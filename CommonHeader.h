@@ -312,7 +312,7 @@ void DrawLabelALICE(Double_t startTextX = 0.13, Double_t startTextY = 0.9, Doubl
 
   Double_t differenceText     = textHeight*1.7;
   TLatex *alice               = new TLatex(startTextX, startTextY, Form("%s",textAlice.Data()));
-  TLatex *energy             = new TLatex(startTextX, (startTextY-1.5*differenceText), "pp, #sqrt{s} = 13 TeV, Pythia 8 Monash 13");
+  TLatex *energy             = new TLatex(startTextX, (startTextY-1.5*differenceText), "pp, #sqrt{s} = 13 TeV");
 
   TLatex *detprocess          = new TLatex(startTextX, (startTextY-2.5*differenceText), "#pi^{0}#rightarrow#gamma#gamma, #gamma's rec. with EMCal ");
 
@@ -322,24 +322,31 @@ void DrawLabelALICE(Double_t startTextX = 0.13, Double_t startTextY = 0.9, Doubl
   alice->SetTextColor(1);
   alice->SetTextFont(42);
   alice->SetTextSize(textSize);
-  alice->Draw();
+  alice->DrawClone();
 
   energy->SetNDC();
   energy->SetTextColor(1);
   energy->SetTextSize(textSize);
   energy->SetTextFont(42);
-  energy->Draw();
+  energy->DrawClone();
 
 
   detprocess->SetNDC();
   detprocess->SetTextColor(1);
   detprocess->SetTextSize(textSize);
   detprocess->SetTextFont(42);
-  detprocess->Draw();
+  detprocess->DrawClone();
 
   pt->SetNDC();
   pt->SetTextColor(1);
   pt->SetTextSize(textSize);
   pt->SetTextFont(42);
-  pt->Draw();
+  pt->DrawClone();
+
+
+  delete alice;
+  delete energy;
+  delete detprocess;
+  delete pt;
+
 }

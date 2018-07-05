@@ -118,7 +118,7 @@ void IterTempCreation(void){
     SetHistoStandardSettings(korrBG);
     SetHistoStandardSettings(korrBG);
 
-    data_MC->SetTitle(str);
+    data->SetTitle(str);
 
     ////////////////////////////////////////////////////////////////////////////
     // normal lame pol 1 fit with template
@@ -186,8 +186,8 @@ void IterTempCreation(void){
       }
 
       if(iter == 0){
-        // mc_full_clone1->Write(Form("mc_full_clone_beforeIterFit_bin%02d_iter%d",k, iter));
-        // korrBG_clone1->Write(Form("korrBG_clone_beforeIterFit_bin%02d_iter%d",k, iter));
+        mc_full_clone1->Write(Form("mc_full_clone_beforeIterFit_bin%02d",k));
+        korrBG_clone1->Write(Form("korrBG_clone_beforeIterFit_bin%02d",k));
       }
 
       //////////////////////////////////////////////////////////////////////////
@@ -328,12 +328,12 @@ void IterTempCreation(void){
     hRatioPol1->SetLineColor(kRed);
     hRatioPol1->SetMarkerColor(kRed);
 
-    
+    data->SetTitle(str);
     IterTemp = new TFile("IterTemp.root","UPDATE");
     gDirectory = IterTemp;
     data->Write(Form("data_bin%02d",k));
-    data_clone4->Write(Form("data_addedErrosPol1_bin%02d",k));
-    data_clone3->Write(Form("data_addedErrosDT_bin%02d",k));
+    data_clone3->Write(Form("data_addedErrosPol1_bin%02d",k));
+    data_clone4->Write(Form("data_addedErrosDT_bin%02d",k));
     mc_full_clone4->Write(Form("mc_peak_pol1_bin%02d",k));
     mc_full_clone3->Write(Form("mc_full_DT_bin%02d", k));
     korrBG_clone3->Write(Form("korrBG_bin%02d", k));

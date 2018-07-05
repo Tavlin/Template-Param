@@ -3,26 +3,19 @@
 
 
 Double_t mc_full_func1(Double_t x){
-  return mc_full_clone1->GetBinContent(mc_full->FindBin(x));
+  return mc_full_clone1->GetBinContent(mc_full_clone1->FindBin(x));
 }
 
 Double_t mc_full_func2(Double_t x){
-  return mc_full_clone2->GetBinContent(mc_full->FindBin(x));
+  return mc_full_clone1->GetBinContent(mc_full_clone1->FindBin(x));
 }
 
 Double_t PeakAKorrBG(Double_t x){
-  return korrBG_clone1->GetBinContent(korrBG->FindBin(x));
+  return korrBG_clone1->GetBinContent(korrBG_clone1->FindBin(x));
 }
 
-Double_t mc_full_func42(Double_t x){
-  return mc_full_clone42->GetBinContent(mc_full->FindBin(x));
-}
-
-Double_t PeakAKorrBG42(Double_t x){
-  return korrBG_clone42->GetBinContent(korrBG->FindBin(x));
-}
-
-void IterTemPlot(void){
+// wpsid = which picture should I draw
+void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
 
   TString str;
   const Int_t nbins = 45;
@@ -61,7 +54,7 @@ void IterTemPlot(void){
   fit_eq_double_temp->SetLineWidth(4);
 
 
-  TF1* fit_eq_1 = new TF1("fit_eq_1", "mc_full_func2(x)*[0]+[2]+x*[3]",0.0,0.4);
+  TF1* fit_eq_1 = new TF1("fit_eq_1", "mc_full_func1(x)*[0]+[2]+x*[3]",0.0,0.4);
   fit_eq_1->SetNpx(ndrawpoints);
   fit_eq_1->SetNumberFitPoints(nbins);
   fit_eq_1->SetLineColor(kRed);
@@ -72,26 +65,216 @@ void IterTemPlot(void){
   // well as peak factor comp. between pol 1 and double temp fit and the ratio
   // of BG. scaling factor and the Peak scaling factor
 
-  TH1F* hChi2_dt
-  TH1F* hChi2_pol1
-  TH1F* hPeakRatio
-  TH1F* hBGtoPeak
+  TH1F* hChi2_dt;
+  TH1F* hChi2_pol1;
+  TH1F* hPeakRatio;
+  TH1F* hPeakComp;
+  // TH1F* hBGtoPeak;
   TH1F* hRatioDoubleTemp;
   TH1F* hRatioPol1;
   TH1F* hData;
+  TH1F* hData_Pol1Error;
+  TH1F* hData_DTError;
   TH1F* hDTPeak;
   TH1F* hDTBG;
   TH1F* hPol1Peak;
+  TH1F* hDoubleTemplatePeakFactor;
+  TH1F* hDoubleTemplatecorrBGFactor;
+  TH1F* hPol1PeakFactor;
   TF1* fpol1;
+  TLine* fitrange2;
+  TLine* line_0;
+  TLine* line_p1;
+  TLine* line_m1;
+  TLine* line_p3;
+  TLine* line_m3;
+  Double_t line_y = 0;
+
+
+  TFile* IterTemp = SafelyOpenRootfile("IterTemp.root");
+  if (IterTemp->IsOpen() ) printf("IterTemp opened successfully\n");
+
+  hChi2_dt = (TH1F*) IterTemp->Get(Form("hchi2_dt"));
+  hChi2_pol1 = (TH1F*) IterTemp->Get(Form("hchi2_pol1"));
+  hPeakRatio = (TH1F*) IterTemp->Get(Form("hpeakratio"));
+  hPeakComp = (TH1F*) IterTemp->Get(Form("hpeakcomp"));
+  hDoubleTemplatePeakFactor = (TH1F*) IterTemp->Get(Form("DoubleTemplatePeakFactor"));
+  hDoubleTemplatecorrBGFactor = (TH1F*) IterTemp->Get(Form("DoubleTemplatecorrBGFactor"));
+  hPol1PeakFactor = (TH1F*) IterTemp->Get(Form("Pol1PeakFactor"));
+
+
+  line_0 = new TLine(0.0, 0.0, 0.4, 0.0);
+  line_0->SetLineWidth(3);
+  line_0->SetLineStyle(1);
+  line_0->SetLineColor(kBlack);
+  line_p1 = new TLine(0.0, 1.0, 0.4, 1.0);
+  line_p1->SetLineWidth(2);
+  line_p1->SetLineStyle(9);
+  line_p1->SetLineColor(kGray+2);
+  line_m1 = new TLine(0.0, -1.0, 0.4, -1.0);
+  line_m1->SetLineWidth(2);
+  line_m1->SetLineStyle(9);
+  line_m1->SetLineColor(kGray+2);
+  line_p3 = new TLine(0.0, 3.0, 0.4, 3.0);
+  line_p3->SetLineWidth(2);
+  line_p3->SetLineStyle(2);
+  line_p3->SetLineColor(kGray+2);
+  line_m3 = new TLine(0.0, -3.0, 0.4, -3.0);
+  line_m3->SetLineWidth(2);
+  line_m3->SetLineStyle(2);
+  line_m3->SetLineColor(kGray+2);
+
+
+
 
   //////////////////////////////////////////////////////////////////////////////
   // going over all pt bins despite first one, which is some framework bs.
   for (int k = 1; k < 26; k++) {
 
+    if(binnumber != -1){
+      if(k == binnumber){
+        hData = (TH1F*) IterTemp->Get(Form("data_bin%02i",k));
+        str = hData->GetTitle();
+        hData_Pol1Error = (TH1F*) IterTemp->Get(Form("data_addedErrosPol1_bin%02i",k));
+        hData_DTError = (TH1F*) IterTemp->Get(Form("data_addedErrosDT_bin%02i",k));
+        hPol1Peak = (TH1F*) IterTemp->Get(Form("mc_peak_pol1_bin%02i",k));
+        hDTPeak = (TH1F*) IterTemp->Get(Form("mc_full_DT_bin%02i",k));
+        hDTBG = (TH1F*) IterTemp->Get(Form("korrBG_bin%02i",k));
+        fpol1 = (TF1*) IterTemp->Get(Form("fpol1_bin%02i",k));
+        hRatioDoubleTemp = (TH1F*) IterTemp->Get(Form("hRatioDoubleTemp_bin%02i",k));
+        hRatioPol1 = (TH1F*) IterTemp->Get(Form("hRatioPol1_bin%02i",k));
+        mc_full_clone1 = (TH1F*) IterTemp->Get(Form("mc_full_clone_beforeIterFit_bin%02d",k));
+        korrBG_clone1 = (TH1F*) IterTemp->Get(Form("korrBG_clone_beforeIterFit_bin%02d",k));
+        mc_full_clone1->SetName("mc_full_clone1");
+        korrBG_clone1->SetName("korrBG_clone1");
 
-    TFile* IterTemp = SafelyOpenRootfile("IterTemp.root");
-    if (IterTemp->IsOpen() ) printf("IterTemp opened successfully\n");
-    
+        fit_eq_double_temp->SetParameter(0,hDoubleTemplatePeakFactor->GetBinContent(k+1));
+        fit_eq_double_temp->SetParameter(1,hDoubleTemplatecorrBGFactor->GetBinContent(k+1));
+        fit_eq_1->SetParameter(0,hPol1PeakFactor->GetBinContent(k+1));
+        fit_eq_1->SetParameter(2,fpol1->GetParameter(0));
+        fit_eq_1->SetParameter(3,fpol1->GetParameter(1));
 
+
+
+        if(wpsid == "all" || wpsid.Contains("paramcomp")){
+          canInvMass->cd();
+          pad1InvMass->Draw();
+          pad2InvMass->Draw("same");
+          pad1InvMass->cd();
+
+          SetHistoStandardSettings(hData, 0., 0., 0.03*3./2.);
+          hData->GetYaxis()->SetRangeUser(
+            1.5*hData->GetBinContent(hData->GetMinimumBin()),
+            1.1*hData->GetBinContent(hData->GetMaximumBin()));
+
+          hData->SetTitle("");
+          hData->GetYaxis()->SetTitleOffset(0.9);
+          hData->Draw("p");
+          fit_eq_1->Draw("same");
+          fit_eq_double_temp->Draw("same");
+          canInvMass->Update();
+          line_y = gPad->GetUymax()*0.995;
+          fitrange2 = new TLine(0.054,line_y,0.252,line_y);
+          fitrange2->SetLineColor(kAzure+10);
+          fitrange2->SetLineWidth(7);
+          fitrange2->Draw("same");
+          DrawLabelALICE(0.5, 0.9, 0.04, 0.03*3./2., str);
+          pad1InvMass->Update();
+
+
+          pad2InvMass->cd();
+          hRatioDoubleTemp->DrawCopy("");
+          line_0->Draw("same");
+          line_p1->Draw("same");
+          line_m1->Draw("same");
+          line_p3->Draw("same");
+          line_m3->Draw("same");
+          hRatioDoubleTemp->DrawCopy("same");
+          hRatioPol1->DrawCopy("same");
+          pad2InvMass->Update();
+
+          canInvMass->Update();
+          canInvMass->SaveAs(Form("MCTemplatesAnData/DataFitWithMCCompIter%02i.png",k));
+          canInvMass->Clear("D");
+        }
+
+        ////////////////////////////////////////////////////////////////////////////
+        // creating TLine which represents the range in which the fit will be made
+        line_y = gPad->GetUymax()*0.995;
+        TLine* fitrange = new TLine(0.054,line_y,0.252,line_y);
+
+        fitrange->SetLineColor(kAzure+10);
+        fitrange->SetLineWidth(7);
+      }
+    }
   }
+
+  // Drawing of Chi^2 comparison bwtween the two fits
+  if(wpsid == "all" || wpsid.Contains("chi2")){
+    c1->cd();
+    c1->Clear();
+    hChi2_dt->Draw("");
+    hChi2_pol1->Draw("same");
+    line_p1->Draw("same");
+    DrawLabelALICE(0.2, 0.9, 0.018, 0.03);
+
+    c1->Update();
+    c1->SaveAs(Form("MCTemplatesAnData/Chi2.png"));
+    c1->Clear();
+  }
+  // draing of b_double/a_double temp
+  if(wpsid == "all" || wpsid.Contains("bgtopeak")){
+    c1->cd();
+    c1->Clear();
+
+    hPeakRatio->Draw("");
+    line_p1->Draw("same");
+    DrawLabelALICE(0.34, 0.9, 0.018, 0.03);
+    c1->Update();
+    c1->SaveAs(Form("MCTemplatesAnData/corr_BG_to_peak.png"));
+    c1->Clear();
+  }
+
+  // draing of a_pol1/a_double temp
+  if(wpsid == "all" || wpsid.Contains("peakcomp")){
+    c1->cd();
+    c1->Clear();
+
+    hPeakComp->Draw("");
+    line_p1->Draw("same");
+    DrawLabelALICE(0.13, 0.9, 0.018, 0.03);
+    c1->Update();
+    c1->SaveAs(Form("MCTemplatesAnData/Peakcomp.png"));
+    c1->Clear();
+  }
+
+  delete pad1InvMass;
+  delete pad2InvMass;
+  delete canInvMass;
+  delete fit_eq_double_temp;
+  delete fit_eq_1;
+  delete hChi2_dt;
+  delete hChi2_pol1;
+  delete hPeakRatio;
+  delete hPeakComp;
+  // delete hBGtoPeak;
+  delete hRatioDoubleTemp;
+  delete hRatioPol1;
+  delete hData;
+  delete hData_Pol1Error;
+  delete hData_DTError;
+  delete hDTPeak;
+  delete hDTBG;
+  delete hPol1Peak;
+  delete hDoubleTemplatePeakFactor;
+  delete hDoubleTemplatecorrBGFactor;
+  delete hPol1PeakFactor;
+  delete fpol1;
+  delete fitrange2;
+  delete line_0;
+  delete line_p1;
+  delete line_m1;
+  delete line_p3;
+  delete line_m3;
+  IterTemp->Close();
 }
