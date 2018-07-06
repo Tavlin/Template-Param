@@ -69,7 +69,6 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
   TH1F* hChi2_pol1;
   TH1F* hPeakRatio;
   TH1F* hPeakComp;
-  // TH1F* hBGtoPeak;
   TH1F* hRatioDoubleTemp;
   TH1F* hRatioPol1;
   TH1F* hData;
@@ -81,6 +80,8 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
   TH1F* hDoubleTemplatePeakFactor;
   TH1F* hDoubleTemplatecorrBGFactor;
   TH1F* hPol1PeakFactor;
+  TH1F* hYield_dt_uncorr;
+  TH1F* hYield_pol1_uncorr;
   TF1* fpol1;
   TLine* fitrange2;
   TLine* line_0;
@@ -88,6 +89,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
   TLine* line_m1;
   TLine* line_p3;
   TLine* line_m3;
+  TLine* line_one;
   Double_t line_y = 0;
 
 
@@ -101,6 +103,8 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
   hDoubleTemplatePeakFactor = (TH1F*) IterTemp->Get(Form("DoubleTemplatePeakFactor"));
   hDoubleTemplatecorrBGFactor = (TH1F*) IterTemp->Get(Form("DoubleTemplatecorrBGFactor"));
   hPol1PeakFactor = (TH1F*) IterTemp->Get(Form("Pol1PeakFactor"));
+  hYield_dt_uncorr = (TH1F*) IterTemp->Get(Form("hYield_dt_uncorr"));
+  hYield_pol1_uncorr = (TH1F*) IterTemp->Get(Form("hYield_pol1_uncorr"));
 
 
   line_0 = new TLine(0.0, 0.0, 0.4, 0.0);
@@ -123,6 +127,10 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
   line_m3->SetLineWidth(2);
   line_m3->SetLineStyle(2);
   line_m3->SetLineColor(kGray+2);
+  line_one = new TLine(0.0, 1.0, 21.0, 1.0);
+  line_one->SetLineWidth(3);
+  line_one->SetLineStyle(1);
+  line_one->SetLineColor(kBlack);
 
 
 
@@ -131,10 +139,100 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
   // going over all pt bins despite first one, which is some framework bs.
   for (int k = 1; k < 26; k++) {
 
-    if(binnumber != -1){
+    if(binnumber <=  0){
+      hData = (TH1F*) IterTemp->Get(Form("data_bin%02i",k));
+      str = hData->GetTitle();
+      hData->SetTitle("");
+      hData_Pol1Error = (TH1F*) IterTemp->Get(Form("data_addedErrosPol1_bin%02i",k));
+      hData_DTError = (TH1F*) IterTemp->Get(Form("data_addedErrosDT_bin%02i",k));
+      hPol1Peak = (TH1F*) IterTemp->Get(Form("mc_peak_pol1_bin%02i",k));
+      hDTPeak = (TH1F*) IterTemp->Get(Form("mc_full_DT_bin%02i",k));
+      hDTBG = (TH1F*) IterTemp->Get(Form("korrBG_bin%02i",k));
+      fpol1 = (TF1*) IterTemp->Get(Form("fpol1_bin%02i",k));
+      hRatioDoubleTemp = (TH1F*) IterTemp->Get(Form("hRatioDoubleTemp_bin%02i",k));
+      hRatioPol1 = (TH1F*) IterTemp->Get(Form("hRatioPol1_bin%02i",k));
+      mc_full_clone1 = (TH1F*) IterTemp->Get(Form("mc_full_clone_beforeIterFit_bin%02d",k));
+      korrBG_clone1 = (TH1F*) IterTemp->Get(Form("korrBG_clone_beforeIterFit_bin%02d",k));
+      mc_full_clone1->SetName("mc_full_clone1");
+      korrBG_clone1->SetName("korrBG_clone1");
+
+      fit_eq_double_temp->SetParameter(0,hDoubleTemplatePeakFactor->GetBinContent(k+1));
+      fit_eq_double_temp->SetParameter(1,hDoubleTemplatecorrBGFactor->GetBinContent(k+1));
+      fit_eq_1->SetParameter(0,hPol1PeakFactor->GetBinContent(k+1));
+      fit_eq_1->SetParameter(2,fpol1->GetParameter(0));
+      fit_eq_1->SetParameter(3,fpol1->GetParameter(1));
+
+
+
+      if(wpsid == "all" || wpsid.Contains("paramcomp")){
+        canInvMass->cd();
+        pad1InvMass->Draw();
+        pad2InvMass->Draw("same");
+        pad1InvMass->cd();
+
+        SetHistoStandardSettings(hData, 0., 0., 0.03*3./2.);
+        hData->GetYaxis()->SetRangeUser(
+          1.5*hData->GetBinContent(hData->GetMinimumBin()),
+          1.1*hData->GetBinContent(hData->GetMaximumBin()));
+
+        hData->SetTitle("");
+        hData->GetYaxis()->SetTitleOffset(0.9);
+        hData->Draw("p");
+        fit_eq_1->Draw("same");
+        fit_eq_double_temp->Draw("same");
+        canInvMass->Update();
+        line_y = gPad->GetUymax()*0.995;
+        fitrange2 = new TLine(lowerparamrange, line_y, upperparamrange, line_y);
+        fitrange2->SetLineColor(kAzure+10);
+        fitrange2->SetLineWidth(7);
+        fitrange2->Draw("same");
+        DrawLabelALICE(0.5, 0.9, 0.04, 0.03*3./2., str);
+        pad1InvMass->Update();
+
+
+        pad2InvMass->cd();
+        hRatioDoubleTemp->DrawCopy("");
+        line_0->Draw("same");
+        line_p1->Draw("same");
+        line_m1->Draw("same");
+        line_p3->Draw("same");
+        line_m3->Draw("same");
+        hRatioDoubleTemp->DrawCopy("same");
+        hRatioPol1->DrawCopy("same");
+        pad2InvMass->Update();
+
+        canInvMass->Update();
+        canInvMass->SaveAs(Form("MCTemplatesAnData/DataFitWithMCCompIter%02i.png",k));
+        canInvMass->Clear("D");
+      }
+      if(wpsid == "all" || wpsid.Contains("bgcomp")){
+        //////////////////////////////////////////////////////////////////////
+        // Drawing both corr. BG versions to Data with normal errors
+        c1->cd();
+
+        hData->Draw("");
+        c1->Update();
+        line_y = gPad->GetUymax()*0.995;
+        hDTBG->Draw("same");
+        fpol1->Draw("same");
+        TLine* fitrange = new TLine(lowerparamrange, line_y, upperparamrange, line_y);
+
+        fitrange->SetLineColor(kAzure+10);
+        fitrange->SetLineWidth(7);
+        fitrange->Draw("same");
+        DrawLabelALICE(0.5, 0.9, 0.02, 0.03, str);
+
+        c1->Update();
+        c1->SaveAs(Form("MCTemplatesAnData/CorrBGComp%02i.png",k));
+        c1->Clear();
+        delete fitrange;
+      }
+    }
+    {
       if(k == binnumber){
         hData = (TH1F*) IterTemp->Get(Form("data_bin%02i",k));
         str = hData->GetTitle();
+        hData->SetTitle("");
         hData_Pol1Error = (TH1F*) IterTemp->Get(Form("data_addedErrosPol1_bin%02i",k));
         hData_DTError = (TH1F*) IterTemp->Get(Form("data_addedErrosDT_bin%02i",k));
         hPol1Peak = (TH1F*) IterTemp->Get(Form("mc_peak_pol1_bin%02i",k));
@@ -174,7 +272,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
           fit_eq_double_temp->Draw("same");
           canInvMass->Update();
           line_y = gPad->GetUymax()*0.995;
-          fitrange2 = new TLine(0.054,line_y,0.252,line_y);
+          fitrange2 = new TLine(lowerparamrange, line_y, upperparamrange, line_y);
           fitrange2->SetLineColor(kAzure+10);
           fitrange2->SetLineWidth(7);
           fitrange2->Draw("same");
@@ -197,14 +295,28 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
           canInvMass->SaveAs(Form("MCTemplatesAnData/DataFitWithMCCompIter%02i.png",k));
           canInvMass->Clear("D");
         }
+        if(wpsid == "all" || wpsid.Contains("bgcomp")){
+          //////////////////////////////////////////////////////////////////////
+          // Drawing both corr. BG versions to Data with normal errors
+          c1->cd();
 
-        ////////////////////////////////////////////////////////////////////////////
-        // creating TLine which represents the range in which the fit will be made
-        line_y = gPad->GetUymax()*0.995;
-        TLine* fitrange = new TLine(0.054,line_y,0.252,line_y);
+          hData->Draw("");
+          c1->Update();
+          line_y = gPad->GetUymax()*0.995;
+          hDTBG->Draw("same");
+          fpol1->Draw("same");
+          TLine* fitrange = new TLine(lowerparamrange, line_y, upperparamrange, line_y);
 
-        fitrange->SetLineColor(kAzure+10);
-        fitrange->SetLineWidth(7);
+          fitrange->SetLineColor(kAzure+10);
+          fitrange->SetLineWidth(7);
+          fitrange->Draw("same");
+          DrawLabelALICE(0.5, 0.9, 0.02, 0.03, str);
+
+          c1->Update();
+          c1->SaveAs(Form("MCTemplatesAnData/CorrBGComp%02i.png",k));
+          c1->Clear();
+          delete fitrange;
+        }
       }
     }
   }
@@ -215,7 +327,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
     c1->Clear();
     hChi2_dt->Draw("");
     hChi2_pol1->Draw("same");
-    line_p1->Draw("same");
+    line_one->Draw("same");
     DrawLabelALICE(0.2, 0.9, 0.018, 0.03);
 
     c1->Update();
@@ -228,7 +340,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
     c1->Clear();
 
     hPeakRatio->Draw("");
-    line_p1->Draw("same");
+    line_one->Draw("same");
     DrawLabelALICE(0.34, 0.9, 0.018, 0.03);
     c1->Update();
     c1->SaveAs(Form("MCTemplatesAnData/corr_BG_to_peak.png"));
@@ -241,12 +353,27 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
     c1->Clear();
 
     hPeakComp->Draw("");
-    line_p1->Draw("same");
+    line_one->Draw("same");
     DrawLabelALICE(0.13, 0.9, 0.018, 0.03);
     c1->Update();
     c1->SaveAs(Form("MCTemplatesAnData/Peakcomp.png"));
     c1->Clear();
   }
+  // drawing uncorrected yields
+  if(wpsid == "all" || wpsid.Contains("uncorryield")){
+    c1->cd();
+    c1->Clear();
+    c1->SetLogy(1);
+    hYield_dt_uncorr->Draw("lp");
+    hYield_pol1_uncorr->Draw("samelp");
+
+    DrawLabelALICE(0.3, 0.9, 0.018, 0.03);
+    c1->Update();
+    c1->SaveAs(Form("MCTemplatesAnData/UncorrYields.png"));
+    c1->Clear();
+    c1->SetLogy(0);
+  }
+
 
   delete pad1InvMass;
   delete pad2InvMass;
@@ -257,7 +384,6 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
   delete hChi2_pol1;
   delete hPeakRatio;
   delete hPeakComp;
-  // delete hBGtoPeak;
   delete hRatioDoubleTemp;
   delete hRatioPol1;
   delete hData;
@@ -276,5 +402,6 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
   delete line_m1;
   delete line_p3;
   delete line_m3;
+  delete line_one;
   IterTemp->Close();
 }

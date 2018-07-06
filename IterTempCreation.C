@@ -27,11 +27,15 @@ void IterTempCreation(void){
   TString sPath = gDirectory->GetPath();
 
   TString str;
+  Double_t int_error = 0;
+  Double_t int_value = 0;
   const Int_t nbins = 45;
   const Int_t ndrawpoints = 1.e5;
   const int n_iter = 4;
   const int numberbins = 26;
   TFile *IterTemp;
+  TH1F* hYield_dt_uncorr = new TH1F("hYield_dt_uncorr","",numberbins, fBinsPi013TeVEMCPt);
+  TH1F* hYield_pol1_uncorr = new TH1F("hYield_pol1_uncorr","",numberbins, fBinsPi013TeVEMCPt);
 
   //////////////////////////////////////////////////////////////////////////////
   // setting up the 2 Huistograms to compare chi2 from the to fit methods as
@@ -50,6 +54,9 @@ void IterTempCreation(void){
   TH1F* hpeakcomp = new TH1F("hpeakcomp", "", numberbins, fBinsPi013TeVEMCPt);
   TH1F* hRatioDoubleTemp;
   TH1F* hRatioPol1;
+  TH1F* data_clone_for_int_dt;
+  TH1F* data_clone_for_int_pol1;
+
   SetHistoStandardSettings(hchi2_dt);
   SetHistoStandardSettings(hchi2_pol1);
   SetHistoStandardSettings(hpeakratio);
@@ -57,6 +64,12 @@ void IterTempCreation(void){
   SetHistoStandardSettings(ha_DT);
   SetHistoStandardSettings(hb_DT);
   SetHistoStandardSettings(ha_pol1);
+  SetHistoStandardSettings(hYield_dt_uncorr);
+  SetHistoStandardSettings(hYield_pol1_uncorr);
+  hYield_dt_uncorr->SetLineColor(kTeal-7);
+  hYield_dt_uncorr->SetMarkerColor(kTeal-7);
+  hYield_pol1_uncorr->SetLineColor(kRed);
+  hYield_pol1_uncorr->SetMarkerColor(kRed);
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -192,13 +205,13 @@ void IterTempCreation(void){
 
       //////////////////////////////////////////////////////////////////////////
       // fit 2 temp
-      TFitResultPtr r_double_temp1 = data_clone1->Fit("fit_eq_double_temp", "QM0PS","", 0.054, 0.252);
-      data_clone1->Fit("fit_eq_double_temp42", "QM0PS","", 0.054, 0.252);
+      TFitResultPtr r_double_temp1 = data_clone1->Fit("fit_eq_double_temp", "QM0PS","", lowerparamrange, upperparamrange);
+      data_clone1->Fit("fit_eq_double_temp42", "QM0PS","", lowerparamrange, upperparamrange);
 
 
       //////////////////////////////////////////////////////////////////////////
       //fit pol 1 + temp
-      TFitResultPtr r_pol1_temp1 = data_clone2->Fit("fit_eq_1", "QM0PS","", 0.054, 0.252);
+      TFitResultPtr r_pol1_temp1 = data_clone2->Fit("fit_eq_1", "QM0PS","", lowerparamrange, upperparamrange);
 
       //////////////////////////////////////////////////////////////////////////
       // scale 2 temp
@@ -270,7 +283,7 @@ void IterTempCreation(void){
     // final  2 temp fit
     mc_full_clone1 = (TH1F*) mc_full->Clone("mc_full_clone1");
     korrBG_clone1 = (TH1F*) korrBG->Clone("korrBG_clone1");
-    TFitResultPtr r_double_temp = data_clone4->Fit("fit_eq_double_temp", "M0PS","", 0.054, 0.252);
+    TFitResultPtr r_double_temp = data_clone4->Fit("fit_eq_double_temp", "M0PS","",lowerparamrange , upperparamrange);
     TH1F* mc_full_clone3 = (TH1F*) mc_full->Clone("mc_full_clone3");
     TH1F* korrBG_clone3 = (TH1F*) korrBG->Clone("korrBG_clone3");
     mc_full_clone3->Scale(r_double_temp->Parameter(0));
@@ -279,7 +292,7 @@ void IterTempCreation(void){
     ///////////////////////////////////////////////////////////////////////////
     // final pol 1 + temp fit
     mc_full_clone2 = (TH1F*) mc_full->Clone("mc_full_clone2");
-    TFitResultPtr r_pol1_temp = data_clone3->Fit("fit_eq_1", "M0PS","", 0.054, 0.252);
+    TFitResultPtr r_pol1_temp = data_clone3->Fit("fit_eq_1", "M0PS","", lowerparamrange, upperparamrange);
     TH1F* mc_full_clone4 = (TH1F*) mc_full->Clone("mc_full_clone4");
     mc_full_clone4->Scale(r_pol1_temp->Parameter(0));
     mc_full_clone4->SetLineColor(kRed);
@@ -347,6 +360,20 @@ void IterTempCreation(void){
     // getting the chi2 of the current pT bin
     hchi2_pol1->SetBinContent(k+1,r_pol1_temp->Chi2()/r_pol1_temp->Ndf());
     hchi2_dt->SetBinContent(k+1,r_double_temp->Chi2()/r_double_temp->Ndf());
+
+
+
+    data_clone_for_int_dt = (TH1F*) data->Clone("hYield_dt_uncorr");
+    data_clone_for_int_dt->Add(korrBG_clone3, -1);
+    int_value = data_clone_for_int_dt->IntegralAndError(0, data_clone_for_int_dt->GetXaxis()->FindBin(0.3), int_error);
+    hYield_dt_uncorr->SetBinContent(k+1, int_value);
+    hYield_dt_uncorr->SetBinError(k+1, int_error);
+
+    data_clone_for_int_pol1 = (TH1F*) data->Clone("hYield_pol1_uncorr");
+    data_clone_for_int_pol1->Add(fpol1, -1);
+    int_value = data_clone_for_int_pol1->IntegralAndError(0, data_clone_for_int_pol1->GetXaxis()->FindBin(0.3), int_error);
+    hYield_pol1_uncorr->SetBinContent(k+1, int_value);
+    hYield_pol1_uncorr->SetBinError(k+1, int_error);
 
     ////////////////////////////////////////////////////////////////////////////
     // getting the peakratio of the current pT bin
@@ -436,6 +463,10 @@ void IterTempCreation(void){
   ha_DT->Write("DoubleTemplatePeakFactor");
   hb_DT->Write("DoubleTemplatecorrBGFactor");
   ha_pol1->Write("Pol1PeakFactor");
+  hYield_dt_uncorr->Scale(1,"width");
+  hYield_pol1_uncorr->Scale(1,"width");
+  hYield_dt_uncorr->Write("hYield_dt_uncorr");
+  hYield_pol1_uncorr->Write("hYield_pol1_uncorr");
 
   delete hpeakratio;
   delete hpeakcomp;
@@ -443,7 +474,8 @@ void IterTempCreation(void){
   delete hchi2_pol1;
   delete hRatioDoubleTemp;
   delete hRatioPol1;
-
+  delete hYield_dt_uncorr;
+  delete hYield_pol1_uncorr;
   IterTemp->Close();
 
 }

@@ -31,6 +31,8 @@ Double_t fBinsPi013TeVEMCPt[27]                  =   { 0.0,  0.5, 1.4,  1.9,  2.
 
 
 const Int_t kMaxHit = 2000;
+const Double_t lowerparamrange = 0.054;
+const Double_t upperparamrange = 0.252;
 TH1F* data;                              //data histogram
 TH1F* data_MC;
 TH1F* mc_photon;                         // gamma gamma MC histogram
