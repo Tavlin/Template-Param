@@ -465,6 +465,10 @@ void IterTempCreation(void){
   ha_pol1->Write("Pol1PeakFactor");
   hYield_dt_uncorr->Scale(1,"width");
   hYield_pol1_uncorr->Scale(1,"width");
+  hYield_dt_uncorr->SetYTitle(rawyield);
+  hYield_dt_uncorr->SetXTitle(massaxis);
+  hYield_pol1_uncorr->SetYTitle(rawyield);
+  hYield_pol1_uncorr->SetXTitle(massaxis);
   hYield_dt_uncorr->Write("hYield_dt_uncorr");
   hYield_pol1_uncorr->Write("hYield_pol1_uncorr");
 

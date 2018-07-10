@@ -67,6 +67,10 @@ void drawchi_and_param42(TLatex* tex,TFitResultPtr r ){
 }
 
 TString MCInfo = "#splitline{pp, #sqrt{#it{s}} = 13TeV}{MC Monasch 13}";
+TString massaxis = "#it{M}_{#gamma #gamma} (GeV/#it{c}^{2})";
+TString rawyield = "#frac{d#it{N}}{d#it{p}_{T}}";
+TString DoubleTempStr = "Double temp. param.";
+TString Pol1Str = "Peak temp. + 1^{st} ord. pol param.";
 TLatex* texMCInfo = new TLatex();
 
 // Double_t myFunc(Double_t x){

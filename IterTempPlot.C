@@ -21,8 +21,8 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
   const Int_t nbins = 45;
   const Int_t ndrawpoints = 1.e5;
   const int n_iter = 4;
-  TString doubletempstring = "Double template param.";
-  TString pol1string = "Peak template + 1^{st} ord. pol. param.";
+  TString doubletempstring = "Double temp. param.";
+  TString pol1string = "Peak temp. + 1^{st} ord. pol. param.";
 
   //////////////////////////////////////////////////////////////////////////////
   // setting up the canvas to draw on. Will later be changed for the chi2 pic
@@ -255,10 +255,18 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
 
 
         if(wpsid == "all" || wpsid.Contains("paramcomp")){
+
+
           canInvMass->cd();
           pad1InvMass->Draw();
           pad2InvMass->Draw("same");
           pad1InvMass->cd();
+
+          TLegend* leg = new TLegend(0.6,0.75,0.9,0.9);
+          SetLegendSettigns(leg);
+          leg->AddEntry(hData, "Daten");
+          leg->AddEntry(fit_eq_1, pol1string, "l");
+          leg->AddEntry(fit_eq_double_temp, doubletempstring, "l");
 
           SetHistoStandardSettings(hData, 0., 0., 0.03*3./2.);
           hData->GetYaxis()->SetRangeUser(
@@ -276,7 +284,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
           fitrange2->SetLineColor(kAzure+10);
           fitrange2->SetLineWidth(7);
           fitrange2->Draw("same");
-          DrawLabelALICE(0.5, 0.9, 0.04, 0.03*3./2., str);
+          DrawLabelALICE(0.5, 0.9, 0.035, 0.03*3./2., str);
           pad1InvMass->Update();
 
 
@@ -323,16 +331,24 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
 
   // Drawing of Chi^2 comparison bwtween the two fits
   if(wpsid == "all" || wpsid.Contains("chi2")){
+
+    TLegend* leg = new TLegend(0.6,0.75,0.9,0.9);
+    SetLegendSettigns(leg);
+    leg->AddEntry(hChi2_dt, "Double temp. param.", "l");
+    leg->AddEntry(hChi2_pol1, "Peak temp. + 1^{st} ord. pol param.", "l");
+
     c1->cd();
     c1->Clear();
     hChi2_dt->Draw("");
     hChi2_pol1->Draw("same");
     line_one->Draw("same");
+    leg->Draw("same");
     DrawLabelALICE(0.2, 0.9, 0.018, 0.03);
 
     c1->Update();
     c1->SaveAs(Form("MCTemplatesAnData/Chi2.png"));
     c1->Clear();
+    delete leg;
   }
   // draing of b_double/a_double temp
   if(wpsid == "all" || wpsid.Contains("bgtopeak")){
@@ -361,17 +377,25 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
   }
   // drawing uncorrected yields
   if(wpsid == "all" || wpsid.Contains("uncorryield")){
+
+    TLegend* leg = new TLegend(0.6,0.75,0.9,0.9);
+    SetLegendSettigns(leg);
+    leg->AddEntry(hYield_dt_uncorr, "Double temp. param.", "lp");
+    leg->AddEntry(hYield_pol1_uncorr, "Peak temp. + 1^{st} ord. pol param.", "lp");
+
     c1->cd();
     c1->Clear();
     c1->SetLogy(1);
     hYield_dt_uncorr->Draw("lp");
     hYield_pol1_uncorr->Draw("samelp");
+    leg->Draw("same");
 
     DrawLabelALICE(0.3, 0.9, 0.018, 0.03);
     c1->Update();
     c1->SaveAs(Form("MCTemplatesAnData/UncorrYields.png"));
     c1->Clear();
     c1->SetLogy(0);
+    delete leg;
   }
 
 
