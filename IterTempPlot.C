@@ -32,6 +32,8 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
   c1->SetBottomMargin(0.09);
   c1->SetRightMargin(0.02);
   c1->SetLeftMargin(0.09);
+  c1->SetTicky();
+  c1->SetTickx();
   TGaxis::SetMaxDigits(3);
   gStyle->SetOptStat(0);
 
@@ -165,6 +167,13 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
 
 
       if(wpsid == "all" || wpsid.Contains("paramcomp")){
+        TLegend* leg = new TLegend(0.6 , 0.2 , 0.9 , 0.5);
+        TLatex* tex = new TLatex(0.7 , 0.7, "test");
+        SetLatexSettings(tex);
+        SetLegendSettigns(leg,0.03*3./2.);
+        leg->AddEntry(hData, "Daten", "lp");
+        leg->AddEntry(fit_eq_1, pol1string, "l");
+        leg->AddEntry(fit_eq_double_temp, doubletempstring, "l");
         canInvMass->cd();
         pad1InvMass->Draw();
         pad2InvMass->Draw("same");
@@ -185,8 +194,13 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
         fitrange2 = new TLine(lowerparamrange, line_y, upperparamrange, line_y);
         fitrange2->SetLineColor(kAzure+10);
         fitrange2->SetLineWidth(7);
+        leg->AddEntry(fitrange2, "Param. range", "l");
         fitrange2->Draw("same");
-        DrawLabelALICE(0.5, 0.9, 0.04, 0.03*3./2., str);
+        leg->Draw("same");
+        tex->Draw("same");
+        // DrawLabelALICE(0.5, 0.9, 0.04, 0.03*3./2., str);
+        tex->Draw("");
+        tex->Draw("same");
         pad1InvMass->Update();
 
 
@@ -204,6 +218,8 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
         canInvMass->Update();
         canInvMass->SaveAs(Form("MCTemplatesAnData/DataFitWithMCCompIter%02i.png",k));
         canInvMass->Clear("D");
+        delete leg;
+        delete fitrange2;
       }
       if(wpsid == "all" || wpsid.Contains("bgcomp")){
         //////////////////////////////////////////////////////////////////////
@@ -386,8 +402,9 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
     c1->cd();
     c1->Clear();
     c1->SetLogy(1);
-    hYield_dt_uncorr->Draw("lp");
-    hYield_pol1_uncorr->Draw("samelp");
+    hYield_pol1_uncorr->GetYaxis()->SetRangeUser(1.e0,1.e6);
+    hYield_pol1_uncorr->Draw("lp");
+    hYield_dt_uncorr->Draw("samelp");
     leg->Draw("same");
 
     DrawLabelALICE(0.3, 0.9, 0.018, 0.03);
