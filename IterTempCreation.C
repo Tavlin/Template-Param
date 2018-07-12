@@ -36,7 +36,7 @@ void IterTempCreation(void){
   TFile *IterTemp;
   TH1F* hYield_dt_uncorr = new TH1F("hYield_dt_uncorr","",numberbins, fBinsPi013TeVEMCPt);
   TH1F* hYield_pol1_uncorr = new TH1F("hYield_pol1_uncorr","",numberbins, fBinsPi013TeVEMCPt);
-
+  // TF1* f1 = new TF1("f1", "1", 0.0, 0.3);
   //////////////////////////////////////////////////////////////////////////////
   // setting up the 2 Huistograms to compare chi2 from the to fit methods as
   // well as peak factor comp. between pol 1 and double temp fit and the ratio
@@ -54,6 +54,8 @@ void IterTempCreation(void){
   TH1F* hpeakcomp = new TH1F("hpeakcomp", "", numberbins, fBinsPi013TeVEMCPt);
   TH1F* hRatioDoubleTemp;
   TH1F* hRatioPol1;
+  TH1F* hDoubleTemp;
+  TH1F* hPol1;
   TH1F* data_clone_for_int_dt;
   TH1F* data_clone_for_int_pol1;
 
@@ -96,7 +98,7 @@ void IterTempCreation(void){
     mc_full->GetXaxis()->SetRangeUser(0.,0.4);
     data->GetXaxis()->SetRangeUser(0.,0.4);
     ////////////////////////////////////////////////////////////////////////////
-    // Getinng the purposed corr Background
+    // Getting the purposed corr Background
     korrBG = (TH1F*) data_MC->Clone("korrBG");
     korrBG->Add(mc_full,-1);
 
@@ -149,17 +151,18 @@ void IterTempCreation(void){
     data->SetTitleSize(0.03, "xy");
     data->SetLabelSize(0.03, "xy");
     data->SetYTitle("d#it{N}/d#it{M}_{#gamma#gamma} (#it{c}^{2}/GeV)");
-    data->SetMarkerStyle(20);
+    data->SetMarkerStyle(24);
     data->SetMarkerSize(1.5);
     data->SetTitle("");
-    korrBG->SetLineColor(kTeal-7);
-    korrBG->SetMarkerColor(kTeal-7);
-    korrBG->SetMarkerStyle(34);
-    korrBG->SetMarkerSize(2);
-    mc_full->SetLineColor(kTeal-7);
-    mc_full->SetMarkerColor(kTeal-7);
+    data->SetLineWidth(3);
+    korrBG->SetLineColor(kCyan+3);
+    korrBG->SetMarkerColor(kCyan+3);
+    korrBG->SetMarkerStyle(21);
+    korrBG->SetMarkerSize(1.5);
+    mc_full->SetLineColor(kGreen+3);
+    mc_full->SetMarkerColor(kGreen+3);
     mc_full->SetMarkerStyle(33);
-    mc_full->SetMarkerSize(2.5);
+    mc_full->SetMarkerSize(2);
 
     //////////////////////////////////////////////////////////////////////////
     // clone for 2 temp fit
@@ -198,10 +201,10 @@ void IterTempCreation(void){
           // if (IterTemp->IsOpen() ) printf("IterTemp opened successfully\n");
       }
 
-      if(iter == 0){
-        mc_full_clone1->Write(Form("mc_full_clone_beforeIterFit_bin%02d",k));
-        korrBG_clone1->Write(Form("korrBG_clone_beforeIterFit_bin%02d",k));
-      }
+      // if(iter == 0){
+      //   mc_full_clone1->Write(Form("mc_full_clone_beforeIterFit_bin%02d",k));
+      //   korrBG_clone1->Write(Form("korrBG_clone_beforeIterFit_bin%02d",k));
+      // }
 
       //////////////////////////////////////////////////////////////////////////
       // fit 2 temp
@@ -283,11 +286,34 @@ void IterTempCreation(void){
     // final  2 temp fit
     mc_full_clone1 = (TH1F*) mc_full->Clone("mc_full_clone1");
     korrBG_clone1 = (TH1F*) korrBG->Clone("korrBG_clone1");
+
+
+
     TFitResultPtr r_double_temp = data_clone4->Fit("fit_eq_double_temp", "M0PS","",lowerparamrange , upperparamrange);
     TH1F* mc_full_clone3 = (TH1F*) mc_full->Clone("mc_full_clone3");
     TH1F* korrBG_clone3 = (TH1F*) korrBG->Clone("korrBG_clone3");
+    Double_t corrbackerror[76];
+    for(int i = 0; i <= 75; i++){
+      corrbackerror[i] = sqrt(pow(korrBG_clone3->GetBinError(i)
+      *r_double_temp->Parameter(1),2.)+ pow(korrBG_clone3->GetBinContent(i)
+      *r_double_temp->Error(1),2.));
+    }
     mc_full_clone3->Scale(r_double_temp->Parameter(0));
     korrBG_clone3->Scale(r_double_temp->Parameter(1));
+
+    ////////////////////////////////////////////////////////////////////////////
+    //  making full histogram of the DoubleTemplate Param.
+    hDoubleTemp = (TH1F*) mc_full_clone3->Clone("hDoubleTemp");
+    hDoubleTemp->Add(korrBG_clone3);
+    hDoubleTemp->SetMarkerStyle(20);
+    hDoubleTemp->SetMarkerSize(1.5);
+    hDoubleTemp->SetMarkerColor(kTeal-7);
+    hDoubleTemp->SetLineColor(kTeal-7);
+    ////////////////////////////////////////////////////////////////////////////
+
+    for(int i = 0; i <= 75; i++){
+      korrBG_clone3->SetBinError(i,corrbackerror[i]);
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     // final pol 1 + temp fit
@@ -304,6 +330,15 @@ void IterTempCreation(void){
     fpol1->SetLineColor(kTeal-7);
     fpol1->SetLineWidth(3);
 
+    ////////////////////////////////////////////////////////////////////////////
+    //  making full histogram of the DoubleTemplate Param.
+    hPol1 = (TH1F*) mc_full_clone4->Clone("hDoubleTemp");
+    hPol1->Add(fpol1);
+    hPol1->SetMarkerStyle(20);
+    hPol1->SetMarkerSize(1.5);
+    hPol1->SetMarkerColor(kRed+1);
+    hPol1->SetLineColor(kRed+1);
+
 
     ///////////////////////////////////////////////////////////////////////////
     // Picture of double template fit with chi2 and factors as well as ratio of
@@ -319,7 +354,7 @@ void IterTempCreation(void){
     hRatioPol1 = (TH1F*) data_clone3->Clone("RatioPol1");
     hRatioDoubleTemp->Add(fit_eq_double_temp,-1.);
     hRatioPol1->Add(fit_eq_1, -1.);
-    for (int i = 0; i < 75; i++) {
+    for (int i = 0; i < 101; i++) {
       hRatioDoubleTemp->SetBinContent(i,hRatioDoubleTemp->GetBinContent(i)/hRatioDoubleTemp->GetBinError(i));
       hRatioPol1->SetBinContent(i,hRatioPol1->GetBinContent(i)/hRatioPol1->GetBinError(i));
       hRatioDoubleTemp->SetBinError(i,0);
@@ -331,10 +366,14 @@ void IterTempCreation(void){
     hRatioPol1->GetYaxis()->SetRangeUser(-4.5,4.5);
     SetHistoStandardSettings(hRatioDoubleTemp,0.,0.,0.09);
     SetHistoStandardSettings(hRatioPol1,0.,0.,0.09);
-    hRatioDoubleTemp->SetYTitle("(data-param)/#sigma(data)");
-    hRatioPol1->SetYTitle("(data-param)/#sigma(data)");
+    hRatioDoubleTemp->SetYTitle("(data-param)/#sigma");
+    hRatioPol1->SetYTitle("(data-param)/#sigma");
     hRatioDoubleTemp->GetYaxis()->SetTitleOffset(0.4);
     hRatioPol1->GetYaxis()->SetTitleOffset(0.4);
+    hRatioDoubleTemp->SetMarkerStyle(24);
+    hRatioDoubleTemp->SetMarkerSize(1.5);
+    hRatioPol1->SetMarkerStyle(24);
+    hRatioPol1->SetMarkerSize(1.5);
 
     hRatioDoubleTemp->SetLineColor(kTeal-7);
     hRatioDoubleTemp->SetMarkerColor(kTeal-7);
@@ -353,6 +392,8 @@ void IterTempCreation(void){
     fpol1->Write(Form("fpol1_bin%02d",k));
     hRatioDoubleTemp->Write(Form("hRatioDoubleTemp_bin%02d", k));
     hRatioPol1->Write(Form("hRatioPol1_bin%02d", k));
+    hDoubleTemp->Write(Form("hDoubleTemp_bin%02d",k));
+    hPol1->Write(Form("hPol1_bin%02d",k));
 
 
     gDirectory->Cd(sPath.Data());
@@ -480,6 +521,8 @@ void IterTempCreation(void){
   delete hRatioPol1;
   delete hYield_dt_uncorr;
   delete hYield_pol1_uncorr;
+  delete hDoubleTemp;
+  delete hPol1;
   IterTemp->Close();
 
 }

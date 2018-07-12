@@ -3,6 +3,7 @@
 #include "TLegend.h"
 #include "TObject.h"
 #include "TCanvas.h"
+#include "TGraphErrors.h"
 #include "TF1.h"
 #include "TStyle.h"
 #include "TString.h"
@@ -25,10 +26,10 @@
 #include <vector>
 #include <algorithm>
 
+
 Double_t fBinsPi013TeVEMCPt[27]                  =   { 0.0,  0.5, 1.4,  1.9,  2.4,  2.9,     3.4,  3.9,  4.4,  4.9,  5.4,
                                                        5.9,  6.4,  6.9,  7.4,  7.9,     8.4,  9.4, 10.4, 11.4, 12.4,
                                                       13.4, 14.4, 15.4, 16.4, 17.5,    21.};
-
 
 const Int_t kMaxHit = 2000;
 const Double_t lowerparamrange = 0.054;
@@ -320,6 +321,8 @@ void DrawLabelALICE(Double_t startTextX = 0.13, Double_t startTextY = 0.9, Doubl
   TLatex *alice               = new TLatex(startTextX, startTextY, Form("%s",textAlice.Data()));
   TLatex *energy             = new TLatex(startTextX, (startTextY-1.5*differenceText), "pp, #sqrt{s} = 13 TeV");
 
+  TLatex *Template             = new TLatex(startTextX, (startTextY-2.5*differenceText), "Templates from Pythia 8 Monash 2013");
+
   TLatex *detprocess          = new TLatex(startTextX, (startTextY-2.5*differenceText), "#pi^{0}#rightarrow#gamma#gamma, #gamma's rec. with EMCal ");
 
   TLatex *pt          = new TLatex(startTextX, (startTextY-3.5*differenceText), str);
@@ -335,6 +338,12 @@ void DrawLabelALICE(Double_t startTextX = 0.13, Double_t startTextY = 0.9, Doubl
   energy->SetTextSize(textSize);
   energy->SetTextFont(42);
   energy->DrawClone();
+
+  Template->SetNDC();
+  Template->SetTextColor(1);
+  Template->SetTextSize(textSize);
+  Template->SetTextFont(42);
+  Template->DrawClone();
 
 
   detprocess->SetNDC();
@@ -352,6 +361,7 @@ void DrawLabelALICE(Double_t startTextX = 0.13, Double_t startTextY = 0.9, Doubl
 
   delete alice;
   delete energy;
+  delete Template;
   delete detprocess;
   delete pt;
 
