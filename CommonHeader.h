@@ -66,11 +66,11 @@ void drawchi_and_param42(TLatex* tex,TFitResultPtr r ){
   // tex->DrawLatexNDC(0.17,0.60,
   // Form("#frac{b_{double}}{a_{double}} = %.2lf ",r->Parameter(1) / r->Parameter(0)));
 }
-
+TString strData = "data (signal + corr. back.)";
 TString MCInfo = "#splitline{pp, #sqrt{#it{s}} = 13TeV}{MC Monasch 13}";
 TString massaxis = "#it{M}_{#gamma #gamma} (GeV/#it{c}^{2})";
 TString rawyield = "#frac{d#it{N}}{d#it{p}_{T}}";
-TString DoubleTempStr = "Double temp. param.";
+TString DoubleTempStr = "signal + corr. back.";
 TString Pol1Str = "Peak temp. + 1^{st} ord. pol param.";
 TLatex* texMCInfo = new TLatex();
 
@@ -323,9 +323,9 @@ void DrawLabelALICE(Double_t startTextX = 0.13, Double_t startTextY = 0.9, Doubl
 
   TLatex *Template             = new TLatex(startTextX, (startTextY-2.5*differenceText), "Templates from Pythia 8 Monash 2013");
 
-  TLatex *detprocess          = new TLatex(startTextX, (startTextY-2.5*differenceText), "#pi^{0}#rightarrow#gamma#gamma, #gamma's rec. with EMCal ");
+  TLatex *detprocess          = new TLatex(startTextX, (startTextY-3.5*differenceText), "#pi^{0}#rightarrow#gamma#gamma, #gamma's rec. with EMCal ");
 
-  TLatex *pt          = new TLatex(startTextX, (startTextY-3.5*differenceText), str);
+  TLatex *pt          = new TLatex(startTextX, (startTextY-4.5*differenceText), str);
 
   alice->SetNDC();
   alice->SetTextColor(1);

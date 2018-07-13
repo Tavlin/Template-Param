@@ -292,8 +292,8 @@ void IterTempCreation(void){
     TFitResultPtr r_double_temp = data_clone4->Fit("fit_eq_double_temp", "M0PS","",lowerparamrange , upperparamrange);
     TH1F* mc_full_clone3 = (TH1F*) mc_full->Clone("mc_full_clone3");
     TH1F* korrBG_clone3 = (TH1F*) korrBG->Clone("korrBG_clone3");
-    Double_t corrbackerror[76];
-    for(int i = 0; i <= 75; i++){
+    Double_t corrbackerror[101];
+    for(int i = 0; i <= 100; i++){
       corrbackerror[i] = sqrt(pow(korrBG_clone3->GetBinError(i)
       *r_double_temp->Parameter(1),2.)+ pow(korrBG_clone3->GetBinContent(i)
       *r_double_temp->Error(1),2.));
@@ -311,7 +311,7 @@ void IterTempCreation(void){
     hDoubleTemp->SetLineColor(kTeal-7);
     ////////////////////////////////////////////////////////////////////////////
 
-    for(int i = 0; i <= 75; i++){
+    for(int i = 0; i <= 100; i++){
       korrBG_clone3->SetBinError(i,corrbackerror[i]);
     }
 
@@ -324,7 +324,7 @@ void IterTempCreation(void){
     mc_full_clone4->SetLineColor(kRed);
     mc_full_clone4->SetMarkerColor(kRed);
 
-    TF1* fpol1 = new TF1("fpol1", "[0]+x*[1]", 0.0, 0.3);
+    TF1* fpol1 = new TF1("fpol1", "[0]+x*[1]", 0.0, 0.4);
     fpol1->SetParameter(0, fit_eq_1->GetParameter(2));
     fpol1->SetParameter(1, fit_eq_1->GetParameter(3));
     fpol1->SetLineColor(kTeal-7);

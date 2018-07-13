@@ -2,17 +2,17 @@
 #include "TFractionFitter.h"
 
 
-Double_t mc_full_func1(Double_t x){
-  return mc_full_clone1->GetBinContent(mc_full_clone1->FindBin(x));
-}
-
-Double_t mc_full_func2(Double_t x){
-  return mc_full_clone1->GetBinContent(mc_full_clone1->FindBin(x));
-}
-
-Double_t PeakAKorrBG(Double_t x){
-  return korrBG_clone1->GetBinContent(korrBG_clone1->FindBin(x));
-}
+// Double_t mc_full_func1(Double_t x){
+//   return mc_full_clone1->GetBinContent(mc_full_clone1->FindBin(x));
+// }
+//
+// Double_t mc_full_func2(Double_t x){
+//   return mc_full_clone1->GetBinContent(mc_full_clone1->FindBin(x));
+// }
+//
+// Double_t PeakAKorrBG(Double_t x){
+//   return korrBG_clone1->GetBinContent(korrBG_clone1->FindBin(x));
+// }
 
 // wpsid = which picture should I draw
 void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
@@ -50,18 +50,18 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
   pad2InvMass->SetRightMargin(0.02);
   pad2InvMass->SetTicky();
 
-  TF1* fit_eq_double_temp = new TF1("fit_eq_double_temp", "PeakAKorrBG(x)*[1] + mc_full_func1(x)*[0]", 0.0,0.4);
-  fit_eq_double_temp->SetNpx(ndrawpoints);
-  fit_eq_double_temp->SetNumberFitPoints(nbins);
-  fit_eq_double_temp->SetLineColor(kTeal-7);
-  fit_eq_double_temp->SetLineWidth(4);
+  // TF1* fit_eq_double_temp = new TF1("fit_eq_double_temp", "PeakAKorrBG(x)*[1] + mc_full_func1(x)*[0]", 0.0,0.4);
+  // fit_eq_double_temp->SetNpx(ndrawpoints);
+  // fit_eq_double_temp->SetNumberFitPoints(nbins);
+  // fit_eq_double_temp->SetLineColor(kTeal-7);
+  // fit_eq_double_temp->SetLineWidth(4);
 
 
-  TF1* fit_eq_1 = new TF1("fit_eq_1", "mc_full_func1(x)*[0]+[2]+x*[3]",0.0,0.4);
-  fit_eq_1->SetNpx(ndrawpoints);
-  fit_eq_1->SetNumberFitPoints(nbins);
-  fit_eq_1->SetLineColor(kRed);
-  fit_eq_1->SetLineWidth(4);
+  // TF1* fit_eq_1 = new TF1("fit_eq_1", "mc_full_func1(x)*[0]+[2]+x*[3]",0.0,0.4);
+  // fit_eq_1->SetNpx(ndrawpoints);
+  // fit_eq_1->SetNumberFitPoints(nbins);
+  // fit_eq_1->SetLineColor(kRed);
+  // fit_eq_1->SetLineWidth(4);
 
   //////////////////////////////////////////////////////////////////////////////
   // setting up the 2 Histograms to compare chi2 from the to fit methods as
@@ -85,6 +85,8 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
   TH1F* hPol1PeakFactor;
   TH1F* hYield_dt_uncorr;
   TH1F* hYield_pol1_uncorr;
+  TH1F* hDoubleTemp;
+  TH1F* hPol1;
   TF1* fpol1;
   TLine* fitrange2;
   TLine* line_0;
@@ -154,16 +156,18 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
       fpol1 = (TF1*) IterTemp->Get(Form("fpol1_bin%02i",k));
       hRatioDoubleTemp = (TH1F*) IterTemp->Get(Form("hRatioDoubleTemp_bin%02i",k));
       hRatioPol1 = (TH1F*) IterTemp->Get(Form("hRatioPol1_bin%02i",k));
-      mc_full_clone1 = (TH1F*) IterTemp->Get(Form("mc_full_clone_beforeIterFit_bin%02d",k));
-      korrBG_clone1 = (TH1F*) IterTemp->Get(Form("korrBG_clone_beforeIterFit_bin%02d",k));
-      mc_full_clone1->SetName("mc_full_clone1");
-      korrBG_clone1->SetName("korrBG_clone1");
+      // mc_full_clone1 = (TH1F*) IterTemp->Get(Form("mc_full_clone_beforeIterFit_bin%02d",k));
+      // korrBG_clone1 = (TH1F*) IterTemp->Get(Form("korrBG_clone_beforeIterFit_bin%02d",k));
+      hDoubleTemp = (TH1F*) IterTemp->Get(Form("hDoubleTemp_bin%02d",k));
+      hPol1 = (TH1F*) IterTemp->Get(Form("hPol1_bin%02d",k));
+      // mc_full_clone1->SetName("mc_full_clone1");
+      // korrBG_clone1->SetName("korrBG_clone1");
 
-      fit_eq_double_temp->SetParameter(0,hDoubleTemplatePeakFactor->GetBinContent(k+1));
-      fit_eq_double_temp->SetParameter(1,hDoubleTemplatecorrBGFactor->GetBinContent(k+1));
-      fit_eq_1->SetParameter(0,hPol1PeakFactor->GetBinContent(k+1));
-      fit_eq_1->SetParameter(2,fpol1->GetParameter(0));
-      fit_eq_1->SetParameter(3,fpol1->GetParameter(1));
+      // fit_eq_double_temp->SetParameter(0,hDoubleTemplatePeakFactor->GetBinContent(k+1));
+      // fit_eq_double_temp->SetParameter(1,hDoubleTemplatecorrBGFactor->GetBinContent(k+1));
+      // fit_eq_1->SetParameter(0,hPol1PeakFactor->GetBinContent(k+1));
+      // fit_eq_1->SetParameter(2,fpol1->GetParameter(0));
+      // fit_eq_1->SetParameter(3,fpol1->GetParameter(1));
 
 
 
@@ -173,11 +177,11 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
         pad2InvMass->Draw("same");
         pad1InvMass->cd();
 
-        TLegend* leg = new TLegend(0.5,0.47,0.9,0.67);
+        TLegend* leg = new TLegend(0.5,0.35,0.9,0.55);
         SetLegendSettigns(leg, 0.03*3./2.);
-        leg->AddEntry(hData, "Daten");
-        leg->AddEntry(fit_eq_1, pol1string, "l");
-        leg->AddEntry(fit_eq_double_temp, doubletempstring, "l");
+        leg->AddEntry(hData, "Daten", "p");
+        leg->AddEntry(hPol1, pol1string, "p");
+        leg->AddEntry(hDoubleTemp, doubletempstring, "p");
 
         SetHistoStandardSettings(hData, 0., 0., 0.03*3./2.);
         hData->GetYaxis()->SetRangeUser(
@@ -187,8 +191,8 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
         hData->SetTitle("");
         hData->GetYaxis()->SetTitleOffset(0.9);
         hData->Draw("p");
-        fit_eq_1->Draw("same");
-        fit_eq_double_temp->Draw("same");
+        hPol1->Draw("same");
+        hDoubleTemp->Draw("same");
         canInvMass->Update();
         line_y = gPad->GetUymax()*0.995;
         fitrange2 = new TLine(lowerparamrange, line_y, upperparamrange, line_y);
@@ -202,14 +206,14 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
 
 
         pad2InvMass->cd();
-        hRatioDoubleTemp->DrawCopy("");
+        hRatioDoubleTemp->DrawCopy("P");
         line_0->Draw("same");
         line_p1->Draw("same");
         line_m1->Draw("same");
         line_p3->Draw("same");
         line_m3->Draw("same");
-        hRatioDoubleTemp->DrawCopy("same");
-        hRatioPol1->DrawCopy("same");
+        hRatioDoubleTemp->DrawCopy("SAME P");
+        hRatioPol1->DrawCopy("SAME P");
         pad2InvMass->Update();
 
         canInvMass->Update();
@@ -223,11 +227,11 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
         //////////////////////////////////////////////////////////////////////
         // Drawing both corr. BG versions to Data with normal errors
         c1->cd();
-        TLegend* leg = new TLegend(0.5,0.47,0.9,0.67);
+        TLegend* leg = new TLegend(0.5,0.43,0.9,0.63);
         SetLegendSettigns(leg, 0.03);
-        leg->AddEntry(hData, "signal + corr. back.", "p");
-        leg->AddEntry(fit_eq_1, "1^{st} ord. pol.", "l");
-        leg->AddEntry(fit_eq_double_temp, "scaled corr. back. temp.", "lp");
+        leg->AddEntry(hData, "data (signal + corr. back.)", "p");
+        leg->AddEntry(fpol1, "1^{st} ord. pol.", "p");
+        leg->AddEntry(hDTBG, "scaled corr. back. temp.", "p");
         hData->GetXaxis()->SetTitleSize(0.03);
         hData->GetYaxis()->SetTitleSize(0.03);
         hData->GetXaxis()->SetLabelSize(0.03);
@@ -268,16 +272,18 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
         fpol1 = (TF1*) IterTemp->Get(Form("fpol1_bin%02i",k));
         hRatioDoubleTemp = (TH1F*) IterTemp->Get(Form("hRatioDoubleTemp_bin%02i",k));
         hRatioPol1 = (TH1F*) IterTemp->Get(Form("hRatioPol1_bin%02i",k));
-        mc_full_clone1 = (TH1F*) IterTemp->Get(Form("mc_full_clone_beforeIterFit_bin%02d",k));
-        korrBG_clone1 = (TH1F*) IterTemp->Get(Form("korrBG_clone_beforeIterFit_bin%02d",k));
-        mc_full_clone1->SetName("mc_full_clone1");
-        korrBG_clone1->SetName("korrBG_clone1");
+        // mc_full_clone1 = (TH1F*) IterTemp->Get(Form("mc_full_clone_beforeIterFit_bin%02d",k));
+        // korrBG_clone1 = (TH1F*) IterTemp->Get(Form("korrBG_clone_beforeIterFit_bin%02d",k));
+        hDoubleTemp = (TH1F*) IterTemp->Get(Form("hDoubleTemp_bin%02d",k));
+        hPol1 = (TH1F*) IterTemp->Get(Form("hPol1_bin%02d",k));
+        // mc_full_clone1->SetName("mc_full_clone1");
+        // korrBG_clone1->SetName("korrBG_clone1");
 
-        fit_eq_double_temp->SetParameter(0,hDoubleTemplatePeakFactor->GetBinContent(k+1));
-        fit_eq_double_temp->SetParameter(1,hDoubleTemplatecorrBGFactor->GetBinContent(k+1));
-        fit_eq_1->SetParameter(0,hPol1PeakFactor->GetBinContent(k+1));
-        fit_eq_1->SetParameter(2,fpol1->GetParameter(0));
-        fit_eq_1->SetParameter(3,fpol1->GetParameter(1));
+        // fit_eq_double_temp->SetParameter(0,hDoubleTemplatePeakFactor->GetBinContent(k+1));
+        // fit_eq_double_temp->SetParameter(1,hDoubleTemplatecorrBGFactor->GetBinContent(k+1));
+        // fit_eq_1->SetParameter(0,hPol1PeakFactor->GetBinContent(k+1));
+        // fit_eq_1->SetParameter(2,fpol1->GetParameter(0));
+        // fit_eq_1->SetParameter(3,fpol1->GetParameter(1));
 
 
 
@@ -289,11 +295,11 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
           pad2InvMass->Draw("same");
           pad1InvMass->cd();
 
-          TLegend* leg = new TLegend(0.5,0.47,0.9,0.67);
+          TLegend* leg = new TLegend(0.5,0.35,0.9,0.55);
           SetLegendSettigns(leg, 0.03*3./2.);
-          leg->AddEntry(hData, "Daten");
-          leg->AddEntry(fit_eq_1, pol1string, "l");
-          leg->AddEntry(fit_eq_double_temp, doubletempstring, "l");
+          leg->AddEntry(hData, strData, "p");
+          leg->AddEntry(hPol1, pol1string, "p");
+          leg->AddEntry(hDoubleTemp, doubletempstring, "p");
 
           SetHistoStandardSettings(hData, 0., 0., 0.03*3./2.);
           hData->GetYaxis()->SetRangeUser(
@@ -303,8 +309,8 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
           hData->SetTitle("");
           hData->GetYaxis()->SetTitleOffset(0.9);
           hData->Draw("p");
-          fit_eq_1->Draw("same");
-          fit_eq_double_temp->Draw("same");
+          hPol1->Draw("same");
+          hDoubleTemp->Draw("same");
           canInvMass->Update();
           line_y = gPad->GetUymax()*0.995;
           fitrange2 = new TLine(lowerparamrange, line_y, upperparamrange, line_y);
@@ -318,14 +324,14 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
 
 
           pad2InvMass->cd();
-          hRatioDoubleTemp->DrawCopy("");
+          hRatioDoubleTemp->DrawCopy("P");
           line_0->Draw("same");
           line_p1->Draw("same");
           line_m1->Draw("same");
           line_p3->Draw("same");
           line_m3->Draw("same");
-          hRatioDoubleTemp->DrawCopy("same");
-          hRatioPol1->DrawCopy("same");
+          hRatioDoubleTemp->DrawCopy("SAME P");
+          hRatioPol1->DrawCopy("SAME P");
           pad2InvMass->Update();
 
           canInvMass->Update();
@@ -339,11 +345,11 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
           //////////////////////////////////////////////////////////////////////
           // Drawing both corr. BG versions to Data with normal errors
           c1->cd();
-          TLegend* leg = new TLegend(0.5,0.47,0.9,0.67);
+          TLegend* leg = new TLegend(0.5,0.44,0.9,0.64);
           SetLegendSettigns(leg, 0.03);
           leg->AddEntry(hData, "signal + corr. back.", "p");
-          leg->AddEntry(fit_eq_1, "1^{st} ord. pol.", "l");
-          leg->AddEntry(fit_eq_double_temp, "scaled corr. back. temp.", "lp");
+          leg->AddEntry(hPol1, "1^{st} ord. pol.", "p");
+          leg->AddEntry(hDoubleTemp, "scaled corr. back. temp.", "p");
           hData->GetXaxis()->SetTitleSize(0.03);
           hData->GetYaxis()->SetTitleSize(0.03);
           hData->GetXaxis()->SetLabelSize(0.03);
@@ -448,8 +454,8 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
   delete pad1InvMass;
   delete pad2InvMass;
   delete canInvMass;
-  delete fit_eq_double_temp;
-  delete fit_eq_1;
+  // delete fit_eq_double_temp;
+  // delete fit_eq_1;
   delete hChi2_dt;
   delete hChi2_pol1;
   delete hPeakRatio;
@@ -473,5 +479,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
   delete line_p3;
   delete line_m3;
   delete line_one;
+  delete hDoubleTemp;
+  delete hPol1;
   IterTemp->Close();
 }
