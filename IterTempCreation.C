@@ -1,4 +1,5 @@
-#include "CommonHeader.h"
+// #include "CommonHeader.h"
+#include "chi2test.h"
 #include "TFractionFitter.h"
 
 
@@ -53,9 +54,12 @@ void IterTempCreation(void){
   std::vector<Double_t> chi2_dt_iter_test;
   // const int numberbins = 26;
   TFile *IterTemp;
+
+  TH2D* testtest[numberbins];
+
   TH1F* hChi2_dt_iter[numberbins];
   TH1F* hChi2_pol1_iter[numberbins];
-  TH1F* hChi2_dt_iter_test[numberbins];
+  // TH1F* hChi2_dt_iter_test[numberbins];
   TH1F* hYield_dt_uncorr = new TH1F("hYield_dt_uncorr","",numberbins, fBinsPi013TeVEMCPt);
   TH1F* hYield_pol1_uncorr = new TH1F("hYield_pol1_uncorr","",numberbins, fBinsPi013TeVEMCPt);
   // TF1* f1 = new TF1("f1", "1", 0.0, 0.3);
@@ -268,29 +272,29 @@ void IterTempCreation(void){
 
       //////////////////////////////////////////////////////////////////////////
       // test chi2 for monitoring
-      gDirectory->Cd(sPath.Data());
-      hDoubleTemp = (TH1F*) mc_full_clone1->Clone("hDoubleTemp");
-      hDoubleTemp->Add(korrBG_clone1);
-      hDataCloneforCHi2 = (TH1F*) data->Clone("hDataCloneforCHi2");
-      gDirectory = IterTemp;
-      hDoubleTemp->Write(Form("hDoubleTemp_bin%02d_iter%02d",k,iter));
-      gDirectory->Cd(sPath.Data());
-      for(int i = 0; i < 200; i++){
-        if( i < 13 || i > 63){
-          hDataCloneforCHi2->SetBinContent(i,0);
-          hDataCloneforCHi2->SetBinError(i,0);
-          hDoubleTemp->SetBinContent(i,0);
-          hDoubleTemp->SetBinError(i,0);
-        }
-        ////////////////////////////////////////////////////////////////////////
-        // desperate try to calc the correct correlated error
-        else{
-          hDoubleTemp->SetBinError(i,sqrt(pow((r_double_temp1->Parameter(0)*mc_full->GetBinError(i)),2.)
-          + pow((r_double_temp1->Parameter(1)*korrBG->GetBinError(i)),2.)));
-        // std::cout << "hDoubleTemp Error:" << hDoubleTemp->GetBinError(i) << std::endl << std::endl;
-        }
-      }
-      chi2_dt_iter_test.push_back(hDataCloneforCHi2->Chi2Test(hDoubleTemp, "WW CHI2/NDF", 0));
+      // gDirectory->Cd(sPath.Data());
+      // hDoubleTemp = (TH1F*) mc_full_clone1->Clone("hDoubleTemp");
+      // hDoubleTemp->Add(korrBG_clone1);
+      // hDataCloneforCHi2 = (TH1F*) data->Clone("hDataCloneforCHi2");
+      // gDirectory = IterTemp;
+      // hDoubleTemp->Write(Form("hDoubleTemp_bin%02d_iter%02d",k,iter));
+      // gDirectory->Cd(sPath.Data());
+      // for(int i = 0; i < 200; i++){
+      //   if( i < 13 || i > 63){
+      //     hDataCloneforCHi2->SetBinContent(i,0);
+      //     hDataCloneforCHi2->SetBinError(i,0);
+      //     hDoubleTemp->SetBinContent(i,0);
+      //     hDoubleTemp->SetBinError(i,0);
+      //   }
+      //   ////////////////////////////////////////////////////////////////////////
+      //   // desperate try to calc the correct correlated error
+      //   else{
+      //     hDoubleTemp->SetBinError(i,sqrt(pow((r_double_temp1->Parameter(0)*mc_full->GetBinError(i)),2.)
+      //     + pow((r_double_temp1->Parameter(1)*korrBG->GetBinError(i)),2.)));
+      //   // std::cout << "hDoubleTemp Error:" << hDoubleTemp->GetBinError(i) << std::endl << std::endl;
+      //   }
+      // }
+      // chi2_dt_iter_test.push_back(hDataCloneforCHi2->Chi2Test(hDoubleTemp, "WW CHI2/NDF", 0));
 
       //////////////////////////////////////////////////////////////////////////
       // reset data_clone histos and then calculate their new errors
@@ -324,7 +328,7 @@ void IterTempCreation(void){
       if(iter >=1){
         if(fabs(chi2_dt_iter[iter-1]-chi2_dt_iter[iter] <= epsilon) &&
            fabs(chi2_pol1_iter[iter-1]-chi2_pol1_iter[iter] <= epsilon)){
-             std::cout << "iter = " << iter << "chi2 = " << chi2_dt_iter[iter] << std::endl;
+            //  std::cout << "iter = " << iter << "chi2 = " << chi2_dt_iter[iter] << std::endl;
           //////////////////////////////////////////////////////////////////////
           // Writing after the scaling and error calculation:
 
@@ -356,13 +360,13 @@ void IterTempCreation(void){
     SetHistoStandardSettings(hChi2_dt_iter[k-1]);
     hChi2_pol1_iter[k-1] = new TH1F(Form("1hChi2_pol1_iter_bin%02d",k-1),"",iter,0.5,(Double_t)iter+0.5);
     SetHistoStandardSettings(hChi2_pol1_iter[k-1]);
-    hChi2_dt_iter_test[k-1] = new TH1F(Form("hChi2_dt_iter_test_bin%02d",k-1),"",iter,0.5,(Double_t)iter+0.5);
-    SetHistoStandardSettings(hChi2_dt_iter_test[k-1]);
+    // hChi2_dt_iter_test[k-1] = new TH1F(Form("hChi2_dt_iter_test_bin%02d",k-1),"",iter,0.5,(Double_t)iter+0.5);
+    // SetHistoStandardSettings(hChi2_dt_iter_test[k-1]);
 
     for(int i = 0; i < iter; i++){
       hChi2_dt_iter[k-1]->SetBinContent(i+1,chi2_dt_iter[i]);
       hChi2_pol1_iter[k-1]->SetBinContent(i+1,chi2_pol1_iter[i]);
-      hChi2_dt_iter_test[k-1]->SetBinContent(i+1,chi2_dt_iter_test[i]);
+      // hChi2_dt_iter_test[k-1]->SetBinContent(i+1,chi2_dt_iter_test[i]);
       hChi2_dt_iter[k-1]->SetYTitle("#chi^{2}/ndf");
       hChi2_dt_iter[k-1]->SetXTitle("Iterationstep");
       hChi2_dt_iter[k-1]->SetLineColor(kTeal-7);
@@ -371,10 +375,10 @@ void IterTempCreation(void){
       hChi2_pol1_iter[k-1]->SetXTitle("Iterationstep");
       hChi2_pol1_iter[k-1]->SetLineColor(kRed);
       hChi2_pol1_iter[k-1]->SetMarkerColor(kRed);
-      hChi2_dt_iter_test[k-1]->SetYTitle("#chi^{2}/ndf");
-      hChi2_dt_iter_test[k-1]->SetXTitle("Iterationstep");
-      hChi2_dt_iter_test[k-1]->SetLineColor(kBlue+2);
-      hChi2_dt_iter_test[k-1]->SetMarkerColor(kBlue+2);
+      // hChi2_dt_iter_test[k-1]->SetYTitle("#chi^{2}/ndf");
+      // hChi2_dt_iter_test[k-1]->SetXTitle("Iterationstep");
+      // hChi2_dt_iter_test[k-1]->SetLineColor(kBlue+2);
+      // hChi2_dt_iter_test[k-1]->SetMarkerColor(kBlue+2);
     }
     gDirectory->Cd(sPath.Data());
     ///////////////////////////////////////////////////////////////////////////
@@ -475,6 +479,11 @@ void IterTempCreation(void){
     hRatioPol1->SetLineColor(kRed);
     hRatioPol1->SetMarkerColor(kRed);
 
+    ////////////////////////////////////////////////////////////////////////////
+    // testitesti
+    ////////////////////////////////////////////////////////////////////////////
+    testtest[k-1] = chi2test(data, mc_full, korrBG);
+
     data->SetTitle(str);
     IterTemp = new TFile("IterTemp.root","UPDATE");
     gDirectory = IterTemp;
@@ -491,7 +500,8 @@ void IterTempCreation(void){
     hPol1->Write(Form("hPol1_bin%02d",k));
     hChi2_dt_iter[k-1]->Write(Form("hChi2_dt_iter_bin%02d",k));
     hChi2_pol1_iter[k-1]->Write(Form("hChi2_pol1_iter_bin%02d",k));
-    hChi2_dt_iter_test[k-1]->Write(Form("hChi2_dt_iter_test_bin%02d",k));
+    // hChi2_dt_iter_test[k-1]->Write(Form("hChi2_dt_iter_test_bin%02d",k));
+    testtest[k-1]->Write(Form("hTestTest_bin%02d",k));
 
     gDirectory->Cd(sPath.Data());
     ////////////////////////////////////////////////////////////////////////////
@@ -574,7 +584,8 @@ void IterTempCreation(void){
     std::cout << "bin number" << k << "Ende" << std::endl << std::endl;
     delete hChi2_dt_iter[k-1];
     delete hChi2_pol1_iter[k-1];
-    delete hChi2_dt_iter_test[k-1];
+    // delete hChi2_dt_iter_test[k-1];
+    delete testtest[k-1];
   }
   /////////////////////////////////////////////////////////////////////////////
   // Writing of Chi2(pT)

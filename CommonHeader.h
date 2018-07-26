@@ -239,28 +239,34 @@ void SetHistoStandardSettings(TH1* histo, Double_t XOffset = 1.2, Double_t YOffs
 
 
 
-void SetHistoStandardSettings2(TH2* histo, Double_t XOffset = 1.2, Double_t YOffset = 1.){
+void SetHistoStandardSettings2(TH2* histo, Double_t XOffset = 1.2, Double_t YOffset = 1., Double_t textSize = 0.03){
+  histo->SetStats(0);
   histo->GetXaxis()->SetTitleOffset(XOffset);
   histo->GetYaxis()->SetTitleOffset(YOffset);
-  histo->GetXaxis()->SetTitleSize(45);
-  histo->GetYaxis()->SetTitleSize(45);
-  histo->GetXaxis()->SetLabelSize(45);
-  histo->GetYaxis()->SetLabelSize(45);
-  histo->GetXaxis()->SetLabelFont(43);
-  histo->GetYaxis()->SetLabelFont(43);
-  histo->GetYaxis()->SetTitleFont(43);
-  histo->GetXaxis()->SetTitleFont(43);
+  histo->GetXaxis()->SetTitleSize(textSize);
+  histo->GetYaxis()->SetTitleSize(textSize);
+  histo->GetXaxis()->SetLabelSize(textSize);
+  histo->GetYaxis()->SetLabelSize(textSize);
+  histo->GetXaxis()->SetLabelFont(42);
+  histo->GetYaxis()->SetLabelFont(42);
+  histo->GetYaxis()->SetTitleFont(42);
+  histo->GetXaxis()->SetTitleFont(42);
+
+  histo->GetZaxis()->SetTitleOffset(XOffset);
+  histo->GetZaxis()->SetLabelSize(textSize);
+  histo->GetZaxis()->SetLabelFont(42);
+  histo->GetZaxis()->SetTitleFont(42);
   // histo->Sumw2();
 
 
-  histo->SetTitle("");
-  histo->SetXTitle("#it{m}_{inv} (GeV/#it{c}^{2})");
-  histo->GetXaxis()->SetTitleOffset(1.4);
-  histo->SetYTitle("#it{p}_{T} (GeV/#it{c})");
-  histo->GetYaxis()->SetTitleOffset(1.4);
-  histo->SetZTitle("#it{counts}");
-  histo->GetZaxis()->SetTitleOffset(1.4);
-  histo->GetZaxis()->SetRangeUser(1.e-10,100.);
+  // histo->SetTitle("");
+  // histo->SetXTitle("#it{m}_{inv} (GeV/#it{c}^{2})");
+  // histo->GetXaxis()->SetTitleOffset(1.4);
+  // histo->SetYTitle("#it{p}_{T} (GeV/#it{c})");
+  // histo->GetYaxis()->SetTitleOffset(1.4);
+  // histo->SetZTitle("#it{counts}");
+  // histo->GetZaxis()->SetTitleOffset(1.4);
+  // histo->GetZaxis()->SetRangeUser(1.e-10,100.);
 
 }
 
