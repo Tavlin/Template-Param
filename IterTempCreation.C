@@ -2,25 +2,38 @@
 #include "TFractionFitter.h"
 
 
-Double_t mc_full_func1(Double_t x){
-  return mc_full_clone1->GetBinContent(mc_full->FindBin(x));
+Double_t mc_full_func1(Double_t *x,  Double_t *par){
+  Double_t xx = x[0];
+  return (Double_t) par[0]*mc_full_clone1->GetBinContent(mc_full->FindBin(xx)) +
+  par[1]*korrBG_clone1->GetBinContent(korrBG->FindBin(xx));
 }
 
-Double_t mc_full_func2(Double_t x){
-  return mc_full_clone2->GetBinContent(mc_full->FindBin(x));
+Double_t mc_full_func42(Double_t *x,  Double_t *par){
+  Double_t xx = x[0];
+  return (Double_t) par[0]*mc_full_clone42->GetBinContent(mc_full->FindBin(xx)) +
+  par[1]*korrBG_clone42->GetBinContent(korrBG->FindBin(xx));
 }
 
-Double_t PeakAKorrBG(Double_t x){
-  return korrBG_clone1->GetBinContent(korrBG->FindBin(x));
+Double_t mc_full_func2(Double_t *x,  Double_t *par){
+  Double_t xx = x[0];
+  return (Double_t) par[0]*mc_full_clone2->GetBinContent(mc_full->FindBin(xx)) +
+  par[1]+par[2]*xx;
 }
 
-Double_t mc_full_func42(Double_t x){
-  return mc_full_clone42->GetBinContent(mc_full->FindBin(x));
-}
-
-Double_t PeakAKorrBG42(Double_t x){
-  return korrBG_clone42->GetBinContent(korrBG->FindBin(x));
-}
+// Double_t PeakAKorrBG(Double_t *x,  Double_t *par){
+//   Double_t xx = x[0];
+//   return (Double_t) par[0]*korrBG_clone1->GetBinContent(korrBG->FindBin(xx));
+// }
+//
+// Double_t mc_full_func42(Double_t *x,  Double_t *par){
+//   Double_t xx = x[0];
+//   return (Double_t) par[]*mc_full_clone42->GetBinContent(mc_full->FindBin(xx));
+// }
+//
+// Double_t PeakAKorrBG42(Double_t *x,  Double_t *par){
+//   Double_t xx = x[0];
+//   return (Double_t) par[]*korrBG_clone42->GetBinContent(korrBG->FindBin(xx));
+// }
 
 void IterTempCreation(void){
 
@@ -32,8 +45,17 @@ void IterTempCreation(void){
   const Int_t nbins = 45;
   const Int_t ndrawpoints = 1.e5;
   const int n_iter = 4;
-  const int numberbins = 26;
+  const int epsilon = 1.e-6;
+  int iter = 0;
+  int chi2_test_vari = 1;
+  std::vector<Double_t> chi2_dt_iter;
+  std::vector<Double_t> chi2_pol1_iter;
+  std::vector<Double_t> chi2_dt_iter_test;
+  // const int numberbins = 26;
   TFile *IterTemp;
+  TH1F* hChi2_dt_iter[numberbins];
+  TH1F* hChi2_pol1_iter[numberbins];
+  TH1F* hChi2_dt_iter_test[numberbins];
   TH1F* hYield_dt_uncorr = new TH1F("hYield_dt_uncorr","",numberbins, fBinsPi013TeVEMCPt);
   TH1F* hYield_pol1_uncorr = new TH1F("hYield_pol1_uncorr","",numberbins, fBinsPi013TeVEMCPt);
   // TF1* f1 = new TF1("f1", "1", 0.0, 0.3);
@@ -54,6 +76,7 @@ void IterTempCreation(void){
   TH1F* hpeakcomp = new TH1F("hpeakcomp", "", numberbins, fBinsPi013TeVEMCPt);
   TH1F* hRatioDoubleTemp;
   TH1F* hRatioPol1;
+  TH1F* hDataCloneforCHi2;
   TH1F* hDoubleTemp;
   TH1F* hPol1;
   TH1F* data_clone_for_int_dt;
@@ -77,7 +100,7 @@ void IterTempCreation(void){
 //////////////////////////////////////////////////////////////////////////////
   // going over all pt bins despite first one, which is some framework bs.
   for (int k = 1; k < numberbins; k++) {
-    cout << "starte bin " << k << " reading and wrinting!" << endl << endl;
+    std::cout << "starte bin " << k << " reading and wrinting!" << std::endl << std::endl;
 
     ////////////////////////////////////////////////////////////////////////////
     // open MC histo path
@@ -105,7 +128,7 @@ void IterTempCreation(void){
 
     ////////////////////////////////////////////////////////////////////////////
     // using the correlated BG from MC as Template
-    TF1* fit_eq_double_temp = new TF1("fit_eq_double_temp", "PeakAKorrBG(x)*[1] + mc_full_func1(x)*[0]", 0.0,0.4);
+    TF1* fit_eq_double_temp = new TF1("fit_eq_double_temp", &mc_full_func1, 0.0,0.4, 2);
     fit_eq_double_temp->SetNpx(ndrawpoints);
     fit_eq_double_temp->SetNumberFitPoints(nbins);
     fit_eq_double_temp->SetLineColor(kTeal-7);
@@ -115,7 +138,7 @@ void IterTempCreation(void){
     // second TF1 for drawing only since the other function gets scaled two
     // times since the external scaling of the templates and the internal
     // scaling
-    TF1* fit_eq_double_temp42 = new TF1("fit_eq_double_temp42", "PeakAKorrBG42(x)*[1] + mc_full_func42(x)*[0]", 0.0,0.4);
+    TF1* fit_eq_double_temp42 = new TF1("fit_eq_double_temp42", &mc_full_func42, 0.0,0.4, 2);
     fit_eq_double_temp42->SetNpx(ndrawpoints);
     fit_eq_double_temp42->SetNumberFitPoints(nbins);
     fit_eq_double_temp42->SetLineColor(kTeal-7);
@@ -137,7 +160,7 @@ void IterTempCreation(void){
 
     ////////////////////////////////////////////////////////////////////////////
     // normal lame pol 1 fit with template
-    TF1* fit_eq_1 = new TF1("fit_eq_1", "mc_full_func2(x)*[0]+[2]+x*[3]",0.0,0.4);
+    TF1* fit_eq_1 = new TF1("fit_eq_1", &mc_full_func2, 0.0, 0.4, 3);
     fit_eq_1->SetNpx(ndrawpoints);
     fit_eq_1->SetNumberFitPoints(nbins);
     fit_eq_1->SetLineColor(kRed);
@@ -174,9 +197,18 @@ void IterTempCreation(void){
     TH1F* data_clone2 = (TH1F*) data->Clone("data_clone2");
     TH1F* data_clone3 = (TH1F*) data->Clone("data_clone3");
 
+    // clearing the vectors
+    chi2_dt_iter.clear();
+    chi2_pol1_iter.clear();
+    chi2_dt_iter.resize(0);
+    chi2_pol1_iter.resize(0);
+    chi2_dt_iter_test.clear();
+    chi2_dt_iter_test.resize(0);
+    chi2_test_vari = 1;
+    iter = 0;
 
-    for (int iter = 0; iter <= n_iter; iter++) {
 
+    while(chi2_test_vari){
       //////////////////////////////////////////////////////////////////////////
       //clone for 2 temp fit
       mc_full_clone1 = (TH1F*) mc_full->Clone("mc_full_clone1");
@@ -210,17 +242,18 @@ void IterTempCreation(void){
       // fit 2 temp
       TFitResultPtr r_double_temp1 = data_clone1->Fit("fit_eq_double_temp", "QM0PS","", lowerparamrange, upperparamrange);
       data_clone1->Fit("fit_eq_double_temp42", "QM0PS","", lowerparamrange, upperparamrange);
+      chi2_dt_iter.push_back(r_double_temp1->Chi2() / r_double_temp1->Ndf());
 
 
       //////////////////////////////////////////////////////////////////////////
       //fit pol 1 + temp
       TFitResultPtr r_pol1_temp1 = data_clone2->Fit("fit_eq_1", "QM0PS","", lowerparamrange, upperparamrange);
+      chi2_pol1_iter.push_back(r_pol1_temp1->Chi2() / r_pol1_temp1->Ndf());
 
       //////////////////////////////////////////////////////////////////////////
       // scale 2 temp
       mc_full_clone1->Scale(r_double_temp1->Parameter(0));
       korrBG_clone1->Scale(r_double_temp1->Parameter(1));
-
 
       //////////////////////////////////////////////////////////////////////////
       // Wrinting after the scaling:
@@ -234,36 +267,73 @@ void IterTempCreation(void){
       mc_full_clone2->Scale(r_pol1_temp1->Parameter(0));
 
       //////////////////////////////////////////////////////////////////////////
-      // reset data_clone histos and then calculate their new errors
-      if(iter < n_iter){
-        gDirectory->Cd(sPath.Data());
-        data_clone1 = (TH1F*) data->Clone("data_clone1");
-        data_clone2 = (TH1F*) data->Clone("data_clone2");
-        for(int j = 0; j < 75; j++){
-          data_clone1->SetBinError(j,sqrt(data_clone1->GetBinError(j) *
-          data_clone1->GetBinError(j) + mc_full_clone1->GetBinError(j) *
-          mc_full_clone1->GetBinError(j) + korrBG_clone1->GetBinError(j) *
-          korrBG_clone1->GetBinError(j)));
-
-          data_clone2->SetBinError(j,sqrt(data_clone2->GetBinError(j) *
-          data_clone2->GetBinError(j) + mc_full_clone2->GetBinError(j) *
-          mc_full_clone2->GetBinError(j)));
+      // test chi2 for monitoring
+      gDirectory->Cd(sPath.Data());
+      hDoubleTemp = (TH1F*) mc_full_clone1->Clone("hDoubleTemp");
+      hDoubleTemp->Add(korrBG_clone1);
+      hDataCloneforCHi2 = (TH1F*) data->Clone("hDataCloneforCHi2");
+      gDirectory = IterTemp;
+      hDoubleTemp->Write(Form("hDoubleTemp_bin%02d_iter%02d",k,iter));
+      gDirectory->Cd(sPath.Data());
+      for(int i = 0; i < 200; i++){
+        if( i < 13 || i > 63){
+          hDataCloneforCHi2->SetBinContent(i,0);
+          hDataCloneforCHi2->SetBinError(i,0);
+          hDoubleTemp->SetBinContent(i,0);
+          hDoubleTemp->SetBinError(i,0);
         }
-        //////////////////////////////////////////////////////////////////////////
-        // Writing after the scaling and error calculation:
-        gDirectory = IterTemp;
-        // data_clone1->Write(Form("data_clone_afterFitWithScalingAndErros_bin%02d_iter%d", k, iter));
-
+        ////////////////////////////////////////////////////////////////////////
+        // desperate try to calc the correct correlated error
+        else{
+          hDoubleTemp->SetBinError(i,sqrt(pow((r_double_temp1->Parameter(0)*mc_full->GetBinError(i)),2.)
+          + pow((r_double_temp1->Parameter(1)*korrBG->GetBinError(i)),2.)));
+        // std::cout << "hDoubleTemp Error:" << hDoubleTemp->GetBinError(i) << std::endl << std::endl;
+        }
       }
+      chi2_dt_iter_test.push_back(hDataCloneforCHi2->Chi2Test(hDoubleTemp, "WW CHI2/NDF", 0));
 
+      //////////////////////////////////////////////////////////////////////////
+      // reset data_clone histos and then calculate their new errors
+
+      gDirectory->Cd(sPath.Data());
+      data_clone1 = (TH1F*) data->Clone("data_clone1");
+      data_clone2 = (TH1F*) data->Clone("data_clone2");
+      hDoubleTemp =( TH1F*) mc_full_clone1->Clone("hDoubleTemp");
+      hDoubleTemp->Add(korrBG_clone1);
+      for(int j = 13; j < 63; j++){
+        data_clone1->SetBinError(j,sqrt(pow(data_clone1->GetBinError(j),2.)
+        + pow((r_double_temp1->Parameter(0)*mc_full->GetBinError(j)),2.)
+        + pow((r_double_temp1->Parameter(1)*korrBG->GetBinError(j)),2.)));
+
+        data_clone2->SetBinError(j,sqrt(pow(data_clone2->GetBinError(j),2.)
+        + pow((r_double_temp1->Parameter(0)*mc_full->GetBinError(j)),2.)));
+      }
       //////////////////////////////////////////////////////////////////////////
       // Writing after the scaling and error calculation:
 
-      //////////////////////////////////////////////////////////////////////////
-      // for the last iteration step don't reset the clones, instead calc errors
-      // for the data histos that will be used in the final Fit afterwards
-      if(iter == n_iter){
-        for(int j = 0; j < 75; j++){
+      // gDirectory = IterTemp;
+
+      // data_clone1->Write(Form("data_clone_afterFitWithScalingAndErros_bin%02d_iter%d", k, iter));
+
+
+        //////////////////////////////////////////////////////////////////////////
+        // Writing after the scaling and error calculation:
+        // data_clone4->Write(Form("data_clone_afterFitWithScalingAndErros_bin%02d_iter%d", k, iter));
+
+      IterTemp->Close();
+      if(iter >=1){
+        if(fabs(chi2_dt_iter[iter-1]-chi2_dt_iter[iter] <= epsilon) &&
+           fabs(chi2_pol1_iter[iter-1]-chi2_pol1_iter[iter] <= epsilon)){
+             std::cout << "iter = " << iter << "chi2 = " << chi2_dt_iter[iter] << std::endl;
+          //////////////////////////////////////////////////////////////////////
+          // Writing after the scaling and error calculation:
+
+          //////////////////////////////////////////////////////////////////////
+          // for the last iteration step don't reset the clones, instead calc
+          // errors for the data histos that will be used in the final Fit
+          // afterwards
+
+          for(int j = 0; j < 75; j++){
           data_clone4->SetBinError(j,sqrt(data_clone4->GetBinError(j) *
           data_clone4->GetBinError(j) + mc_full_clone1->GetBinError(j) *
           mc_full_clone1->GetBinError(j) + korrBG_clone1->GetBinError(j) *
@@ -272,14 +342,39 @@ void IterTempCreation(void){
           data_clone3->SetBinError(j,sqrt(data_clone3->GetBinError(j) *
           data_clone3->GetBinError(j) + mc_full_clone2->GetBinError(j) *
           mc_full_clone2->GetBinError(j)));
+
+          chi2_test_vari = 0;
         }
-
-        //////////////////////////////////////////////////////////////////////////
-        // Writing after the scaling and error calculation:
-        // data_clone4->Write(Form("data_clone_afterFitWithScalingAndErros_bin%02d_iter%d", k, iter));
-
       }
-      IterTemp->Close();
+    }
+      iter++;
+    }
+    ////////////////////////////////////////////////////////////////////////////
+    // making the CHi2 monitoring histos!
+
+    hChi2_dt_iter[k-1] = new TH1F(Form("hChi2_dt_iter_bin%02d",k-1),"",iter,0.5,(Double_t)iter+0.5);
+    SetHistoStandardSettings(hChi2_dt_iter[k-1]);
+    hChi2_pol1_iter[k-1] = new TH1F(Form("1hChi2_pol1_iter_bin%02d",k-1),"",iter,0.5,(Double_t)iter+0.5);
+    SetHistoStandardSettings(hChi2_pol1_iter[k-1]);
+    hChi2_dt_iter_test[k-1] = new TH1F(Form("hChi2_dt_iter_test_bin%02d",k-1),"",iter,0.5,(Double_t)iter+0.5);
+    SetHistoStandardSettings(hChi2_dt_iter_test[k-1]);
+
+    for(int i = 0; i < iter; i++){
+      hChi2_dt_iter[k-1]->SetBinContent(i+1,chi2_dt_iter[i]);
+      hChi2_pol1_iter[k-1]->SetBinContent(i+1,chi2_pol1_iter[i]);
+      hChi2_dt_iter_test[k-1]->SetBinContent(i+1,chi2_dt_iter_test[i]);
+      hChi2_dt_iter[k-1]->SetYTitle("#chi^{2}/ndf");
+      hChi2_dt_iter[k-1]->SetXTitle("Iterationstep");
+      hChi2_dt_iter[k-1]->SetLineColor(kTeal-7);
+      hChi2_dt_iter[k-1]->SetMarkerColor(kTeal-7);
+      hChi2_pol1_iter[k-1]->SetYTitle("#chi^{2}/ndf");
+      hChi2_pol1_iter[k-1]->SetXTitle("Iterationstep");
+      hChi2_pol1_iter[k-1]->SetLineColor(kRed);
+      hChi2_pol1_iter[k-1]->SetMarkerColor(kRed);
+      hChi2_dt_iter_test[k-1]->SetYTitle("#chi^{2}/ndf");
+      hChi2_dt_iter_test[k-1]->SetXTitle("Iterationstep");
+      hChi2_dt_iter_test[k-1]->SetLineColor(kBlue+2);
+      hChi2_dt_iter_test[k-1]->SetMarkerColor(kBlue+2);
     }
     gDirectory->Cd(sPath.Data());
     ///////////////////////////////////////////////////////////////////////////
@@ -289,7 +384,7 @@ void IterTempCreation(void){
 
 
 
-    TFitResultPtr r_double_temp = data_clone4->Fit("fit_eq_double_temp", "M0PS","",lowerparamrange , upperparamrange);
+    TFitResultPtr r_double_temp = data_clone4->Fit("fit_eq_double_temp", "M0S","",lowerparamrange , upperparamrange);
     TH1F* mc_full_clone3 = (TH1F*) mc_full->Clone("mc_full_clone3");
     TH1F* korrBG_clone3 = (TH1F*) korrBG->Clone("korrBG_clone3");
     Double_t corrbackerror[101];
@@ -318,15 +413,15 @@ void IterTempCreation(void){
     ///////////////////////////////////////////////////////////////////////////
     // final pol 1 + temp fit
     mc_full_clone2 = (TH1F*) mc_full->Clone("mc_full_clone2");
-    TFitResultPtr r_pol1_temp = data_clone3->Fit("fit_eq_1", "M0PS","", lowerparamrange, upperparamrange);
+    TFitResultPtr r_pol1_temp = data_clone3->Fit("fit_eq_1", "M0S","", lowerparamrange, upperparamrange);
     TH1F* mc_full_clone4 = (TH1F*) mc_full->Clone("mc_full_clone4");
     mc_full_clone4->Scale(r_pol1_temp->Parameter(0));
     mc_full_clone4->SetLineColor(kRed);
     mc_full_clone4->SetMarkerColor(kRed);
 
     TF1* fpol1 = new TF1("fpol1", "[0]+x*[1]", 0.0, 0.4);
-    fpol1->SetParameter(0, fit_eq_1->GetParameter(2));
-    fpol1->SetParameter(1, fit_eq_1->GetParameter(3));
+    fpol1->SetParameter(0, fit_eq_1->GetParameter(1));
+    fpol1->SetParameter(1, fit_eq_1->GetParameter(2));
     fpol1->SetLineColor(kTeal-7);
     fpol1->SetLineWidth(3);
 
@@ -394,7 +489,9 @@ void IterTempCreation(void){
     hRatioPol1->Write(Form("hRatioPol1_bin%02d", k));
     hDoubleTemp->Write(Form("hDoubleTemp_bin%02d",k));
     hPol1->Write(Form("hPol1_bin%02d",k));
-
+    hChi2_dt_iter[k-1]->Write(Form("hChi2_dt_iter_bin%02d",k));
+    hChi2_pol1_iter[k-1]->Write(Form("hChi2_pol1_iter_bin%02d",k));
+    hChi2_dt_iter_test[k-1]->Write(Form("hChi2_dt_iter_test_bin%02d",k));
 
     gDirectory->Cd(sPath.Data());
     ////////////////////////////////////////////////////////////////////////////
@@ -474,9 +571,11 @@ void IterTempCreation(void){
       DataFile->Close();
     }
     IterTemp->Close();
-    cout << "bin number" << k << "Ende" << endl << endl;
+    std::cout << "bin number" << k << "Ende" << std::endl << std::endl;
+    delete hChi2_dt_iter[k-1];
+    delete hChi2_pol1_iter[k-1];
+    delete hChi2_dt_iter_test[k-1];
   }
-
   /////////////////////////////////////////////////////////////////////////////
   // Writing of Chi2(pT)
   IterTemp = new TFile("IterTemp.root","UPDATE");

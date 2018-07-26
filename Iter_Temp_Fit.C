@@ -66,6 +66,7 @@ void Iter_Temp_Fit(void){
   TH1F* hpeakcomp = new TH1F("hpeakcomp", "", 26, fBinsPi013TeVEMCPt);
   TH1F* hRatioDoubleTemp;
   TH1F* hRatioPol1;
+  TH1F* hDoubleTemp;
   SetHistoStandardSettings(hchi2_dt);
   SetHistoStandardSettings(hchi2_pol1);
   SetHistoStandardSettings(hpeakratio);
@@ -148,19 +149,22 @@ void Iter_Temp_Fit(void){
     data->GetYaxis()->SetLabelOffset(0.006);
     data->SetTitleSize(0.03, "xy");
     data->SetLabelSize(0.03, "xy");
+    data->GetYaxis()->SetRangeUser(
+      1.5*data->GetBinContent(data->GetMinimumBin()),
+      1.1*data->GetBinContent(data->GetMaximumBin()));
     data->SetYTitle("d#it{N}/d#it{M}_{#gamma#gamma} (#it{c}^{2}/GeV)");
     data->SetMarkerStyle(20);
     data->SetMarkerSize(1.5);
     data->SetTitle("");
-    korrBG->SetLineColor(kTeal-7);
-    korrBG->SetMarkerColor(kTeal-7);
-    korrBG->SetMarkerStyle(34);
-    korrBG->SetMarkerSize(2);
-    mc_full->SetLineColor(kTeal-7);
-    mc_full->SetMarkerColor(kTeal-7);
+    data->SetLineWidth(3);
+    korrBG->SetLineColor(kCyan+3);
+    korrBG->SetMarkerColor(kCyan+3);
+    korrBG->SetMarkerStyle(21);
+    korrBG->SetMarkerSize(1.5);
+    mc_full->SetLineColor(kGreen+3);
+    mc_full->SetMarkerColor(kGreen+3);
     mc_full->SetMarkerStyle(33);
-    mc_full->SetMarkerSize(2.5);
-
+    mc_full->SetMarkerSize(2);
 
     //////////////////////////////////////////////////////////////////////////
     // clone for 2 temp fit
@@ -190,11 +194,12 @@ void Iter_Temp_Fit(void){
       //////////////////////////////////////////////////////////////////////////
       // StartDrawing before something happend
 
-      legiter = new TLegend(0.52,0.65,0.8,0.85); // was 0.55
+      legiter = new TLegend(0.5,0.43,0.9,0.63); // was 0.55
       SetLegendSettigns(legiter);
-      legiter->AddEntry(data_clone1, "Data same - scaled mixed evt.", "lp");
-      legiter->AddEntry(mc_full_clone1, "MC peak", "p");
-      legiter->AddEntry(korrBG_clone1, "corr. BG ", "p");
+      legiter->AddEntry(data_clone1, "data: (signal + corr. back.)", "lp");
+      legiter->AddEntry((TObject*) 0x0, "template:", "");
+      legiter->AddEntry(mc_full_clone1, "signal", "p");
+      legiter->AddEntry(korrBG_clone1, "corr. back. ", "p");
 
 
 
@@ -205,7 +210,8 @@ void Iter_Temp_Fit(void){
       data_clone4->Draw();
       mc_full_clone1->Draw("same");
       korrBG_clone1->Draw("same");
-      DrawLabelALICE(0.55, 0.5, 0.02, 0.03, str);
+      DrawLabelALICE(0.5, 0.9, 0.02, 0.03, str);
+      c1->Update();
 
       ////////////////////////////////////////////////////////////////////////////
       // creating TLine which represents the range in which the fit will be made
@@ -235,7 +241,6 @@ void Iter_Temp_Fit(void){
       c1->Clear();
       c1->Update();
       data_clone4->Draw();
-      fit_eq_double_temp42->DrawCopy("same");
       //////////////////////////////////////////////////////////////////////////
       // scale 2 temp
       mc_full_clone1->Scale(r_double_temp1->Parameter(0));
@@ -244,13 +249,30 @@ void Iter_Temp_Fit(void){
 
       //////////////////////////////////////////////////////////////////////////
       // Drawing after the scaling:
+      hDoubleTemp = (TH1F*) mc_full_clone1->Clone("hDoubleTemp");
+      hDoubleTemp->Add(korrBG_clone1);
+      hDoubleTemp->SetLineColor(kTeal-7);
+      hDoubleTemp->SetMarkerColor(kTeal-7);
+      hDoubleTemp->SetMarkerStyle(20);
+      hDoubleTemp->SetMarkerSize(1.5);
 
-      // data_clone4->Draw();
+      TLegend* legiter2 = new TLegend(0.5,0.43,0.9,0.63);
+      SetLegendSettigns(legiter2);
+      legiter2->AddEntry(data_clone1, "data: (signal + corr. back.)", "lp");
+      legiter2->AddEntry((TObject*) 0x0, "template:", "");
+      legiter2->AddEntry(mc_full_clone1, "signal", "p");
+      legiter2->AddEntry(korrBG_clone1, "corr. back. ", "p");
+      legiter2->AddEntry(hDoubleTemp, "signal + corr. back.", "p");
+      legiter2->AddEntry(fitrange_in_iter, "Param. range", "l");
+
+      c1->Update();
+      hDoubleTemp->Draw("same");
       mc_full_clone1->Draw("same");
       korrBG_clone1->Draw("same");
+      fitrange_in_iter->Draw("same");
       drawchi_and_param42(chi_and_param42, r_double_temp1);
-      legiter->Draw();
-      DrawLabelALICE(0.55, 0.5, 0.02, 0.03, str);
+      legiter2->Draw();
+      DrawLabelALICE(0.5, 0.9, 0.02, 0.03, str);
 
       c1->Update();
       c1->SaveAs(Form("IterationProgress/bin%02i_%02iAfterFitWithScaling_iter%02i.png",k,02, iter));
@@ -281,10 +303,11 @@ void Iter_Temp_Fit(void){
         data_clone1->Draw();
         mc_full_clone1->Draw("same");
         korrBG_clone1->Draw("same");
-        fit_eq_double_temp42->DrawCopy("same");
+        hDoubleTemp->Draw("same");
+        fitrange_in_iter->Draw("same");
         drawchi_and_param42(chi_and_param42, r_double_temp1);
-        legiter->Draw();
-        DrawLabelALICE(0.55, 0.5, 0.02, 0.03, str);
+        legiter2->Draw();
+        DrawLabelALICE(0.5, 0.9, 0.02, 0.03, str);
 
         c1->Update();
         c1->SaveAs(Form("IterationProgress/bin%02i_%02iAfterFitWithScalingAndErros_iter%02i.png",k,03, iter));
@@ -315,15 +338,18 @@ void Iter_Temp_Fit(void){
         data_clone4->Draw();
         mc_full_clone1->Draw("same");
         korrBG_clone1->Draw("same");
+        hDoubleTemp->Draw("same");
+        fitrange_in_iter->Draw("same");
         drawchi_and_param42(chi_and_param42, r_double_temp1);
-        legiter->Draw();
-        DrawLabelALICE(0.55, 0.5, 0.02, 0.03, str);
+        legiter2->Draw();
+        DrawLabelALICE(0.5, 0.9, 0.02, 0.03, str);
 
         c1->Update();
         c1->SaveAs(Form("IterationProgress/bin%02i_%02iAfterFitWithScalingAndErros_iter%02i.png",k,03, iter));
         c1->Clear();
       }
       delete fitrange_in_iter;
+      delete legiter2;
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -352,456 +378,456 @@ void Iter_Temp_Fit(void){
     fpol1->SetLineWidth(3);
 
 
-    ///////////////////////////////////////////////////////////////////////////
-    // create TLatex for extra information  (pT range)
-    TLatex* tex = new TLatex();
-    data_MC->SetTitle("");
-    tex->SetTextSize(0.03);
-    tex->SetTextFont(42);
-
-    TLegend *leg = new TLegend(0.52,0.65,0.8,0.85); // was 0.55
-    SetLegendSettigns(leg);
-    leg->AddEntry(data, "Data same - scaled mixed evt.", "lp");
-    leg->AddEntry(fit_eq_double_temp, doubletempstring, "l");
-    c1->Clear();
-
-    ///////////////////////////////////////////////////////////////////////////
-    // Picture of double template fit with chi2 and factors as well as ratio of
-    // the factors for the template.
-    data_clone4->SetLineWidth(3);
-    data_clone3->SetLineWidth(3);
-    data_clone3->SetLineColor(kGray+2);
-    data_clone3->SetMarkerColor(kGray+2);
-    data_clone4->SetTitle("");
-    data_clone4->Draw("p");
-
-    fit_eq_double_temp->Draw("same");
-
-    c1->Update();
-
-    ////////////////////////////////////////////////////////////////////////////
-    // creating TLine which represents the range in which the fit will be made
-    double line_y = gPad->GetUymax()*0.995;
-    cout << line_y << endl;
-    TLine* fitrange = new TLine(0.054,line_y,0.252,line_y);
-
-    fitrange->SetLineColor(kAzure+10);
-    fitrange->SetLineWidth(7);
-    fitrange->Draw("same");
-
-    leg->AddEntry(fitrange, "Param. range", "l");
-    leg->Draw("same");
-    // tex->DrawLatexNDC(0.35,0.9, str);
-
-    TLatex* chi_and_param = new TLatex();
-    SetLatexSettings(chi_and_param);
-    chi_and_param->DrawLatexNDC(0.18,0.85,
-    Form("#frac{#chi^{2}_{double temp}}{ndf} = %.2lf ",r_double_temp->Chi2() /
-    r_double_temp->Ndf()));
-
-    // chi_and_param->DrawLatexNDC(0.18,0.75,
-    // Form("a_{double} = %.2lf ",r_double_temp->Parameter(0)));
+    // ///////////////////////////////////////////////////////////////////////////
+    // // create TLatex for extra information  (pT range)
+    // TLatex* tex = new TLatex();
+    // data_MC->SetTitle("");
+    // tex->SetTextSize(0.03);
+    // tex->SetTextFont(42);
     //
-    // chi_and_param->DrawLatexNDC(0.18,0.70,
-    // Form("b_{double} = %.2lf ",r_double_temp->Parameter(1)));
+    // TLegend *leg = new TLegend(0.52,0.65,0.8,0.85); // was 0.55
+    // SetLegendSettigns(leg);
+    // leg->AddEntry(data, "Data same - scaled mixed evt.", "lp");
+    // leg->AddEntry(fit_eq_double_temp, doubletempstring, "l");
+    // c1->Clear();
     //
-    // chi_and_param->DrawLatexNDC(0.18,0.65,
-    // Form("b_{double}/a_{double} = %.2lf ",r_double_temp->Parameter(1) /
-    // r_double_temp->Parameter(0)));
-    DrawLabelALICE(0.55, 0.5, 0.02, 0.03, str);
-
-
-    c1->SaveAs(Form("MCTemplatesAnData/DataFitWithMCIter%02i.png",k));
-    c1->Clear();
-
-    fpol1->SetLineColor(kRed);
-    TLegend *leg2 = new TLegend(0.52,0.52,0.8,0.87); // was 0.55
-    SetLegendSettigns(leg2);
-    leg2->SetTextSize(0.06);
-    leg2->AddEntry(data_clone4, "Data same - scaled mixed evt.", "lp");
-    leg2->AddEntry(fit_eq_double_temp, doubletempstring, "l");
-    leg2->AddEntry(fit_eq_1, pol1string);
-
-    c1->Clear();
-
-    ///////////////////////////////////////////////////////////////////////////
-    // Comparison Picture between 1st Order polynomial fit and double template
-    // fit to data.
-    // Also drawn are the chi2 of the 2 fits and the factors coming from the
-    // double template fit and their ratio
-
-    canInvMass->cd();
-    pad1InvMass->Draw();
-    pad2InvMass->Draw("same");
-    pad1InvMass->cd();
-
-    SetHistoStandardSettings(data_clone4, 0., 0., 0.03*3./2.);
-    data_clone4->GetYaxis()->SetRangeUser(
-      1.4*data_clone4->GetBinContent(data_clone4->GetMinimumBin()),
-      1.4*data_clone4->GetBinContent(data_clone4->GetMaximumBin()));
-
-    data_clone4->SetTitle("");
-    data_clone4->SetLineColor(kBlue+2);
-    data_clone4->SetMarkerColor(kBlue+2);
-    data_clone4->GetYaxis()->SetTitleOffset(0.9);
-    data_clone4->Draw("p");
-    data_clone3->Draw("samep");
-    fit_eq_double_temp->Draw("same");
-    fit_eq_1->Draw("same");
-
-    canInvMass->Update();
-    line_y = gPad->GetUymax()*0.995;
-    cout << line_y << endl;
-    TLine* fitrange2 = new TLine(0.054,line_y,0.252,line_y);
-    fitrange2->SetLineColor(kAzure+10);
-    fitrange2->SetLineWidth(7);
-    fitrange2->Draw("same");
-    leg2->AddEntry(fitrange2, "Param. range", "l");
-    SetLegendSettigns(leg2, 0.03*3./2.);
-    leg2->Draw("same");
-    // tex->DrawLatexNDC(0.35,0.9, str);
-
-    TLatex* chi_and_param2 = new TLatex();
-    SetLatexSettings(chi_and_param2, 0.03);
-    chi_and_param2->DrawLatexNDC(0.18,0.67,
-    Form("#frac{#chi^{2}_{pol1 + temp}}{ndf} = %.2lf ",r_pol1_temp->Chi2() /
-    r_pol1_temp->Ndf()));
-
-    chi_and_param2->DrawLatexNDC(0.18,0.83,
-    Form("#frac{#chi^{2}_{double temp}}{ndf} = %.2lf ",r_double_temp->Chi2() /
-    r_double_temp->Ndf()));
-
-    // chi_and_param2->DrawLatexNDC(0.19,0.55,
-    // Form("a_{double} = %.2lf",r_double_temp->Parameter(0)));
+    // ///////////////////////////////////////////////////////////////////////////
+    // // Picture of double template fit with chi2 and factors as well as ratio of
+    // // the factors for the template.
+    // data_clone4->SetLineWidth(3);
+    // data_clone3->SetLineWidth(3);
+    // data_clone3->SetLineColor(kGray+2);
+    // data_clone3->SetMarkerColor(kGray+2);
+    // data_clone4->SetTitle("");
+    // data_clone4->Draw("p");
     //
-    // chi_and_param2->DrawLatexNDC(0.19,0.45,
-    // Form("a_{pol1} = %.2lf",r_pol1_temp->Parameter(0)));
-    DrawLabelALICE(0.55, 0.48, 0.04, 0.03*3./2., str);
-    pad1InvMass->Update();
-
-
-    pad2InvMass->cd();
-    hRatioDoubleTemp = (TH1F*) data_clone4->Clone("RatioDoubleTemp");
-    hRatioPol1 = (TH1F*) data_clone3->Clone("RatioPol1");
-    hRatioDoubleTemp->Add(fit_eq_double_temp,-1.);
-    hRatioPol1->Add(fit_eq_1, -1.);
-    for (int i = 0; i < 75; i++) {
-      hRatioDoubleTemp->SetBinContent(i,hRatioDoubleTemp->GetBinContent(i)/hRatioDoubleTemp->GetBinError(i));
-      hRatioPol1->SetBinContent(i,hRatioPol1->GetBinContent(i)/hRatioPol1->GetBinError(i));
-      hRatioDoubleTemp->SetBinError(i,0);
-      hRatioPol1->SetBinError(i,0);
-
-    }
-    hRatioDoubleTemp->GetYaxis()->SetRangeUser(-5.,5.);
-    hRatioDoubleTemp->GetYaxis()->SetNdivisions(509);
-    hRatioPol1->GetYaxis()->SetRangeUser(-4.5,4.5);
-    SetHistoStandardSettings(hRatioDoubleTemp,0.,0.,0.09);
-    SetHistoStandardSettings(hRatioPol1,0.,0.,0.09);
-    hRatioDoubleTemp->SetYTitle("(data-param)/#sigma(data)");
-    hRatioPol1->SetYTitle("(data-param)/#sigma(data)");
-    hRatioDoubleTemp->GetYaxis()->SetTitleOffset(0.4);
-    hRatioPol1->GetYaxis()->SetTitleOffset(0.4);
-
-    hRatioDoubleTemp->SetLineColor(kTeal-7);
-    hRatioDoubleTemp->SetMarkerColor(kTeal-7);
-    hRatioPol1->SetLineColor(kRed);
-    hRatioPol1->SetMarkerColor(kRed);
-
-    TLine* line_0 = new TLine(0.0, 0.0, 0.4, 0.0);
-    line_0->SetLineWidth(3);
-    line_0->SetLineStyle(1);
-    line_0->SetLineColor(kBlack);
-    TLine* line_p1 = new TLine(0.0, 1.0, 0.4, 1.0);
-    line_p1->SetLineWidth(2);
-    line_p1->SetLineStyle(3);
-    line_p1->SetLineColor(kGray+2);
-    TLine* line_m1 = new TLine(0.0, -1.0, 0.4, -1.0);
-    line_m1->SetLineWidth(2);
-    line_m1->SetLineStyle(3);
-    line_m1->SetLineColor(kGray+2);
-    TLine* line_p3 = new TLine(0.0, 3.0, 0.4, 3.0);
-    line_p3->SetLineWidth(2);
-    line_p3->SetLineStyle(2);
-    line_p3->SetLineColor(kGray+2);
-    TLine* line_m3 = new TLine(0.0, -3.0, 0.4, -3.0);
-    line_m3->SetLineWidth(2);
-    line_m3->SetLineStyle(2);
-    line_m3->SetLineColor(kGray+2);
-
-
-
-    hRatioDoubleTemp->DrawCopy("");
-    line_0->Draw("same");
-    line_p1->Draw("same");
-    line_m1->Draw("same");
-    line_p3->Draw("same");
-    line_m3->Draw("same");
-    hRatioDoubleTemp->DrawCopy("same");
-    hRatioPol1->DrawCopy("same");
-    pad2InvMass->Update();
-
-    canInvMass->Update();
-    canInvMass->SaveAs(Form("MCTemplatesAnData/DataFitWithMCCompIter%02i.png",k));
-    canInvMass->Clear("D");
-
-
-
-
-
-
-    c1->cd();
-    data_clone4->SetLineColor(kGray+3);
-    data_clone4->SetMarkerColor(kGray+3);
-
-    ///////////////////////////////////////////////////////////////////////////
-    // drawing Double Template fit to data with extra Error from iterartion
-    c1->Update();
-    TLatex* tex_double_temp = new TLatex();
-    SetLatexSettings(tex_double_temp);
-
-    TLegend *leg3 = new TLegend(0.52,0.65,0.8,0.85); // was 0.55
-    SetLegendSettigns(leg3);
-    leg3->AddEntry(data_clone4, "Data same - scaled mixed evt.", "lp");
-    leg3->AddEntry(mc_full_clone1, "scaled peak template", "p");
-    leg3->AddEntry(korrBG_clone1, "scaled corr. BG template ", "p");
-
-    SetHistoStandardSettings(data_clone4);
-    data_clone4->Draw("p");
-    mc_full_clone3->Draw("same");
-    korrBG_clone3->Draw("same");
-    leg3->Draw("same");
-    fitrange2->Draw("same");
-    // tex->DrawLatexNDC(0.35,0.9, str);
-    tex_double_temp->DrawLatexNDC(0.15, 0.85, "Double template parametrization");
-    DrawLabelALICE(0.55, 0.5, 0.02, 0.03, str);
-
-    c1->Update();
-    c1->SaveAs(Form("MCTemplatesAnData/DataDoubleTempComp%02i.png",k));
-    c1->Clear();
-
-    ///////////////////////////////////////////////////////////////////////////
-    // drawing 1st order polynomial plus peak scaled to data with extra error
-    // from iterration
-    c1->Update();
-    TLatex* tex_pol1 = new TLatex();
-    SetLatexSettings(tex_pol1);
-
-    TLegend *leg4 = new TLegend(0.52,0.65,0.8,0.85); // was 0.55
-    SetLegendSettigns(leg4);
-    leg4->AddEntry(data_clone4, "Data same - scaled mixed evt.", "lp");
-    leg4->AddEntry(mc_full_clone4, "scaled peak template", "p");
-    leg4->AddEntry(fpol1, "1^{st} ord. pol. ", "l");
-    leg4->AddEntry(fit_eq_1, pol1string);
-    leg4->AddEntry(fitrange2, "Param. range", "l");
-
-    data_clone3->SetTitle("");
-    data_clone3->Draw("p");
-    mc_full_clone4->Draw("same");
-    fpol1->Draw("same");
-    fit_eq_1->Draw("same");
-    leg4->Draw("same");
-    fitrange2->Draw("same");
-    // tex->DrawLatexNDC(0.35,0.9, str);
-    tex_pol1->DrawLatexNDC(0.15, 0.85, "#splitline{Peak template +}{1^{st} ord. pol. param}");
-    DrawLabelALICE(0.55, 0.5, 0.02, 0.03, str);
-
-    c1->Update();
-    c1->SaveAs(Form("MCTemplatesAnData/DataPol1Comp%02i.png",k));
-    c1->Clear();
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Drawing double temp fit + data with normal errors:
-    c1->Update();
-
-
-    TLegend *leg5 = new TLegend(0.52,0.65,0.8,0.85); // was 0.55
-    SetLegendSettigns(leg5);
-    leg5->AddEntry(data, "Data same - scaled mixed evt.", "lp");
-    leg5->AddEntry(mc_full_clone3, "scaled peak template", "p");
-    leg5->AddEntry(korrBG_clone3, "scaled corr. BG. template", "p");
-    leg5->AddEntry(fit_eq_double_temp, doubletempstring, "l");
-    leg5->AddEntry(fitrange2, "Param. range", "l");
-
-    data->Draw("");
-    mc_full_clone3->Draw("same");
-    korrBG_clone3->Draw("same");
-    fit_eq_double_temp->Draw("same");
-    leg5->Draw("same");
-    fitrange2->Draw("same");
-    // tex->DrawLatexNDC(0.35,0.9, str);
-    chi_and_param2->SetTextSize(0.03);
-    chi_and_param2->DrawLatexNDC(0.15,0.85,
-    Form("#frac{#chi^{2}_{double temp}}{ndf} = %.2lf ",r_double_temp->Chi2() /
-    r_double_temp->Ndf()));
-
-    // chi_and_param2->DrawLatexNDC(0.17,0.70,
-    // Form("a_{double} = %.2lf ",r_double_temp->Parameter(0)));
+    // fit_eq_double_temp->Draw("same");
     //
-    // chi_and_param2->DrawLatexNDC(0.17,0.65,
-    // Form("b_{double} = %.2lf ",r_double_temp->Parameter(1)));
+    // c1->Update();
     //
-    // chi_and_param2->DrawLatexNDC(0.17,0.60,
-    // Form("b_{double}/a_{double} = %.2lf ",r_double_temp->Parameter(1) /
-    // r_double_temp->Parameter(0)));
-    DrawLabelALICE(0.55, 0.5, 0.02, 0.03, str);
-
-    c1->Update();
-    c1->SaveAs(Form("MCTemplatesAnData/DataDoubleTempFit_NormalErrors%02i.png",k));
-    c1->Clear();
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Drawing double temp fit + data with iter. errors:
-    c1->Update();
-
-
-    TLegend *leg6 = new TLegend(0.52,0.65,0.8,0.85); // was 0.55
-    SetLegendSettigns(leg6);
-    leg6->AddEntry(data_clone4, "Data same - scaled mixed evt.", "lp");
-    leg6->AddEntry(mc_full_clone3, "scaled peak template", "p");
-    leg6->AddEntry(korrBG_clone3, "scaled corr. BG. template ", "p");
-    leg6->AddEntry(fit_eq_double_temp, doubletempstring, "l");
-    leg6->AddEntry(fitrange2, "Param. range", "l");
-
-    data_clone4->Draw("");
-    data_clone4->GetYaxis()->SetTitleSize(0.03);
-    data_clone4->GetXaxis()->SetTitleSize(0.03);
-    mc_full_clone3->Draw("same");
-    korrBG_clone3->Draw("same");
-    fit_eq_double_temp->Draw("same");
-    leg6->Draw("same");
-    fitrange2->Draw("same");
-    // tex->DrawLatexNDC(0.35, 0.9, str);
-    tex->DrawLatexNDC(0.15,0.85, "Added MC-template");
-    tex->DrawLatexNDC(0.15,0.8, "uncertainty to Data");
-    tex->DrawLatexNDC(0.15, 0.75, Form("#frac{#chi^{2}}{ndf} = %.2lf", r_double_temp->Chi2()/r_double_temp->Ndf()));
-    DrawLabelALICE(0.55, 0.5, 0.02, 0.03, str);
-
-    c1->Update();
-    c1->SaveAs(Form("MCTemplatesAnData/DataDoubleTempFit_AddedErrors%02i.png",k));
-    c1->Clear();
-
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Drawing first ord. pol. fit + data with normal errors:
-    c1->Update();
-
-    mc_full_clone4->SetLineColor(kRed);
-    mc_full_clone4->SetMarkerColor(kRed);
-    TLegend *leg7 = new TLegend(0.52,0.65,0.8,0.85); // was 0.55
-    SetLegendSettigns(leg7);
-    leg7->AddEntry(data, "Data same - scaled mixed evt.", "lp");
-    leg7->AddEntry(mc_full_clone4, "scaled peak template", "p");
-    leg7->AddEntry(fpol1, "1^{st} ord. pol.", "l");
-    leg7->AddEntry(fit_eq_1, pol1string);
-    leg7->AddEntry(fitrange2, "Param. range", "l");
-
-    data->Draw("");
-    mc_full_clone4->Draw("same");
-    fpol1->Draw("same");
-    fit_eq_1->Draw("same");
-    leg7->Draw("same");
-    fitrange2->Draw("same");
-    // tex->DrawLatexNDC(0.35,0.9, str);
-
-    chi_and_param2->DrawLatexNDC(0.15,0.85,
-    Form("#frac{#chi^{2}_{double temp}}{ndf} = %.2lf ",r_pol1_temp->Chi2() /
-    r_pol1_temp->Ndf()));
-
-    // chi_and_param2->DrawLatexNDC(0.60,0.55,
-    // Form("a_{pol1} = %.2lf ",r_pol1_temp->Parameter(0)));
-    DrawLabelALICE(0.55, 0.5, 0.02, 0.03, str);
-
-
-    c1->Update();
-    c1->SaveAs(Form("MCTemplatesAnData/DataPol1Fit_NormalErrors%02i.png",k));
-    c1->Clear();
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Drawing first ord. pol. fit + data with iter. errors:
-    c1->Update();
-
-
-    TLegend *leg8 = new TLegend(0.52,0.65,0.8,0.85); // was 0.55
-    SetLegendSettigns(leg8);
-    leg8->AddEntry(data_clone4, "Data same - scaled mixed evt.", "lp");
-    leg8->AddEntry(mc_full_clone4, "scaled peak template", "p");
-    leg8->AddEntry(fpol1, "1^{st} ord. pol.", "l");
-    leg8->AddEntry(fit_eq_1, pol1string);
-    leg8->AddEntry(fitrange2, "Param. range", "l");
-
-    data_clone4->Draw("");
-    mc_full_clone4->Draw("same");
-    fpol1->Draw("same");
-    fit_eq_1->Draw("same");
-    leg8->Draw("same");
-    fitrange2->Draw("same");
-    // tex->DrawLatexNDC(0.35,0.9, str);
-    tex->DrawLatexNDC(0.15,0.85, "Added MC-template");
-    tex->DrawLatexNDC(0.15,0.8, "uncertainty to Data");
-    tex->DrawLatexNDC(0.15, 0.75, Form("#frac{#chi^{2}}{ndf} = %.2lf", r_pol1_temp->Chi2()/r_pol1_temp->Ndf()));
-    DrawLabelALICE(0.55, 0.5, 0.02, 0.03, str);
-
-    c1->Update();
-    c1->SaveAs(Form("MCTemplatesAnData/DataPol1Fit_AddedErrors%02i.png",k));
-    c1->Clear();
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Drawing both corr. BG versions to Data with normal errors
-    c1->Update();
-
-
-    TLegend *leg9 = new TLegend(0.52,0.65,0.8,0.85); // was 0.55
-    SetLegendSettigns(leg9);
-    leg9->AddEntry(data, "Data same - scaled mixed evt.", "lp");
-    leg9->AddEntry(korrBG_clone3, "scaled corr. BG. template", "p");
-    leg9->AddEntry(fpol1, "1^{st} ord. pol.", "l");
-    leg9->AddEntry(fitrange2, "Param. range", "l");
-
-    data->Draw("");
-    data->GetYaxis()->SetTitleOffset(1.5);
-    korrBG_clone3->Draw("same");
-    fpol1->SetLineColor(kRed);
-    fpol1->Draw("same");
-    leg9->Draw("same");
-    fitrange2->Draw("same");
-    // tex->DrawLatexNDC(0.35,0.9, str);
-    tex->DrawLatexNDC(0.15,0.8, "Corr. BG. comparison");
-    DrawLabelALICE(0.55, 0.5, 0.02, 0.03, str);
-
-
-    c1->Update();
-    c1->SaveAs(Form("MCTemplatesAnData/CorrBGComp%02i.png",k));
-    fpol1->SetLineColor(kTeal-7);
-    c1->Clear();
-
-    ////////////////////////////////////////////////////////////////////////////
-    // getting the chi2 of the current pT bin
-    hchi2_pol1->SetBinContent(k+1,r_pol1_temp->Chi2()/r_pol1_temp->Ndf());
-    hchi2_dt->SetBinContent(k+1,r_double_temp->Chi2()/r_double_temp->Ndf());
-
-    ////////////////////////////////////////////////////////////////////////////
-    // getting the peakratio of the current pT bin
-    Double_t peakratio, peakratioerr, peakscale, bgscale, peakerr, bgerr;
-    Double_t peakscale_pol1, peakerr_pol1, peakratio_to_pol1, peakratioerr_to_pol1;
-    peakscale = r_double_temp->Parameter(0);
-    bgscale = r_double_temp->Parameter(1);
-    peakerr = r_double_temp->Error(0);
-    bgerr = r_double_temp->Error(1);
-
-    peakscale_pol1 = r_pol1_temp->Parameter(0);
-    peakerr_pol1 = r_pol1_temp->Error(0);
-
-    peakratio = bgscale/peakscale;
-    peakratio_to_pol1 = peakscale/peakscale_pol1;
-
-    peakratioerr = sqrt(pow(bgerr/peakscale, 2.)+pow(bgscale*peakerr/pow(peakscale, 2.), 2.));
-    peakratioerr_to_pol1 = sqrt(pow(peakerr/peakscale_pol1,2.0)+pow(peakscale*peakerr_pol1/pow(peakscale_pol1,2.0),2.0));
-
-    hpeakratio->SetBinContent(k+1, peakratio);
-    hpeakratio->SetBinError(k+1, peakratioerr);
-
-    hpeakcomp->SetBinContent(k+1, peakratio_to_pol1);
-    hpeakcomp->SetBinError(k+1, peakratioerr_to_pol1);
+    // ////////////////////////////////////////////////////////////////////////////
+    // // creating TLine which represents the range in which the fit will be made
+    // double line_y = gPad->GetUymax()*0.995;
+    // cout << line_y << endl;
+    // TLine* fitrange = new TLine(0.054,line_y,0.252,line_y);
+    //
+    // fitrange->SetLineColor(kAzure+10);
+    // fitrange->SetLineWidth(7);
+    // fitrange->Draw("same");
+    //
+    // leg->AddEntry(fitrange, "Param. range", "l");
+    // leg->Draw("same");
+    // // tex->DrawLatexNDC(0.35,0.9, str);
+    //
+    // TLatex* chi_and_param = new TLatex();
+    // SetLatexSettings(chi_and_param);
+    // chi_and_param->DrawLatexNDC(0.18,0.85,
+    // Form("#frac{#chi^{2}_{double temp}}{ndf} = %.2lf ",r_double_temp->Chi2() /
+    // r_double_temp->Ndf()));
+    //
+    // // chi_and_param->DrawLatexNDC(0.18,0.75,
+    // // Form("a_{double} = %.2lf ",r_double_temp->Parameter(0)));
+    // //
+    // // chi_and_param->DrawLatexNDC(0.18,0.70,
+    // // Form("b_{double} = %.2lf ",r_double_temp->Parameter(1)));
+    // //
+    // // chi_and_param->DrawLatexNDC(0.18,0.65,
+    // // Form("b_{double}/a_{double} = %.2lf ",r_double_temp->Parameter(1) /
+    // // r_double_temp->Parameter(0)));
+    // DrawLabelALICE(0.55, 0.5, 0.02, 0.03, str);
+    //
+    //
+    // c1->SaveAs(Form("MCTemplatesAnData/DataFitWithMCIter%02i.png",k));
+    // c1->Clear();
+    //
+    // fpol1->SetLineColor(kRed);
+    // TLegend *leg2 = new TLegend(0.52,0.52,0.8,0.87); // was 0.55
+    // SetLegendSettigns(leg2);
+    // leg2->SetTextSize(0.06);
+    // leg2->AddEntry(data_clone4, "Data same - scaled mixed evt.", "lp");
+    // leg2->AddEntry(fit_eq_double_temp, doubletempstring, "l");
+    // leg2->AddEntry(fit_eq_1, pol1string);
+    //
+    // c1->Clear();
+    //
+    // ///////////////////////////////////////////////////////////////////////////
+    // // Comparison Picture between 1st Order polynomial fit and double template
+    // // fit to data.
+    // // Also drawn are the chi2 of the 2 fits and the factors coming from the
+    // // double template fit and their ratio
+    //
+    // canInvMass->cd();
+    // pad1InvMass->Draw();
+    // pad2InvMass->Draw("same");
+    // pad1InvMass->cd();
+    //
+    // SetHistoStandardSettings(data_clone4, 0., 0., 0.03*3./2.);
+    // data_clone4->GetYaxis()->SetRangeUser(
+    //   1.4*data_clone4->GetBinContent(data_clone4->GetMinimumBin()),
+    //   1.4*data_clone4->GetBinContent(data_clone4->GetMaximumBin()));
+    //
+    // data_clone4->SetTitle("");
+    // data_clone4->SetLineColor(kBlue+2);
+    // data_clone4->SetMarkerColor(kBlue+2);
+    // data_clone4->GetYaxis()->SetTitleOffset(0.9);
+    // data_clone4->Draw("p");
+    // data_clone3->Draw("samep");
+    // fit_eq_double_temp->Draw("same");
+    // fit_eq_1->Draw("same");
+    //
+    // canInvMass->Update();
+    // line_y = gPad->GetUymax()*0.995;
+    // cout << line_y << endl;
+    // TLine* fitrange2 = new TLine(0.054,line_y,0.252,line_y);
+    // fitrange2->SetLineColor(kAzure+10);
+    // fitrange2->SetLineWidth(7);
+    // fitrange2->Draw("same");
+    // leg2->AddEntry(fitrange2, "Param. range", "l");
+    // SetLegendSettigns(leg2, 0.03*3./2.);
+    // leg2->Draw("same");
+    // // tex->DrawLatexNDC(0.35,0.9, str);
+    //
+    // TLatex* chi_and_param2 = new TLatex();
+    // SetLatexSettings(chi_and_param2, 0.03);
+    // chi_and_param2->DrawLatexNDC(0.18,0.67,
+    // Form("#frac{#chi^{2}_{pol1 + temp}}{ndf} = %.2lf ",r_pol1_temp->Chi2() /
+    // r_pol1_temp->Ndf()));
+    //
+    // chi_and_param2->DrawLatexNDC(0.18,0.83,
+    // Form("#frac{#chi^{2}_{double temp}}{ndf} = %.2lf ",r_double_temp->Chi2() /
+    // r_double_temp->Ndf()));
+    //
+    // // chi_and_param2->DrawLatexNDC(0.19,0.55,
+    // // Form("a_{double} = %.2lf",r_double_temp->Parameter(0)));
+    // //
+    // // chi_and_param2->DrawLatexNDC(0.19,0.45,
+    // // Form("a_{pol1} = %.2lf",r_pol1_temp->Parameter(0)));
+    // DrawLabelALICE(0.55, 0.48, 0.04, 0.03*3./2., str);
+    // pad1InvMass->Update();
+    //
+    //
+    // pad2InvMass->cd();
+    // hRatioDoubleTemp = (TH1F*) data_clone4->Clone("RatioDoubleTemp");
+    // hRatioPol1 = (TH1F*) data_clone3->Clone("RatioPol1");
+    // hRatioDoubleTemp->Add(fit_eq_double_temp,-1.);
+    // hRatioPol1->Add(fit_eq_1, -1.);
+    // for (int i = 0; i < 75; i++) {
+    //   hRatioDoubleTemp->SetBinContent(i,hRatioDoubleTemp->GetBinContent(i)/hRatioDoubleTemp->GetBinError(i));
+    //   hRatioPol1->SetBinContent(i,hRatioPol1->GetBinContent(i)/hRatioPol1->GetBinError(i));
+    //   hRatioDoubleTemp->SetBinError(i,0);
+    //   hRatioPol1->SetBinError(i,0);
+    //
+    // }
+    // hRatioDoubleTemp->GetYaxis()->SetRangeUser(-5.,5.);
+    // hRatioDoubleTemp->GetYaxis()->SetNdivisions(509);
+    // hRatioPol1->GetYaxis()->SetRangeUser(-4.5,4.5);
+    // SetHistoStandardSettings(hRatioDoubleTemp,0.,0.,0.09);
+    // SetHistoStandardSettings(hRatioPol1,0.,0.,0.09);
+    // hRatioDoubleTemp->SetYTitle("(data-param)/#sigma(data)");
+    // hRatioPol1->SetYTitle("(data-param)/#sigma(data)");
+    // hRatioDoubleTemp->GetYaxis()->SetTitleOffset(0.4);
+    // hRatioPol1->GetYaxis()->SetTitleOffset(0.4);
+    //
+    // hRatioDoubleTemp->SetLineColor(kTeal-7);
+    // hRatioDoubleTemp->SetMarkerColor(kTeal-7);
+    // hRatioPol1->SetLineColor(kRed);
+    // hRatioPol1->SetMarkerColor(kRed);
+    //
+    // TLine* line_0 = new TLine(0.0, 0.0, 0.4, 0.0);
+    // line_0->SetLineWidth(3);
+    // line_0->SetLineStyle(1);
+    // line_0->SetLineColor(kBlack);
+    // TLine* line_p1 = new TLine(0.0, 1.0, 0.4, 1.0);
+    // line_p1->SetLineWidth(2);
+    // line_p1->SetLineStyle(3);
+    // line_p1->SetLineColor(kGray+2);
+    // TLine* line_m1 = new TLine(0.0, -1.0, 0.4, -1.0);
+    // line_m1->SetLineWidth(2);
+    // line_m1->SetLineStyle(3);
+    // line_m1->SetLineColor(kGray+2);
+    // TLine* line_p3 = new TLine(0.0, 3.0, 0.4, 3.0);
+    // line_p3->SetLineWidth(2);
+    // line_p3->SetLineStyle(2);
+    // line_p3->SetLineColor(kGray+2);
+    // TLine* line_m3 = new TLine(0.0, -3.0, 0.4, -3.0);
+    // line_m3->SetLineWidth(2);
+    // line_m3->SetLineStyle(2);
+    // line_m3->SetLineColor(kGray+2);
+    //
+    //
+    //
+    // hRatioDoubleTemp->DrawCopy("");
+    // line_0->Draw("same");
+    // line_p1->Draw("same");
+    // line_m1->Draw("same");
+    // line_p3->Draw("same");
+    // line_m3->Draw("same");
+    // hRatioDoubleTemp->DrawCopy("same");
+    // hRatioPol1->DrawCopy("same");
+    // pad2InvMass->Update();
+    //
+    // canInvMass->Update();
+    // canInvMass->SaveAs(Form("MCTemplatesAnData/DataFitWithMCCompIter%02i.png",k));
+    // canInvMass->Clear("D");
+    //
+    //
+    //
+    //
+    //
+    //
+    // c1->cd();
+    // data_clone4->SetLineColor(kGray+3);
+    // data_clone4->SetMarkerColor(kGray+3);
+    //
+    // ///////////////////////////////////////////////////////////////////////////
+    // // drawing Double Template fit to data with extra Error from iterartion
+    // c1->Update();
+    // TLatex* tex_double_temp = new TLatex();
+    // SetLatexSettings(tex_double_temp);
+    //
+    // TLegend *leg3 = new TLegend(0.52,0.65,0.8,0.85); // was 0.55
+    // SetLegendSettigns(leg3);
+    // leg3->AddEntry(data_clone4, "Data same - scaled mixed evt.", "lp");
+    // leg3->AddEntry(mc_full_clone1, "scaled peak template", "p");
+    // leg3->AddEntry(korrBG_clone1, "scaled corr. BG template ", "p");
+    //
+    // SetHistoStandardSettings(data_clone4);
+    // data_clone4->Draw("p");
+    // mc_full_clone3->Draw("same");
+    // korrBG_clone3->Draw("same");
+    // leg3->Draw("same");
+    // fitrange2->Draw("same");
+    // // tex->DrawLatexNDC(0.35,0.9, str);
+    // tex_double_temp->DrawLatexNDC(0.15, 0.85, "Double template parametrization");
+    // DrawLabelALICE(0.55, 0.5, 0.02, 0.03, str);
+    //
+    // c1->Update();
+    // c1->SaveAs(Form("MCTemplatesAnData/DataDoubleTempComp%02i.png",k));
+    // c1->Clear();
+    //
+    // ///////////////////////////////////////////////////////////////////////////
+    // // drawing 1st order polynomial plus peak scaled to data with extra error
+    // // from iterration
+    // c1->Update();
+    // TLatex* tex_pol1 = new TLatex();
+    // SetLatexSettings(tex_pol1);
+    //
+    // TLegend *leg4 = new TLegend(0.52,0.65,0.8,0.85); // was 0.55
+    // SetLegendSettigns(leg4);
+    // leg4->AddEntry(data_clone4, "Data same - scaled mixed evt.", "lp");
+    // leg4->AddEntry(mc_full_clone4, "scaled peak template", "p");
+    // leg4->AddEntry(fpol1, "1^{st} ord. pol. ", "l");
+    // leg4->AddEntry(fit_eq_1, pol1string);
+    // leg4->AddEntry(fitrange2, "Param. range", "l");
+    //
+    // data_clone3->SetTitle("");
+    // data_clone3->Draw("p");
+    // mc_full_clone4->Draw("same");
+    // fpol1->Draw("same");
+    // fit_eq_1->Draw("same");
+    // leg4->Draw("same");
+    // fitrange2->Draw("same");
+    // // tex->DrawLatexNDC(0.35,0.9, str);
+    // tex_pol1->DrawLatexNDC(0.15, 0.85, "#splitline{Peak template +}{1^{st} ord. pol. param}");
+    // DrawLabelALICE(0.55, 0.5, 0.02, 0.03, str);
+    //
+    // c1->Update();
+    // c1->SaveAs(Form("MCTemplatesAnData/DataPol1Comp%02i.png",k));
+    // c1->Clear();
+    //
+    // ////////////////////////////////////////////////////////////////////////////
+    // // Drawing double temp fit + data with normal errors:
+    // c1->Update();
+    //
+    //
+    // TLegend *leg5 = new TLegend(0.52,0.65,0.8,0.85); // was 0.55
+    // SetLegendSettigns(leg5);
+    // leg5->AddEntry(data, "Data same - scaled mixed evt.", "lp");
+    // leg5->AddEntry(mc_full_clone3, "scaled peak template", "p");
+    // leg5->AddEntry(korrBG_clone3, "scaled corr. BG. template", "p");
+    // leg5->AddEntry(fit_eq_double_temp, doubletempstring, "l");
+    // leg5->AddEntry(fitrange2, "Param. range", "l");
+    //
+    // data->Draw("");
+    // mc_full_clone3->Draw("same");
+    // korrBG_clone3->Draw("same");
+    // fit_eq_double_temp->Draw("same");
+    // leg5->Draw("same");
+    // fitrange2->Draw("same");
+    // // tex->DrawLatexNDC(0.35,0.9, str);
+    // chi_and_param2->SetTextSize(0.03);
+    // chi_and_param2->DrawLatexNDC(0.15,0.85,
+    // Form("#frac{#chi^{2}_{double temp}}{ndf} = %.2lf ",r_double_temp->Chi2() /
+    // r_double_temp->Ndf()));
+    //
+    // // chi_and_param2->DrawLatexNDC(0.17,0.70,
+    // // Form("a_{double} = %.2lf ",r_double_temp->Parameter(0)));
+    // //
+    // // chi_and_param2->DrawLatexNDC(0.17,0.65,
+    // // Form("b_{double} = %.2lf ",r_double_temp->Parameter(1)));
+    // //
+    // // chi_and_param2->DrawLatexNDC(0.17,0.60,
+    // // Form("b_{double}/a_{double} = %.2lf ",r_double_temp->Parameter(1) /
+    // // r_double_temp->Parameter(0)));
+    // DrawLabelALICE(0.55, 0.5, 0.02, 0.03, str);
+    //
+    // c1->Update();
+    // c1->SaveAs(Form("MCTemplatesAnData/DataDoubleTempFit_NormalErrors%02i.png",k));
+    // c1->Clear();
+    //
+    // ////////////////////////////////////////////////////////////////////////////
+    // // Drawing double temp fit + data with iter. errors:
+    // c1->Update();
+    //
+    //
+    // TLegend *leg6 = new TLegend(0.52,0.65,0.8,0.85); // was 0.55
+    // SetLegendSettigns(leg6);
+    // leg6->AddEntry(data_clone4, "Data same - scaled mixed evt.", "lp");
+    // leg6->AddEntry(mc_full_clone3, "scaled peak template", "p");
+    // leg6->AddEntry(korrBG_clone3, "scaled corr. BG. template ", "p");
+    // leg6->AddEntry(fit_eq_double_temp, doubletempstring, "l");
+    // leg6->AddEntry(fitrange2, "Param. range", "l");
+    //
+    // data_clone4->Draw("");
+    // data_clone4->GetYaxis()->SetTitleSize(0.03);
+    // data_clone4->GetXaxis()->SetTitleSize(0.03);
+    // mc_full_clone3->Draw("same");
+    // korrBG_clone3->Draw("same");
+    // fit_eq_double_temp->Draw("same");
+    // leg6->Draw("same");
+    // fitrange2->Draw("same");
+    // // tex->DrawLatexNDC(0.35, 0.9, str);
+    // tex->DrawLatexNDC(0.15,0.85, "Added MC-template");
+    // tex->DrawLatexNDC(0.15,0.8, "uncertainty to Data");
+    // tex->DrawLatexNDC(0.15, 0.75, Form("#frac{#chi^{2}}{ndf} = %.2lf", r_double_temp->Chi2()/r_double_temp->Ndf()));
+    // DrawLabelALICE(0.55, 0.5, 0.02, 0.03, str);
+    //
+    // c1->Update();
+    // c1->SaveAs(Form("MCTemplatesAnData/DataDoubleTempFit_AddedErrors%02i.png",k));
+    // c1->Clear();
+    //
+    //
+    // ////////////////////////////////////////////////////////////////////////////
+    // // Drawing first ord. pol. fit + data with normal errors:
+    // c1->Update();
+    //
+    // mc_full_clone4->SetLineColor(kRed);
+    // mc_full_clone4->SetMarkerColor(kRed);
+    // TLegend *leg7 = new TLegend(0.52,0.65,0.8,0.85); // was 0.55
+    // SetLegendSettigns(leg7);
+    // leg7->AddEntry(data, "Data same - scaled mixed evt.", "lp");
+    // leg7->AddEntry(mc_full_clone4, "scaled peak template", "p");
+    // leg7->AddEntry(fpol1, "1^{st} ord. pol.", "l");
+    // leg7->AddEntry(fit_eq_1, pol1string);
+    // leg7->AddEntry(fitrange2, "Param. range", "l");
+    //
+    // data->Draw("");
+    // mc_full_clone4->Draw("same");
+    // fpol1->Draw("same");
+    // fit_eq_1->Draw("same");
+    // leg7->Draw("same");
+    // fitrange2->Draw("same");
+    // // tex->DrawLatexNDC(0.35,0.9, str);
+    //
+    // chi_and_param2->DrawLatexNDC(0.15,0.85,
+    // Form("#frac{#chi^{2}_{double temp}}{ndf} = %.2lf ",r_pol1_temp->Chi2() /
+    // r_pol1_temp->Ndf()));
+    //
+    // // chi_and_param2->DrawLatexNDC(0.60,0.55,
+    // // Form("a_{pol1} = %.2lf ",r_pol1_temp->Parameter(0)));
+    // DrawLabelALICE(0.55, 0.5, 0.02, 0.03, str);
+    //
+    //
+    // c1->Update();
+    // c1->SaveAs(Form("MCTemplatesAnData/DataPol1Fit_NormalErrors%02i.png",k));
+    // c1->Clear();
+    //
+    // ////////////////////////////////////////////////////////////////////////////
+    // // Drawing first ord. pol. fit + data with iter. errors:
+    // c1->Update();
+    //
+    //
+    // TLegend *leg8 = new TLegend(0.52,0.65,0.8,0.85); // was 0.55
+    // SetLegendSettigns(leg8);
+    // leg8->AddEntry(data_clone4, "Data same - scaled mixed evt.", "lp");
+    // leg8->AddEntry(mc_full_clone4, "scaled peak template", "p");
+    // leg8->AddEntry(fpol1, "1^{st} ord. pol.", "l");
+    // leg8->AddEntry(fit_eq_1, pol1string);
+    // leg8->AddEntry(fitrange2, "Param. range", "l");
+    //
+    // data_clone4->Draw("");
+    // mc_full_clone4->Draw("same");
+    // fpol1->Draw("same");
+    // fit_eq_1->Draw("same");
+    // leg8->Draw("same");
+    // fitrange2->Draw("same");
+    // // tex->DrawLatexNDC(0.35,0.9, str);
+    // tex->DrawLatexNDC(0.15,0.85, "Added MC-template");
+    // tex->DrawLatexNDC(0.15,0.8, "uncertainty to Data");
+    // tex->DrawLatexNDC(0.15, 0.75, Form("#frac{#chi^{2}}{ndf} = %.2lf", r_pol1_temp->Chi2()/r_pol1_temp->Ndf()));
+    // DrawLabelALICE(0.55, 0.5, 0.02, 0.03, str);
+    //
+    // c1->Update();
+    // c1->SaveAs(Form("MCTemplatesAnData/DataPol1Fit_AddedErrors%02i.png",k));
+    // c1->Clear();
+    //
+    // ////////////////////////////////////////////////////////////////////////////
+    // // Drawing both corr. BG versions to Data with normal errors
+    // c1->Update();
+    //
+    //
+    // TLegend *leg9 = new TLegend(0.52,0.65,0.8,0.85); // was 0.55
+    // SetLegendSettigns(leg9);
+    // leg9->AddEntry(data, "Data same - scaled mixed evt.", "lp");
+    // leg9->AddEntry(korrBG_clone3, "scaled corr. BG. template", "p");
+    // leg9->AddEntry(fpol1, "1^{st} ord. pol.", "l");
+    // leg9->AddEntry(fitrange2, "Param. range", "l");
+    //
+    // data->Draw("");
+    // data->GetYaxis()->SetTitleOffset(1.5);
+    // korrBG_clone3->Draw("same");
+    // fpol1->SetLineColor(kRed);
+    // fpol1->Draw("same");
+    // leg9->Draw("same");
+    // fitrange2->Draw("same");
+    // // tex->DrawLatexNDC(0.35,0.9, str);
+    // tex->DrawLatexNDC(0.15,0.8, "Corr. BG. comparison");
+    // DrawLabelALICE(0.55, 0.5, 0.02, 0.03, str);
+    //
+    //
+    // c1->Update();
+    // c1->SaveAs(Form("MCTemplatesAnData/CorrBGComp%02i.png",k));
+    // fpol1->SetLineColor(kTeal-7);
+    // c1->Clear();
+    //
+    // ////////////////////////////////////////////////////////////////////////////
+    // // getting the chi2 of the current pT bin
+    // hchi2_pol1->SetBinContent(k+1,r_pol1_temp->Chi2()/r_pol1_temp->Ndf());
+    // hchi2_dt->SetBinContent(k+1,r_double_temp->Chi2()/r_double_temp->Ndf());
+    //
+    // ////////////////////////////////////////////////////////////////////////////
+    // // getting the peakratio of the current pT bin
+    // Double_t peakratio, peakratioerr, peakscale, bgscale, peakerr, bgerr;
+    // Double_t peakscale_pol1, peakerr_pol1, peakratio_to_pol1, peakratioerr_to_pol1;
+    // peakscale = r_double_temp->Parameter(0);
+    // bgscale = r_double_temp->Parameter(1);
+    // peakerr = r_double_temp->Error(0);
+    // bgerr = r_double_temp->Error(1);
+    //
+    // peakscale_pol1 = r_pol1_temp->Parameter(0);
+    // peakerr_pol1 = r_pol1_temp->Error(0);
+    //
+    // peakratio = bgscale/peakscale;
+    // peakratio_to_pol1 = peakscale/peakscale_pol1;
+    //
+    // peakratioerr = sqrt(pow(bgerr/peakscale, 2.)+pow(bgscale*peakerr/pow(peakscale, 2.), 2.));
+    // peakratioerr_to_pol1 = sqrt(pow(peakerr/peakscale_pol1,2.0)+pow(peakscale*peakerr_pol1/pow(peakscale_pol1,2.0),2.0));
+    //
+    // hpeakratio->SetBinContent(k+1, peakratio);
+    // hpeakratio->SetBinError(k+1, peakratioerr);
+    //
+    // hpeakcomp->SetBinContent(k+1, peakratio_to_pol1);
+    // hpeakcomp->SetBinError(k+1, peakratioerr_to_pol1);
 
 
 
@@ -820,25 +846,26 @@ void Iter_Temp_Fit(void){
     delete mc_full;
     delete korrBG;
     delete data;
-    delete leg;
-    delete leg2;
-    delete leg3;
-    delete leg4;
-    delete leg5;
-    delete leg6;
-    delete leg7;
-    delete leg8;
-    delete leg9;
-    delete chi_and_param;
-    delete chi_and_param2;
-    delete tex;
-    delete fitrange;
+    delete hDoubleTemp;
+    // delete leg;
+    // delete leg2;
+    // delete leg3;
+    // delete leg4;
+    // delete leg5;
+    // delete leg6;
+    // delete leg7;
+    // delete leg8;
+    // delete leg9;
+    // delete chi_and_param;
+    // delete chi_and_param2;
+    // delete tex;
+    // delete fitrange;
     delete fpol1;
     delete fit_eq_double_temp;
     delete fit_eq_1;
-    delete fitrange2;
-    delete tex_double_temp;
-    delete tex_pol1;
+    // delete fitrange2;
+    // delete tex_double_temp;
+    // delete tex_pol1;
 
     if(k < 25){
       MCFile->Close();
@@ -849,65 +876,65 @@ void Iter_Temp_Fit(void){
 
   }
 
-  /////////////////////////////////////////////////////////////////////////////
-  // Drawing of Chi2(pT)
-  TLine* oneline = new TLine(0.0, 1., 21.0, 1.0);
-  oneline->SetLineWidth(3);
-  oneline->SetLineStyle(2);
-  oneline->SetLineColor(kGray+3);
-
-  c1->Update();
-
-
-  hchi2_pol1->SetLineColor(kRed);
-  hchi2_pol1->SetLineWidth(3);
-  hchi2_dt->SetLineWidth(3);
-  hpeakratio->SetLineWidth(3);
-  hpeakcomp->SetLineWidth(3);
-  hchi2_pol1->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-  hchi2_dt->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-  hchi2_pol1->GetYaxis()->SetTitle("#chi^{2}/ndf");
-  hchi2_dt->GetYaxis()->SetTitle("#chi^{2}/ndf");
-  hpeakratio->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-  hpeakratio->GetYaxis()->SetTitle("b_{double}/a_{double}");
-  hpeakcomp->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-  hpeakcomp->GetYaxis()->SetTitle("a_{pol1}/ a_{double}");
-  hchi2_dt->GetYaxis()->SetRangeUser(0.0,5.0);
-
-  TLegend* legchi = new TLegend(0.35,0.55,0.9,0.65);
-  SetLegendSettigns(legchi);
-  legchi->AddEntry(hchi2_dt, doubletempstring, "l");
-  legchi->AddEntry(hchi2_pol1, pol1string, "l");
-
-  // c1->SetTopMargin(0.05);
-  // c1->SetBottomMargin(0.14);
-  // c1->SetRightMargin(0.005);
-  // c1->SetLeftMargin(0.14);
-
-
-  hchi2_dt->Draw("");
-  hchi2_pol1->Draw("same");
-  legchi->Draw("same");
-  oneline->Draw("same");
-  DrawLabelALICE(0.2, 0.9, 0.018, 0.03);
-
-  c1->SaveAs(Form("MCTemplatesAnData/Chi2.png"));
-  c1->Clear();
-
-  c1->Update();
-  hpeakratio->Draw("");
-  oneline->Draw("same");
-  DrawLabelALICE(0.34, 0.9, 0.018, 0.03);
-  c1->SaveAs(Form("MCTemplatesAnData/Peakratio.png"));
-  c1->Clear();
-
-
-  c1->Update();
-  hpeakcomp->Draw("");
-  oneline->Draw("same");
-  DrawLabelALICE(0.13, 0.9, 0.018, 0.03);
-  c1->SaveAs(Form("MCTemplatesAnData/Peakcomp.png"));
-  c1->Clear();
+  // /////////////////////////////////////////////////////////////////////////////
+  // // Drawing of Chi2(pT)
+  // TLine* oneline = new TLine(0.0, 1., 21.0, 1.0);
+  // oneline->SetLineWidth(3);
+  // oneline->SetLineStyle(2);
+  // oneline->SetLineColor(kGray+3);
+  //
+  // c1->Update();
+  //
+  //
+  // hchi2_pol1->SetLineColor(kRed);
+  // hchi2_pol1->SetLineWidth(3);
+  // hchi2_dt->SetLineWidth(3);
+  // hpeakratio->SetLineWidth(3);
+  // hpeakcomp->SetLineWidth(3);
+  // hchi2_pol1->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+  // hchi2_dt->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+  // hchi2_pol1->GetYaxis()->SetTitle("#chi^{2}/ndf");
+  // hchi2_dt->GetYaxis()->SetTitle("#chi^{2}/ndf");
+  // hpeakratio->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+  // hpeakratio->GetYaxis()->SetTitle("b_{double}/a_{double}");
+  // hpeakcomp->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+  // hpeakcomp->GetYaxis()->SetTitle("a_{pol1}/ a_{double}");
+  // hchi2_dt->GetYaxis()->SetRangeUser(0.0,5.0);
+  //
+  // TLegend* legchi = new TLegend(0.35,0.55,0.9,0.65);
+  // SetLegendSettigns(legchi);
+  // legchi->AddEntry(hchi2_dt, doubletempstring, "l");
+  // legchi->AddEntry(hchi2_pol1, pol1string, "l");
+  //
+  // // c1->SetTopMargin(0.05);
+  // // c1->SetBottomMargin(0.14);
+  // // c1->SetRightMargin(0.005);
+  // // c1->SetLeftMargin(0.14);
+  //
+  //
+  // hchi2_dt->Draw("");
+  // hchi2_pol1->Draw("same");
+  // legchi->Draw("same");
+  // oneline->Draw("same");
+  // DrawLabelALICE(0.2, 0.9, 0.018, 0.03);
+  //
+  // c1->SaveAs(Form("MCTemplatesAnData/Chi2.png"));
+  // c1->Clear();
+  //
+  // c1->Update();
+  // hpeakratio->Draw("");
+  // oneline->Draw("same");
+  // DrawLabelALICE(0.34, 0.9, 0.018, 0.03);
+  // c1->SaveAs(Form("MCTemplatesAnData/Peakratio.png"));
+  // c1->Clear();
+  //
+  //
+  // c1->Update();
+  // hpeakcomp->Draw("");
+  // oneline->Draw("same");
+  // DrawLabelALICE(0.13, 0.9, 0.018, 0.03);
+  // c1->SaveAs(Form("MCTemplatesAnData/Peakcomp.png"));
+  // c1->Clear();
 
 
   delete hpeakratio;
@@ -922,7 +949,7 @@ void Iter_Temp_Fit(void){
   delete pad2InvMass;
   delete canInvMass;
   delete c1;
-  delete oneline;
-  delete legchi;
+  // delete oneline;
+  // delete legchi;
 
 }

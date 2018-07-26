@@ -21,8 +21,8 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
   const Int_t nbins = 45;
   const Int_t ndrawpoints = 1.e5;
   const int n_iter = 4;
-  TString doubletempstring = "double temp. param.";
-  TString pol1string = "signal temp. + 1^{st} ord. pol. param.";
+  TString doubletempstring = "double temp.";
+  TString pol1string = "signal temp. + 1^{st} ord. pol.";
 
   //////////////////////////////////////////////////////////////////////////////
   // setting up the canvas to draw on. Will later be changed for the chi2 pic
@@ -68,33 +68,35 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
   // well as peak factor comp. between pol 1 and double temp fit and the ratio
   // of BG. scaling factor and the Peak scaling factor
 
-  TH1F* hChi2_dt;
-  TH1F* hChi2_pol1;
-  TH1F* hPeakRatio;
-  TH1F* hPeakComp;
-  TH1F* hRatioDoubleTemp;
-  TH1F* hRatioPol1;
-  TH1F* hData;
-  TH1F* hData_Pol1Error;
-  TH1F* hData_DTError;
-  TH1F* hDTPeak;
-  TH1F* hDTBG;
-  TH1F* hPol1Peak;
-  TH1F* hDoubleTemplatePeakFactor;
-  TH1F* hDoubleTemplatecorrBGFactor;
-  TH1F* hPol1PeakFactor;
-  TH1F* hYield_dt_uncorr;
-  TH1F* hYield_pol1_uncorr;
-  TH1F* hDoubleTemp;
-  TH1F* hPol1;
-  TF1* fpol1;
-  TLine* fitrange2;
-  TLine* line_0;
-  TLine* line_p1;
-  TLine* line_m1;
-  TLine* line_p3;
-  TLine* line_m3;
-  TLine* line_one;
+  TH1F* hChi2_dt = NULL;
+  TH1F* hChi2_pol1 = NULL;
+  TH1F* hPeakRatio = NULL;
+  TH1F* hPeakComp = NULL;
+  TH1F* hRatioDoubleTemp = NULL;
+  TH1F* hRatioPol1 = NULL;
+  TH1F* hData = NULL;
+  TH1F* hData_Pol1Error = NULL;
+  TH1F* hData_DTError = NULL;
+  TH1F* hDTPeak = NULL;
+  TH1F* hDTBG = NULL;
+  TH1F* hPol1Peak = NULL;
+  TH1F* hDoubleTemplatePeakFactor = NULL;
+  TH1F* hDoubleTemplatecorrBGFactor = NULL;
+  TH1F* hPol1PeakFactor = NULL;
+  TH1F* hYield_dt_uncorr = NULL;
+  TH1F* hYield_pol1_uncorr = NULL;
+  TH1F* hDoubleTemp = NULL;
+  TH1F* hPol1 = NULL;
+  TH1F* hChi2_dt_iter = NULL;
+  TH1F* hChi2_pol1_iter = NULL;
+  TF1* fpol1 = NULL;
+  TLine* fitrange2 = NULL;
+  TLine* line_0 = NULL;
+  TLine* line_p1 = NULL;
+  TLine* line_m1 = NULL;
+  TLine* line_p3 = NULL;
+  TLine* line_m3 = NULL;
+  TLine* line_one = NULL;
   Double_t line_y = 0;
 
 
@@ -142,9 +144,9 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
 
   //////////////////////////////////////////////////////////////////////////////
   // going over all pt bins despite first one, which is some framework bs.
-  for (int k = 1; k < 26; k++) {
+  for (int k = 1; k < numberbins; k++) {
 
-    if(binnumber <=  0){
+    if(binnumber <=  0 || binnumber > numberbins){
       hData = (TH1F*) IterTemp->Get(Form("data_bin%02i",k));
       str = hData->GetTitle();
       hData->SetTitle("");
@@ -160,6 +162,8 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
       // korrBG_clone1 = (TH1F*) IterTemp->Get(Form("korrBG_clone_beforeIterFit_bin%02d",k));
       hDoubleTemp = (TH1F*) IterTemp->Get(Form("hDoubleTemp_bin%02d",k));
       hPol1 = (TH1F*) IterTemp->Get(Form("hPol1_bin%02d",k));
+      hChi2_dt_iter = (TH1F*) IterTemp->Get(Form("hChi2_dt_iter_bin%02d",k));
+      hChi2_pol1_iter = (TH1F*) IterTemp->Get(Form("hChi2_pol1_iter_bin%02d",k));
       // mc_full_clone1->SetName("mc_full_clone1");
       // korrBG_clone1->SetName("korrBG_clone1");
 
@@ -179,7 +183,8 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
 
         TLegend* leg = new TLegend(0.5,0.35,0.9,0.55);
         SetLegendSettigns(leg, 0.03*3./2.);
-        leg->AddEntry(hData, "Daten", "p");
+        leg->AddEntry(hData, strData, "p");
+        leg->AddEntry((TObject*)0x0, "parametrization:", "");
         leg->AddEntry(hPol1, pol1string, "p");
         leg->AddEntry(hDoubleTemp, doubletempstring, "p");
 
@@ -199,7 +204,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
         fitrange2->SetLineColor(kAzure+10);
         fitrange2->SetLineWidth(7);
         fitrange2->Draw("same");
-        leg->AddEntry(fitrange2, "param. range", "l");
+        leg->AddEntry(fitrange2, "range", "l");
         leg->Draw("same");
         DrawLabelALICE(0.5, 0.9, 0.035, 0.03*3./2., str);
         pad1InvMass->Update();
@@ -227,21 +232,19 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
         //////////////////////////////////////////////////////////////////////
         // Drawing both corr. BG versions to Data with normal errors
         c1->cd();
-        TLegend* leg = new TLegend(0.5,0.43,0.9,0.63);
+        TLegend* leg = new TLegend(0.5,0.5,0.9,0.63);
         SetLegendSettigns(leg, 0.03);
-        leg->AddEntry(hData, "data (signal + corr. back.)", "p");
-        leg->AddEntry(fpol1, "1^{st} ord. pol.", "p");
+        leg->AddEntry(fpol1, "1^{st} ord. pol.", "l");
         leg->AddEntry(hDTBG, "scaled corr. back. temp.", "p");
         hData->GetXaxis()->SetTitleSize(0.03);
         hData->GetYaxis()->SetTitleSize(0.03);
         hData->GetXaxis()->SetLabelSize(0.03);
         hData->GetYaxis()->SetLabelSize(0.03);
 
-        hData->Draw("");
+        hDTBG->Draw("");
+        fpol1->Draw("same");
         c1->Update();
         line_y = gPad->GetUymax()*0.995;
-        hDTBG->Draw("same");
-        fpol1->Draw("same");
         TLine* fitrange = new TLine(lowerparamrange, line_y, upperparamrange, line_y);
 
         fitrange->SetLineColor(kAzure+10);
@@ -258,126 +261,175 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
         delete leg;
         delete fitrange;
       }
-    }
-    {
-      if(k == binnumber){
-        hData = (TH1F*) IterTemp->Get(Form("data_bin%02i",k));
-        str = hData->GetTitle();
-        hData->SetTitle("");
-        hData_Pol1Error = (TH1F*) IterTemp->Get(Form("data_addedErrosPol1_bin%02i",k));
-        hData_DTError = (TH1F*) IterTemp->Get(Form("data_addedErrosDT_bin%02i",k));
-        hPol1Peak = (TH1F*) IterTemp->Get(Form("mc_peak_pol1_bin%02i",k));
-        hDTPeak = (TH1F*) IterTemp->Get(Form("mc_full_DT_bin%02i",k));
-        hDTBG = (TH1F*) IterTemp->Get(Form("korrBG_bin%02i",k));
-        fpol1 = (TF1*) IterTemp->Get(Form("fpol1_bin%02i",k));
-        hRatioDoubleTemp = (TH1F*) IterTemp->Get(Form("hRatioDoubleTemp_bin%02i",k));
-        hRatioPol1 = (TH1F*) IterTemp->Get(Form("hRatioPol1_bin%02i",k));
-        // mc_full_clone1 = (TH1F*) IterTemp->Get(Form("mc_full_clone_beforeIterFit_bin%02d",k));
-        // korrBG_clone1 = (TH1F*) IterTemp->Get(Form("korrBG_clone_beforeIterFit_bin%02d",k));
-        hDoubleTemp = (TH1F*) IterTemp->Get(Form("hDoubleTemp_bin%02d",k));
-        hPol1 = (TH1F*) IterTemp->Get(Form("hPol1_bin%02d",k));
-        // mc_full_clone1->SetName("mc_full_clone1");
-        // korrBG_clone1->SetName("korrBG_clone1");
+      if(wpsid == "all" || wpsid.Contains("monitoring")){
+        ////////////////////////////////////////////////////////////////////////
+        // Drawing monitoring plots for Chi^2 for both fits
+        c1->cd();
 
-        // fit_eq_double_temp->SetParameter(0,hDoubleTemplatePeakFactor->GetBinContent(k+1));
-        // fit_eq_double_temp->SetParameter(1,hDoubleTemplatecorrBGFactor->GetBinContent(k+1));
-        // fit_eq_1->SetParameter(0,hPol1PeakFactor->GetBinContent(k+1));
-        // fit_eq_1->SetParameter(2,fpol1->GetParameter(0));
-        // fit_eq_1->SetParameter(3,fpol1->GetParameter(1));
+        TLegend* leg = new TLegend(0.5,0.5,0.9,0.63);
+        SetLegendSettigns(leg, 0.03);
+        leg->AddEntry(hChi2_dt_iter, doubletempstring, "p");
+        leg->AddEntry(hChi2_pol1_iter, pol1string, "p");
+        hChi2_dt_iter->GetYaxis()->SetRangeUser(0.,1.5*hChi2_dt_iter->GetMaximum());
 
+        hChi2_dt_iter->Draw("HIST");
+        hChi2_pol1_iter->Draw("SAME HIST");
+        c1->Update();
+        leg->Draw("same");
+        DrawLabelALICE(0.5, 0.9, 0.02, 0.03, str);
 
+        c1->Update();
+        c1->SaveAs(Form("MCTemplatesAnData/Monitoring%02i.png",k));
+        c1->Clear();
 
-        if(wpsid == "all" || wpsid.Contains("paramcomp")){
-
-
-          canInvMass->cd();
-          pad1InvMass->Draw();
-          pad2InvMass->Draw("same");
-          pad1InvMass->cd();
-
-          TLegend* leg = new TLegend(0.5,0.35,0.9,0.55);
-          SetLegendSettigns(leg, 0.03*3./2.);
-          leg->AddEntry(hData, strData, "p");
-          leg->AddEntry(hPol1, pol1string, "p");
-          leg->AddEntry(hDoubleTemp, doubletempstring, "p");
-
-          SetHistoStandardSettings(hData, 0., 0., 0.03*3./2.);
-          hData->GetYaxis()->SetRangeUser(
-            1.5*hData->GetBinContent(hData->GetMinimumBin()),
-            1.1*hData->GetBinContent(hData->GetMaximumBin()));
-
-          hData->SetTitle("");
-          hData->GetYaxis()->SetTitleOffset(0.9);
-          hData->Draw("p");
-          hPol1->Draw("same");
-          hDoubleTemp->Draw("same");
-          canInvMass->Update();
-          line_y = gPad->GetUymax()*0.995;
-          fitrange2 = new TLine(lowerparamrange, line_y, upperparamrange, line_y);
-          fitrange2->SetLineColor(kAzure+10);
-          fitrange2->SetLineWidth(7);
-          fitrange2->Draw("same");
-          leg->AddEntry(fitrange2, "param. range", "l");
-          leg->Draw("same");
-          DrawLabelALICE(0.5, 0.9, 0.035, 0.03*3./2., str);
-          pad1InvMass->Update();
-
-
-          pad2InvMass->cd();
-          hRatioDoubleTemp->DrawCopy("P");
-          line_0->Draw("same");
-          line_p1->Draw("same");
-          line_m1->Draw("same");
-          line_p3->Draw("same");
-          line_m3->Draw("same");
-          hRatioDoubleTemp->DrawCopy("SAME P");
-          hRatioPol1->DrawCopy("SAME P");
-          pad2InvMass->Update();
-
-          canInvMass->Update();
-          canInvMass->SaveAs(Form("MCTemplatesAnData/DataFitWithMCCompIter%02i.png",k));
-          canInvMass->Clear("D");
-
-          delete leg;
-
-        }
-        if(wpsid == "all" || wpsid.Contains("bgcomp")){
-          //////////////////////////////////////////////////////////////////////
-          // Drawing both corr. BG versions to Data with normal errors
-          c1->cd();
-          TLegend* leg = new TLegend(0.5,0.44,0.9,0.64);
-          SetLegendSettigns(leg, 0.03);
-          leg->AddEntry(hData, "signal + corr. back.", "p");
-          leg->AddEntry(hPol1, "1^{st} ord. pol.", "p");
-          leg->AddEntry(hDoubleTemp, "scaled corr. back. temp.", "p");
-          hData->GetXaxis()->SetTitleSize(0.03);
-          hData->GetYaxis()->SetTitleSize(0.03);
-          hData->GetXaxis()->SetLabelSize(0.03);
-          hData->GetYaxis()->SetLabelSize(0.03);
-
-          hData->Draw("");
-          c1->Update();
-          line_y = gPad->GetUymax()*0.995;
-          hDTBG->Draw("same");
-          fpol1->Draw("same");
-          TLine* fitrange = new TLine(lowerparamrange, line_y, upperparamrange, line_y);
-
-          fitrange->SetLineColor(kAzure+10);
-          fitrange->SetLineWidth(7);
-          fitrange->Draw("same");
-          leg->AddEntry(fitrange, "param. range", "l");
-          leg->Draw("same");
-          DrawLabelALICE(0.5, 0.9, 0.02, 0.03, str);
-
-          c1->Update();
-          c1->SaveAs(Form("MCTemplatesAnData/CorrBGComp%02i.png",k));
-          c1->Clear();
-
-          delete leg;
-          delete fitrange;
-        }
+        delete leg;
       }
     }
+
+      else{
+        if(binnumber == k){
+          hData = (TH1F*) IterTemp->Get(Form("data_bin%02i",k));
+          str = hData->GetTitle();
+          hData->SetTitle("");
+          hData_Pol1Error = (TH1F*) IterTemp->Get(Form("data_addedErrosPol1_bin%02i",k));
+          hData_DTError = (TH1F*) IterTemp->Get(Form("data_addedErrosDT_bin%02i",k));
+          hPol1Peak = (TH1F*) IterTemp->Get(Form("mc_peak_pol1_bin%02i",k));
+          hDTPeak = (TH1F*) IterTemp->Get(Form("mc_full_DT_bin%02i",k));
+          hDTBG = (TH1F*) IterTemp->Get(Form("korrBG_bin%02i",k));
+          fpol1 = (TF1*) IterTemp->Get(Form("fpol1_bin%02i",k));
+          hRatioDoubleTemp = (TH1F*) IterTemp->Get(Form("hRatioDoubleTemp_bin%02i",k));
+          hRatioPol1 = (TH1F*) IterTemp->Get(Form("hRatioPol1_bin%02i",k));
+          // mc_full_clone1 = (TH1F*) IterTemp->Get(Form("mc_full_clone_beforeIterFit_bin%02d",k));
+          // korrBG_clone1 = (TH1F*) IterTemp->Get(Form("korrBG_clone_beforeIterFit_bin%02d",k));
+          hDoubleTemp = (TH1F*) IterTemp->Get(Form("hDoubleTemp_bin%02d",k));
+          hPol1 = (TH1F*) IterTemp->Get(Form("hPol1_bin%02d",k));
+          hChi2_dt_iter = (TH1F*) IterTemp->Get(Form("hChi2_dt_iter_bin%02d",k));
+          hChi2_pol1_iter = (TH1F*) IterTemp->Get(Form("hChi2_pol1_iter_bin%02d",k));
+          // mc_full_clone1->SetName("mc_full_clone1");
+          // korrBG_clone1->SetName("korrBG_clone1");
+
+          // fit_eq_double_temp->SetParameter(0,hDoubleTemplatePeakFactor->GetBinContent(k+1));
+          // fit_eq_double_temp->SetParameter(1,hDoubleTemplatecorrBGFactor->GetBinContent(k+1));
+          // fit_eq_1->SetParameter(0,hPol1PeakFactor->GetBinContent(k+1));
+          // fit_eq_1->SetParameter(2,fpol1->GetParameter(0));
+          // fit_eq_1->SetParameter(3,fpol1->GetParameter(1));
+
+
+
+          if(wpsid == "all" || wpsid.Contains("paramcomp")){
+
+
+            canInvMass->cd();
+            pad1InvMass->Draw();
+            pad2InvMass->Draw("same");
+            pad1InvMass->cd();
+
+            TLegend* leg = new TLegend(0.5,0.35,0.9,0.55);
+            SetLegendSettigns(leg, 0.03*3./2.);
+            leg->AddEntry(hData, strData, "p");
+            leg->AddEntry((TObject*)0x0, "parametrization:", "");
+            leg->AddEntry(hPol1, pol1string, "p");
+            leg->AddEntry(hDoubleTemp, doubletempstring, "p");
+
+            SetHistoStandardSettings(hData, 0., 0., 0.03*3./2.);
+            hData->GetYaxis()->SetRangeUser(
+              1.5*hData->GetBinContent(hData->GetMinimumBin()),
+              1.1*hData->GetBinContent(hData->GetMaximumBin()));
+
+            hData->SetTitle("");
+            hData->GetYaxis()->SetTitleOffset(0.9);
+            hData->Draw("p");
+            hPol1->Draw("same");
+            hDoubleTemp->Draw("same");
+            canInvMass->Update();
+            line_y = gPad->GetUymax()*0.995;
+            fitrange2 = new TLine(lowerparamrange, line_y, upperparamrange, line_y);
+            fitrange2->SetLineColor(kAzure+10);
+            fitrange2->SetLineWidth(7);
+            fitrange2->Draw("same");
+            leg->AddEntry(fitrange2, "range", "l");
+            leg->Draw("same");
+            DrawLabelALICE(0.5, 0.9, 0.035, 0.03*3./2., str);
+            pad1InvMass->Update();
+
+
+            pad2InvMass->cd();
+            hRatioDoubleTemp->DrawCopy("P");
+            line_0->Draw("same");
+            line_p1->Draw("same");
+            line_m1->Draw("same");
+            line_p3->Draw("same");
+            line_m3->Draw("same");
+            hRatioDoubleTemp->DrawCopy("SAME P");
+            hRatioPol1->DrawCopy("SAME P");
+            pad2InvMass->Update();
+
+            canInvMass->Update();
+            canInvMass->SaveAs(Form("MCTemplatesAnData/DataFitWithMCCompIter%02i.png",k));
+            canInvMass->Clear("D");
+
+            delete leg;
+
+          }
+          if(wpsid == "all" || wpsid.Contains("bgcomp")){
+            //////////////////////////////////////////////////////////////////////
+            // Drawing both corr. BG versions to Data with normal errors
+            c1->cd();
+            TLegend* leg = new TLegend(0.5,0.5,0.9,0.64);
+            SetLegendSettigns(leg, 0.03);
+            leg->AddEntry(hPol1, "1^{st} ord. pol.", "l");
+            leg->AddEntry(hDoubleTemp, "scaled corr. back. temp.", "p");
+            hData->GetXaxis()->SetTitleSize(0.03);
+            hData->GetYaxis()->SetTitleSize(0.03);
+            hData->GetXaxis()->SetLabelSize(0.03);
+            hData->GetYaxis()->SetLabelSize(0.03);
+
+            hDTBG->Draw("");
+            fpol1->Draw("same");
+            c1->Update();
+            line_y = gPad->GetUymax()*0.995;
+            TLine* fitrange = new TLine(lowerparamrange, line_y, upperparamrange, line_y);
+
+            fitrange->SetLineColor(kAzure+10);
+            fitrange->SetLineWidth(7);
+            fitrange->Draw("same");
+            leg->AddEntry(fitrange, "param. range", "l");
+            leg->Draw("same");
+            DrawLabelALICE(0.5, 0.9, 0.02, 0.03, str);
+
+            c1->Update();
+            c1->SaveAs(Form("MCTemplatesAnData/CorrBGComp%02i.png",k));
+            c1->Clear();
+
+            delete leg;
+            delete fitrange;
+          }
+
+          if(wpsid == "all" || wpsid.Contains("monitoring")){
+            ////////////////////////////////////////////////////////////////////////
+            // Drawing monitoring plots for Chi^2 for both fits
+            c1->cd();
+
+            TLegend* leg = new TLegend(0.5,0.5,0.9,0.63);
+            SetLegendSettigns(leg, 0.03);
+            leg->AddEntry(hChi2_dt_iter, doubletempstring, "p");
+            leg->AddEntry(hChi2_pol1_iter, pol1string, "p");
+            hChi2_dt_iter->GetYaxis()->SetRangeUser(0.,1.5*hChi2_dt_iter->GetMaximum());
+
+            hChi2_dt_iter->Draw("HIST");
+            hChi2_pol1_iter->Draw("SAME HIST");
+            c1->Update();
+            leg->Draw("same");
+            DrawLabelALICE(0.5, 0.9, 0.02, 0.03, str);
+
+            c1->Update();
+            c1->SaveAs(Form("MCTemplatesAnData/Monitoring%02i.png",k));
+            c1->Clear();
+
+            delete leg;
+          }
+        }
+      }
   }
 
   // Drawing of Chi^2 comparison bwtween the two fits
@@ -387,6 +439,14 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
     SetLegendSettigns(leg);
     leg->AddEntry(hChi2_dt, doubletempstring, "l");
     leg->AddEntry(hChi2_pol1, pol1string, "l");
+    Double_t chi2_dt_mean = 0;
+    Double_t chi2_pol1_mean = 0;
+    for (int i = 0; i < numberbins; i++) {
+      chi2_dt_mean += hChi2_dt->GetBinContent(i);
+      chi2_pol1_mean += hChi2_pol1->GetBinContent(i);
+    }
+    chi2_dt_mean /= (Double_t)numberbins;
+    chi2_pol1_mean /= (Double_t)numberbins;
 
     c1->cd();
     c1->Clear();
@@ -396,10 +456,16 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
     leg->Draw("same");
     DrawLabelALICE(0.2, 0.9, 0.018, 0.03);
 
+    TLatex* tex = new TLatex();
+    SetLatexSettings(tex);
+    tex->DrawLatexNDC(0.6,0.7,Form("#LT#chi^{2}_{dt}/ndf#GT = %1.2lf",chi2_dt_mean));
+    tex->DrawLatexNDC(0.6,0.65,Form("#LT#chi^{2}_{pol1}/ndf#GT = %1.2lf",chi2_pol1_mean));
+
     c1->Update();
     c1->SaveAs(Form("MCTemplatesAnData/Chi2.png"));
     c1->Clear();
     delete leg;
+    delete tex;
   }
   // draing of b_double/a_double temp
   if(wpsid == "all" || wpsid.Contains("bgtopeak")){
@@ -481,5 +547,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
   delete line_one;
   delete hDoubleTemp;
   delete hPol1;
+  delete hChi2_dt_iter;
+  delete hChi2_pol1_iter;
   IterTemp->Close();
 }

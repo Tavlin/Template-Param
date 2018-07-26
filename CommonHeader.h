@@ -26,14 +26,24 @@
 #include <vector>
 #include <algorithm>
 
+Double_t fBinsPi013TeVEMCPt[46]                  =   {0.0,  1.4,   1.6,   1.8,   2.0,   2.2,
+                                                      2.4,   2.6,   2.8,   3.0,   3.2,
+                                                      3.4,   3.6,   3.8,   4.0,   4.2,
+                                                      4.4,   4.6,   4.8,   5.0,   5.2,
+                                                      5.4,   5.6,   5.8,   6.0,   6.2,
+                                                      6.4,   6.6,   6.8,   7.0,   7.2,
+                                                      7.4,   7.6,   7.8,   8.0,   8.4,
+                                                      8.8,   9.2,   9.6,  10.0,  11.0,
+                                                     12.0,  13.0,  14.0,  16.0,  20.0};
 
-Double_t fBinsPi013TeVEMCPt[27]                  =   { 0.0,  0.5, 1.4,  1.9,  2.4,  2.9,     3.4,  3.9,  4.4,  4.9,  5.4,
-                                                       5.9,  6.4,  6.9,  7.4,  7.9,     8.4,  9.4, 10.4, 11.4, 12.4,
-                                                      13.4, 14.4, 15.4, 16.4, 17.5,    21.};
+// Double_t fBinsPi013TeVEMCPt[27]                  =   { 0.0,  0.5, 1.4,  1.9,  2.4,  2.9,     3.4,  3.9,  4.4,  4.9,  5.4,
+//                                                        5.9,  6.4,  6.9,  7.4,  7.9,     8.4,  9.4, 10.4, 11.4, 12.4,
+//                                                       13.4, 14.4, 15.4, 16.4, 17.5,    21.};
 
 const Int_t kMaxHit = 2000;
-const Double_t lowerparamrange = 0.054;
+const Double_t lowerparamrange = 0.056;
 const Double_t upperparamrange = 0.252;
+const int numberbins = 45;
 TH1F* data;                              //data histogram
 TH1F* data_MC;
 TH1F* mc_photon;                         // gamma gamma MC histogram
@@ -55,17 +65,19 @@ TH1F* korrBG_clone42;
 
 void drawchi_and_param42(TLatex* tex,TFitResultPtr r ){
   tex->DrawLatexNDC(0.15,0.85,
-  Form("#frac{#chi^{2}_{double temp}}{ndf} = %.2lf ",r->Chi2() / r->Ndf()));
-  //
-  // tex->DrawLatexNDC(0.17,0.70,
-  // Form("a_{double} = %.2lf ",r->Parameter(0)));
-  //
-  // tex->DrawLatexNDC(0.17,0.65,
-  // Form("b_{double} = %.2lf ",r->Parameter(1)));
-  //
-  // tex->DrawLatexNDC(0.17,0.60,
-  // Form("#frac{b_{double}}{a_{double}} = %.2lf ",r->Parameter(1) / r->Parameter(0)));
+  Form("#frac{#chi^{2}}{ndf} = %.2lf ",r->Chi2() / r->Ndf()));
+
+  tex->DrawLatexNDC(0.17,0.70,
+  Form("a = %.2lf ",r->Parameter(0)));
+
+  tex->DrawLatexNDC(0.17,0.65,
+  Form("b = %.2lf ",r->Parameter(1)));
+
+  tex->DrawLatexNDC(0.17,0.60,
+  Form("#frac{b}{a} = %.2lf ",r->Parameter(1) / r->Parameter(0)));
 }
+
+
 TString strData = "data (signal + corr. back.)";
 TString MCInfo = "#splitline{pp, #sqrt{#it{s}} = 13TeV}{MC Monasch 13}";
 TString massaxis = "#it{M}_{#gamma #gamma} (GeV/#it{c}^{2})";
@@ -187,7 +199,7 @@ class DataTree{
 
 
 void SetCanvasStandardSettings(TCanvas *cCanv){
-  gStyle->SetOptStat(0); // <- das hier macht dies box rechts oben weg
+  gStyle->SetOptStat(kFALSE); // <- das hier macht dies box rechts oben weg
   cCanv->SetTopMargin(0.025);
   cCanv->SetBottomMargin(0.15);
   cCanv->SetRightMargin(0.05);
@@ -200,6 +212,7 @@ void SetCanvasStandardSettings(TCanvas *cCanv){
 
 
 void SetHistoStandardSettings(TH1* histo, Double_t XOffset = 1.2, Double_t YOffset = 1., Double_t textSize = 0.03){
+  histo->SetStats(0);
   histo->GetXaxis()->SetTitleOffset(XOffset);
   histo->GetYaxis()->SetTitleOffset(YOffset);
   histo->GetXaxis()->SetTitleSize(textSize);
