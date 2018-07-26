@@ -70,17 +70,30 @@ TH2D* chi2test(TH1F* hData, TH1F* hSignal, TH1F* hCorrback){
 ////////////////////////////////////////////////////////////////////////////////
 // Gets the 2D Histo and Searches for Chi2_min
 ////////////////////////////////////////////////////////////////////////////////
-Double_t findChi2_min(TH2D *h1){
-  Double_t val = 100;
-  for (int ix = 0; ix < 1000; ix++) {
-    for (int iy = 0; iy < 1000; iy++) {
-      if(h1->GetBinContent(ix,iy) < val)
-      {
-        val = h1->GetBinContent(ix,iy);
+std::vector<double> GetMinmumTH2 (TH2D *h){
+  std::vector<double> vec;
+  int nBinsX = h->GetNbinsX();
+  int nBinsY = h->GetNbinsY();
+  double posX = 0.;
+  double posY = 0.;
+  double val = h->GetBinContent(1,1);
+  double val_tmp = 0.;
+  for (int ix = 1; ix <= nBinsX; ++ix){
+    for (int iy = 1; iy <= nBinsY; ++iy){
+      val_tmp = h->GetBinContent(ix,iy);
+      if(val_tmp < val){
+        val = val_tmp;
+        posX = h->GetXaxis()->GetBinCenter(ix);
+        posY = h->GetYaxis()->GetBinCenter(iy);
+        // cout << "Pos X: " << posX << "\tPos Y: " << posY << "\t val: " << val << endl;
       }
     }
   }
-  return val;
+  vec.push_back(posX);
+  vec.push_back(posY);
+  vec.push_back(val);
+  // cout << "Min X: " << gr->GetX()[1] << "\tMin Y: " << gr->GetY()[1] << endl;
+  return vec;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
