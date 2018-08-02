@@ -9,4 +9,4 @@ mkdir MCTemplatesAnData
 mkdir MixedBGComp
 
 time root -l -b -q IterTempCreation.C++\(\)
-# time root -l -b -q IterTempPlot.C++\($1,\"$2\"\)
+time root -l -b -q IterTempPlot.C++\($1,\"$2\"\)

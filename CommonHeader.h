@@ -13,11 +13,14 @@
 #include "TH1F.h"
 #include "TH1D.h"
 #include "TH2F.h"
+#include "TH2D.h"
 #include "TTree.h"
 #include "TGraph.h"
 #include "TRandom.h"
 #include "TFitResult.h"
 #include "TROOT.h"
+#include "TArrayD.h"
+#include "TObjArray.h"
 #include <TSystem.h>
 #include <iostream>
 #include <fstream>
@@ -25,6 +28,16 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+
+// Double_t fBinsPi013TeVEMCPt[40]                  =   {0.0,  1.4,   1.6,   1.8,   2.0,   2.2,
+//                                                       2.4,   2.6,   2.8,   3.0,   3.2,
+//                                                       3.4,   3.6,   3.8,   4.0,   4.2,
+//                                                       4.4,   4.6,   4.8,   5.0,   5.2,
+//                                                       5.4,   5.6,   5.8,   6.0,   6.2,
+//                                                       6.4,   6.6,   6.8,   7.0,   7.5,
+//                                                       8.0,   8.5,   9.0,   9.5,  10.0,
+//                                                      12.0,  14.0,  16.0,  20.0};
+
 
 Double_t fBinsPi013TeVEMCPt[46]                  =   {0.0,  1.4,   1.6,   1.8,   2.0,   2.2,
                                                       2.4,   2.6,   2.8,   3.0,   3.2,
@@ -43,24 +56,24 @@ Double_t fBinsPi013TeVEMCPt[46]                  =   {0.0,  1.4,   1.6,   1.8,  
 const Int_t kMaxHit = 2000;
 const Double_t lowerparamrange = 0.056;
 const Double_t upperparamrange = 0.252;
-const int numberbins = 45;
-TH1F* data;                              //data histogram
-TH1F* data_MC;
-TH1F* mc_photon;                         // gamma gamma MC histogram
-TH1F* mc_MixedConvPhoton;                // gamma gamma_conv MC histogram
-TH1F* mc_ConvPhoton;                     // gamma_conv gamma_conv MC histogram
-TH1F* testhisto2;
-TH1F* mc_full;
-TH1F* korrBG;
-TH1F* mc_full_clone1;
-TH1F* mc_full_clone2;
-TH1F* korrBG_clone1;
-TH1F* MCBG;
-TH1F* DataBG;
-TLegend *legiter;
-TLatex* chi_and_param42;
-TH1F* mc_full_clone42;
-TH1F* korrBG_clone42;
+const int numberbins = 39;
+TH1D* data = NULL;                              //data histogram
+TH1D* data_MC = NULL;
+TH1D* mc_photon = NULL;                         // gamma gamma MC histogram
+TH1D* mc_MixedConvPhoton = NULL;                // gamma gamma_conv MC histogram
+TH1D* mc_ConvPhoton = NULL;                     // gamma_conv gamma_conv MC histogram
+TH1D* testhisto2 = NULL;
+TH1D* mc_full = NULL;
+TH1D* korrBG = NULL;
+TH1D* mc_full_clone1 = NULL;
+TH1D* mc_full_clone2 = NULL;
+TH1D* korrBG_clone1 = NULL;
+TH1D* MCBG = NULL;
+TH1D* DataBG = NULL;
+TLegend *legiter = NULL;
+TLatex* chi_and_param42 = NULL;
+TH1D* mc_full_clone42 = NULL;
+TH1D* korrBG_clone42 = NULL;
 
 
 void drawchi_and_param42(TLatex* tex,TFitResultPtr r ){
@@ -252,7 +265,7 @@ void SetHistoStandardSettings2(TH2* histo, Double_t XOffset = 1.2, Double_t YOff
   histo->GetYaxis()->SetTitleFont(42);
   histo->GetXaxis()->SetTitleFont(42);
 
-  histo->GetZaxis()->SetTitleOffset(XOffset);
+  histo->GetZaxis()->SetTitleOffset(YOffset);
   histo->GetZaxis()->SetLabelSize(textSize);
   histo->GetZaxis()->SetLabelFont(42);
   histo->GetZaxis()->SetTitleFont(42);

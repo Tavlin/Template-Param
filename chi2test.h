@@ -1,69 +1,132 @@
 #include "CommonHeader.h"
 
-TH2D* chi2test(TH1F* hData, TH1F* hSignal, TH1F* hCorrback){
-  Double_t chi2 = 0;
-  Double_t A_c = 0;               // Area of hData
-  Double_t A_b = 0;               // Area of corr. back.
-  Double_t A_a = 0;               // Area of signal
-  Double_t dx = 1.e-3;
-  Double_t dy = 1.e-3;
-  Double_t temp_error = 0;
-  const int bin0dot3 = 75;
 
-  TH2D* hChi2map = new TH2D("hChi2map", "", 1000, 0., 1., 1000, 0., 1.);
+Double_t chi2_selfmade(TH1D* h1, TH1D* h2, TH1D* h3, Double_t &ndf, Double_t a,
+                       Double_t b){
+  Double_t chi2 = 0;
+  Double_t temp_error = 0;
+
+  for (int j = 16; j <= 63; j++) {
+
+    if(h1->GetBinContent(j) != 0 && h1->GetBinError(j) != 0
+      && h2->GetBinError(j) != 0 && h2->GetBinContent(j) != 0){
+
+        temp_error = sqrt(pow(a*h1->GetBinError(j), 2.)
+        +pow(b*h2->GetBinError(j), 2.));
+
+        chi2 += pow(a*h1->GetBinContent(j) + b*h2->GetBinContent(j)
+        -h3->GetBinContent(j),2.)
+        /(pow(temp_error,2.)+pow(h3->GetBinError(j),2.));
+      }
+
+    else{
+      ndf -= 1;
+    }
+  }
+  if(chi2 == 0){
+    return 1000;
+  }
+  else{
+    return chi2;
+  }
+}
+
+
+TH2D* chi2test(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi2_min,
+  Double_t &signalAreaScaling, Double_t &corrbackAreaScaling, Double_t &x_min,
+  Double_t &y_min, Double_t &ndf){
+  Double_t chi2_min_temp = 10.e10;
+  Double_t A_c = 0;                         // Area of hData
+  Double_t A_b = 0;                         // Area of corr. back.
+  Double_t A_a = 0;                         // Area of signal
+  const Double_t dx = 0.005;                // Stepsize in x
+  const Double_t dy = 0.01;                // Stepsize in y
+  Double_t temp_error = 0;                  // Fehlervariable fuer die Templates
+  int binnumber2D = 500;                    // Binzahl ~ Feinheit der Suche
+  const int bin0dot3 = 75;                  // Binzahl wo 0.3 GeV/c liegt
+
+  TH2D* hChi2map;
+
+  hChi2map = new TH2D("hChi2map", "", binnumber2D, 0.5, 2.5, binnumber2D, -2.5, 2.5);
   SetHistoStandardSettings2(hChi2map);
 
-  hChi2map->SetXTitle("normalized signal scaling factor");
-  hChi2map->SetYTitle("normalized corr. back. scaling factor");
-  hChi2map->SetZTitle("#chi^{2}/dof");
+  hChi2map->SetXTitle("signal scaling factor");
+  hChi2map->SetYTitle("corr. back. scaling factor");
+  hChi2map->SetZTitle("#chi^{2}");
 
-  TH1F* hData_clone = (TH1F*) hData->Clone("hData");
-  TH1F* hSignal_clone = (TH1F*) hSignal->Clone("hSignal");
-  TH1F* hCorrback_clone = (TH1F*) hCorrback->Clone("hCorrback");
+  TH1D* hData_clone = (TH1D*) hData->Clone("hData");
+  TH1D* hSignal_clone = (TH1D*) hSignal->Clone("hSignal");
+  TH1D* hCorrback_clone = (TH1D*) hCorrback->Clone("hCorrback");
 
   //////////////////////////////////////////////////////////////////////////////
   // Setting all the bins with pT > 0.3 GeV/c to 0
   //////////////////////////////////////////////////////////////////////////////
-  for (int i = bin0dot3; i < 200; i++) {
-    hData_clone->SetBinContent(i,0.);
-    hData_clone->SetBinError(i,0.);
-    hSignal_clone->SetBinContent(i,0.);
-    hSignal_clone->SetBinError(i,0.);
-    hCorrback_clone->SetBinContent(i,0.);
-    hCorrback_clone->SetBinError(i,0.);
-  }
-  A_c = hData_clone->Integral();
-  A_b = hCorrback_clone->Integral();
-  A_a = hSignal_clone->Integral();
-
-  hCorrback_clone->Scale(A_c/A_b);
-  hSignal_clone->Scale(A_c/A_a);
-
-  for (int ix = 0; ix < 1000; ix++) {
-    for (int iy = 0; iy < 1000; iy++) {
-      chi2 = 0;
-      for (int i = 0; i < bin0dot3; i++) {
-
-        temp_error = sqrt(pow(dx*ix*hSignal_clone->GetBinError(i), 2.)
-        +pow(dy*iy*hCorrback_clone->GetBinError(i), 2.));
-
-        chi2 += pow(dx*ix*hSignal_clone->GetBinContent(i)
-        +dy*iy*hCorrback_clone->GetBinContent(i)
-        -hData_clone->GetBinContent(i),2.)
-        /(pow(temp_error,2.)+pow(hData_clone->GetBinError(i),2.));
-      }
-      chi2 /= (Double_t)(bin0dot3 -2.);
-      hChi2map->Fill(dx*ix, dy*iy, chi2);
+  for (int i = 0; i < 200; i++) {
+    if(i < 16 || i > 63){
+      hData_clone->SetBinContent(i,0.);
+      hData_clone->SetBinError(i,0.);
+      hSignal_clone->SetBinContent(i,0.);
+      hSignal_clone->SetBinError(i,0.);
+      hCorrback_clone->SetBinContent(i,0.);
+      hCorrback_clone->SetBinError(i,0.);
     }
   }
+  // A_c = hData_clone->Integral();
+  // A_b = hCorrback_clone->Integral();
+  // A_a = hSignal_clone->Integral();
+
+  // if(A_b < 0){
+  //   hCorrback_clone->Scale(-1.*(A_c/A_b));
+  //   corrbackAreaScaling = -1.*(A_c/A_b);
+  // }
+  // else{
+  //   hCorrback_clone->Scale(A_c/A_b);
+  //   corrbackAreaScaling = A_c/A_b;
+  // }
+  // hSignal_clone->Scale(A_c/A_a);
+  // signalAreaScaling = A_c/A_a;
+
+  corrbackAreaScaling = 1.;
+  signalAreaScaling = 1.;
+
+  for (int ix = 0; ix < binnumber2D; ix++) {
+    for (int iy = 0; iy < binnumber2D; iy++) {
+      ndf = 61-16;
+      Double_t chi2 = 0;
+      chi2 = chi2_selfmade(hSignal_clone, hCorrback_clone, hData_clone, ndf,
+                           dx*(Double_t)ix, dy*(Double_t)(iy-250));
+      // for (int j = 16; j <= 63; j++) {
+
+        // if(hSignal_clone->GetBinContent(j) != 0 && hSignal_clone->GetBinError(j) != 0
+        //   && hCorrback_clone->GetBinError(j) != 0 && hCorrback_clone->GetBinContent(j) != 0){
+        //
+        //     temp_error = sqrt(pow((dx*(Double_t)ix)*hSignal_clone->GetBinError(j), 2.)
+        //     +pow(dy*((Double_t)(iy-500))*hCorrback_clone->GetBinError(j), 2.));
+        //
+        //     chi2 += pow((dx*(Double_t)ix)*hSignal_clone->GetBinContent(j)
+        //     +dy*((Double_t)(iy-500))*hCorrback_clone->GetBinContent(j)
+        //     -hData_clone->GetBinContent(j),2.)
+        //     /(pow(temp_error,2.)+pow(hData_clone->GetBinError(j),2.));
+        //   }
+        // else{
+        //   ndf -= 1;
+        // }
+      // }
+
+      if(chi2 < chi2_min_temp){
+        chi2_min_temp = chi2;
+        x_min = ix*dx;
+        y_min = (iy-250)*dy;
+      }
+      hChi2map->SetBinContent(ix+1, iy+1, chi2);
+    }
+  }
+  chi2_min = chi2_min_temp;
+  std::cout << "chi^2_min = " << chi2_min << std::endl;
+  std::cout << "ndf = " << ndf << std::endl;
 
 
   return hChi2map;
-
-  delete hChi2map;
-  delete hData_clone;
-  delete hSignal_clone;
-  delete hCorrback_clone;
 
 }
 

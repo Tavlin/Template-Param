@@ -49,42 +49,64 @@ void IterTempCreation(void){
   const int epsilon = 1.e-6;
   int iter = 0;
   int chi2_test_vari = 1;
+
+  std::vector<Double_t> chi2_dt;
+  Double_t temp_chi2_dt = 0;
+  std::vector<Double_t> vSignalAreaScaling;
+  Double_t signalAreaScaling = 0;
+  std::vector<Double_t> vCorrbackAreaScaling;
+  Double_t corrbackAreaScaling = 0;
+  std::vector<Double_t> v_x_min;
+  Double_t x_min = 0;
+  std::vector<Double_t> v_y_min;
+  Double_t y_min = 0;
+  Double_t ndf = 0;
+
+  std::vector<std::vector<Double_t>> vsigma_dt;
+
   std::vector<Double_t> chi2_dt_iter;
+  std::vector<Double_t> a_dt_iter;
+  std::vector<Double_t> b_dt_iter;
+  std::vector<Double_t> chi2_dt_iter_selfcalc;
   std::vector<Double_t> chi2_pol1_iter;
   std::vector<Double_t> chi2_dt_iter_test;
   // const int numberbins = 26;
   TFile *IterTemp;
 
-  TH2D* testtest[numberbins];
+  TH2D* hChi2_2D[numberbins];
+  TH2D* hChi2_2D_sigma[numberbins];
 
-  TH1F* hChi2_dt_iter[numberbins];
-  TH1F* hChi2_pol1_iter[numberbins];
-  // TH1F* hChi2_dt_iter_test[numberbins];
-  TH1F* hYield_dt_uncorr = new TH1F("hYield_dt_uncorr","",numberbins, fBinsPi013TeVEMCPt);
-  TH1F* hYield_pol1_uncorr = new TH1F("hYield_pol1_uncorr","",numberbins, fBinsPi013TeVEMCPt);
+  TH1D* hChi2_dt_iter[numberbins];
+  TH1D* ha_dt_iter[numberbins];
+  TH1D* hb_dt_iter[numberbins];
+  TH1D* hChi2_dt_iter_selfcalc[numberbins];
+  TH1D* hChi2_pol1_iter[numberbins];
+  TH1D* hChi2_dt_iter_test[numberbins];
+  TH1D* hYield_dt_uncorr = new TH1D("hYield_dt_uncorr","",numberbins, fBinsPi013TeVEMCPt);
+  TH1D* hYield_pol1_uncorr = new TH1D("hYield_pol1_uncorr","",numberbins, fBinsPi013TeVEMCPt);
   // TF1* f1 = new TF1("f1", "1", 0.0, 0.3);
   //////////////////////////////////////////////////////////////////////////////
-  // setting up the 2 Huistograms to compare chi2 from the to fit methods as
+  // setting up the 2 Histograms to compare chi2 from the to fit methods as
   // well as peak factor comp. between pol 1 and double temp fit and the ratio
   // of BG. scaling factor and the Peak scaling factor
 
-  TH1F* hchi2_dt = new TH1F("hchi2_dt", "", numberbins, fBinsPi013TeVEMCPt);
-  TH1F* hchi2_pol1 = new TH1F("hchi2_pol1", "", numberbins, fBinsPi013TeVEMCPt);
+  TH1D* hchi2_dt = new TH1D("hchi2_dt", "", numberbins, fBinsPi013TeVEMCPt);
+  TH1D* hchi2_pol1 = new TH1D("hchi2_pol1", "", numberbins, fBinsPi013TeVEMCPt);
 
-  TH1F* ha_DT = new TH1F("ha_DT", "", numberbins, fBinsPi013TeVEMCPt);
-  TH1F* hb_DT = new TH1F("hb_DT", "", numberbins, fBinsPi013TeVEMCPt);
-  TH1F* ha_pol1 = new TH1F("ha_pol1", "", numberbins, fBinsPi013TeVEMCPt);
+  TH1D* ha_DT = new TH1D("ha_DT", "", numberbins, fBinsPi013TeVEMCPt);
+  TH1D* hb_DT = new TH1D("hb_DT", "", numberbins, fBinsPi013TeVEMCPt);
+  TH1D* ha_pol1 = new TH1D("ha_pol1", "", numberbins, fBinsPi013TeVEMCPt);
 
 
-  TH1F* hpeakratio = new TH1F("hpeakratio", "", numberbins, fBinsPi013TeVEMCPt);
-  TH1F* hpeakcomp = new TH1F("hpeakcomp", "", numberbins, fBinsPi013TeVEMCPt);
-  TH1F* hRatioDoubleTemp;
-  TH1F* hRatioPol1;
-  TH1F* hDataCloneforCHi2;
-  TH1F* hDoubleTemp;
-  TH1F* hPol1;
-  TH1F* data_clone_for_int_dt;
-  TH1F* data_clone_for_int_pol1;
+  TH1D* hpeakratio = new TH1D("hpeakratio", "", numberbins, fBinsPi013TeVEMCPt);
+  TH1D* hpeakcomp = new TH1D("hpeakcomp", "", numberbins, fBinsPi013TeVEMCPt);
+  TH1D* hRatioDoubleTemp;
+  TH1D* hRatioPol1;
+  TH1D* hDataCloneforCHi2;
+  TH1D* hDoubleTemp;
+  TH1D* hPol1;
+  TH1D* data_clone_for_int_dt;
+  TH1D* data_clone_for_int_pol1;
 
   SetHistoStandardSettings(hchi2_dt);
   SetHistoStandardSettings(hchi2_pol1);
@@ -113,22 +135,29 @@ void IterTempCreation(void){
 
     ////////////////////////////////////////////////////////////////////////////
     // retrieve MC histograms
-    data_MC = (TH1F*) MCFile->Get(Form("fHistoMappingSignalInvMass_in_Pt_Bin%02i",k));
-    mc_full = (TH1F*) MCFile->Get(Form("Mapping_TrueFullMeson_InvMass_in_Pt_Bin%02i",k));
+    data_MC = (TH1D*) MCFile->Get(Form("fHistoMappingSignalInvMass_in_Pt_Bin%02i",k));
+    mc_full = (TH1D*) MCFile->Get(Form("Mapping_TrueFullMeson_InvMass_in_Pt_Bin%02i",k));
 
 
     TFile* DataFile = SafelyOpenRootfile("./00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_data_GammaConvV1WithoutCorrection_00010113_1111112067032220000_01631031000000d0.root");
     if (DataFile->IsOpen() ) printf("DataFile opened successfully\n");
-    data = (TH1F*) DataFile->Get(Form("fHistoMappingSignalInvMass_in_Pt_Bin%02i",k));
+    data = (TH1D*) DataFile->Get(Form("fHistoMappingSignalInvMass_in_Pt_Bin%02i",k));
 
 
     mc_full->GetXaxis()->SetRangeUser(0.,0.4);
     data->GetXaxis()->SetRangeUser(0.,0.4);
     ////////////////////////////////////////////////////////////////////////////
     // Getting the purposed corr Background
-    korrBG = (TH1F*) data_MC->Clone("korrBG");
+    korrBG = (TH1D*) data_MC->Clone("korrBG");
     korrBG->Add(mc_full,-1);
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Function for ndf
+    TF1* f_ChiOverNdf = new TF1("f_ChiOverNdf", "[0]", 0.0 ,100.);
+    f_ChiOverNdf->SetNpx(ndrawpoints);
+    f_ChiOverNdf->SetNumberFitPoints(nbins);
+    f_ChiOverNdf->SetLineColor(kBlue+2);
+    f_ChiOverNdf->SetLineWidth(4);
 
     ////////////////////////////////////////////////////////////////////////////
     // using the correlated BG from MC as Template
@@ -193,21 +222,28 @@ void IterTempCreation(void){
 
     //////////////////////////////////////////////////////////////////////////
     // clone for 2 temp fit
-    TH1F* data_clone1 = (TH1F*) data->Clone("data_clone1");
-    TH1F* data_clone4 = (TH1F*) data->Clone("data_clone4");
+    TH1D* data_clone1 = (TH1D*) data->Clone("data_clone1");
+    TH1D* data_clone4 = (TH1D*) data->Clone("data_clone4");
 
     //////////////////////////////////////////////////////////////////////////
     //clone for pol 1 fit
-    TH1F* data_clone2 = (TH1F*) data->Clone("data_clone2");
-    TH1F* data_clone3 = (TH1F*) data->Clone("data_clone3");
+    TH1D* data_clone2 = (TH1D*) data->Clone("data_clone2");
+    TH1D* data_clone3 = (TH1D*) data->Clone("data_clone3");
 
     // clearing the vectors
     chi2_dt_iter.clear();
     chi2_pol1_iter.clear();
     chi2_dt_iter.resize(0);
+    a_dt_iter.clear();
+    a_dt_iter.resize(0);
+    b_dt_iter.clear();
+    b_dt_iter.resize(0);
     chi2_pol1_iter.resize(0);
     chi2_dt_iter_test.clear();
     chi2_dt_iter_test.resize(0);
+    chi2_dt_iter_selfcalc.clear();
+    chi2_dt_iter_selfcalc.resize(0);
+    chi2_dt_iter_selfcalc.push_back(0.);
     chi2_test_vari = 1;
     iter = 0;
 
@@ -215,14 +251,14 @@ void IterTempCreation(void){
     while(chi2_test_vari){
       //////////////////////////////////////////////////////////////////////////
       //clone for 2 temp fit
-      mc_full_clone1 = (TH1F*) mc_full->Clone("mc_full_clone1");
-      mc_full_clone42 = (TH1F*) mc_full->Clone("mc_full_clone42");
-      korrBG_clone1 = (TH1F*) korrBG->Clone("korrBG_clone1");
-      korrBG_clone42 = (TH1F*) korrBG->Clone("korrBG_clone42");
+      mc_full_clone1 = (TH1D*) mc_full->Clone("mc_full_clone1");
+      mc_full_clone42 = (TH1D*) mc_full->Clone("mc_full_clone42");
+      korrBG_clone1 = (TH1D*) korrBG->Clone("korrBG_clone1");
+      korrBG_clone42 = (TH1D*) korrBG->Clone("korrBG_clone42");
 
       //////////////////////////////////////////////////////////////////////////
       //clone for pol 1 fit
-      mc_full_clone2 = (TH1F*) mc_full->Clone("mc_full_clone2");
+      mc_full_clone2 = (TH1D*) mc_full->Clone("mc_full_clone2");
 
       ////////////////////////////////////////////////////////////////////////////
       // creating the new root file to safe all the related histograms and fits
@@ -247,6 +283,8 @@ void IterTempCreation(void){
       TFitResultPtr r_double_temp1 = data_clone1->Fit("fit_eq_double_temp", "QM0PS","", lowerparamrange, upperparamrange);
       data_clone1->Fit("fit_eq_double_temp42", "QM0PS","", lowerparamrange, upperparamrange);
       chi2_dt_iter.push_back(r_double_temp1->Chi2() / r_double_temp1->Ndf());
+      a_dt_iter.push_back(r_double_temp1->Parameter(0));
+      b_dt_iter.push_back(r_double_temp1->Parameter(1));
 
 
       //////////////////////////////////////////////////////////////////////////
@@ -258,6 +296,14 @@ void IterTempCreation(void){
       // scale 2 temp
       mc_full_clone1->Scale(r_double_temp1->Parameter(0));
       korrBG_clone1->Scale(r_double_temp1->Parameter(1));
+
+      Double_t temp_ndf = r_double_temp1->Ndf();
+      chi2_dt_iter_selfcalc.push_back(chi2_selfmade(mc_full, korrBG, data,
+                                                    temp_ndf,
+                                                    r_double_temp1->Parameter(0),
+                                                    r_double_temp1->Parameter(1))
+                                                    /(Double_t)r_double_temp1->Ndf());
+
 
       //////////////////////////////////////////////////////////////////////////
       // Wrinting after the scaling:
@@ -272,37 +318,37 @@ void IterTempCreation(void){
 
       //////////////////////////////////////////////////////////////////////////
       // test chi2 for monitoring
-      // gDirectory->Cd(sPath.Data());
-      // hDoubleTemp = (TH1F*) mc_full_clone1->Clone("hDoubleTemp");
-      // hDoubleTemp->Add(korrBG_clone1);
-      // hDataCloneforCHi2 = (TH1F*) data->Clone("hDataCloneforCHi2");
+      gDirectory->Cd(sPath.Data());
+      hDoubleTemp = (TH1D*) mc_full_clone1->Clone("hDoubleTemp");
+      hDoubleTemp->Add(korrBG_clone1);
+      hDataCloneforCHi2 = (TH1D*) data->Clone("hDataCloneforCHi2");
       // gDirectory = IterTemp;
       // hDoubleTemp->Write(Form("hDoubleTemp_bin%02d_iter%02d",k,iter));
       // gDirectory->Cd(sPath.Data());
-      // for(int i = 0; i < 200; i++){
-      //   if( i < 13 || i > 63){
-      //     hDataCloneforCHi2->SetBinContent(i,0);
-      //     hDataCloneforCHi2->SetBinError(i,0);
-      //     hDoubleTemp->SetBinContent(i,0);
-      //     hDoubleTemp->SetBinError(i,0);
-      //   }
-      //   ////////////////////////////////////////////////////////////////////////
-      //   // desperate try to calc the correct correlated error
-      //   else{
-      //     hDoubleTemp->SetBinError(i,sqrt(pow((r_double_temp1->Parameter(0)*mc_full->GetBinError(i)),2.)
-      //     + pow((r_double_temp1->Parameter(1)*korrBG->GetBinError(i)),2.)));
-      //   // std::cout << "hDoubleTemp Error:" << hDoubleTemp->GetBinError(i) << std::endl << std::endl;
-      //   }
-      // }
-      // chi2_dt_iter_test.push_back(hDataCloneforCHi2->Chi2Test(hDoubleTemp, "WW CHI2/NDF", 0));
+      for(int i = 0; i < 200; i++){
+        if( i < 13 || i > 63){
+          hDataCloneforCHi2->SetBinContent(i,0);
+          hDataCloneforCHi2->SetBinError(i,0);
+          hDoubleTemp->SetBinContent(i,0);
+          hDoubleTemp->SetBinError(i,0);
+        }
+        ////////////////////////////////////////////////////////////////////////
+        // desperate try to calc the correct correlated error
+        else{
+          hDoubleTemp->SetBinError(i,sqrt(pow((r_double_temp1->Parameter(0)*mc_full->GetBinError(i)),2.)
+          + pow((r_double_temp1->Parameter(1)*korrBG->GetBinError(i)),2.)));
+        // std::cout << "hDoubleTemp Error:" << hDoubleTemp->GetBinError(i) << std::endl << std::endl;
+        }
+      }
+      chi2_dt_iter_test.push_back(hDataCloneforCHi2->Chi2Test(hDoubleTemp, "WW CHI2/NDF", 0));
 
       //////////////////////////////////////////////////////////////////////////
       // reset data_clone histos and then calculate their new errors
 
       gDirectory->Cd(sPath.Data());
-      data_clone1 = (TH1F*) data->Clone("data_clone1");
-      data_clone2 = (TH1F*) data->Clone("data_clone2");
-      hDoubleTemp =( TH1F*) mc_full_clone1->Clone("hDoubleTemp");
+      data_clone1 = (TH1D*) data->Clone("data_clone1");
+      data_clone2 = (TH1D*) data->Clone("data_clone2");
+      hDoubleTemp =( TH1D*) mc_full_clone1->Clone("hDoubleTemp");
       hDoubleTemp->Add(korrBG_clone1);
       for(int j = 13; j < 63; j++){
         data_clone1->SetBinError(j,sqrt(pow(data_clone1->GetBinError(j),2.)
@@ -353,44 +399,69 @@ void IterTempCreation(void){
     }
       iter++;
     }
+
     ////////////////////////////////////////////////////////////////////////////
     // making the CHi2 monitoring histos!
 
-    hChi2_dt_iter[k-1] = new TH1F(Form("hChi2_dt_iter_bin%02d",k-1),"",iter,0.5,(Double_t)iter+0.5);
+    hChi2_dt_iter[k-1] = new TH1D(Form("hChi2_dt_iter_bin%02d",k-1),"",iter,0.5,(Double_t)iter+0.5);
     SetHistoStandardSettings(hChi2_dt_iter[k-1]);
-    hChi2_pol1_iter[k-1] = new TH1F(Form("1hChi2_pol1_iter_bin%02d",k-1),"",iter,0.5,(Double_t)iter+0.5);
-    SetHistoStandardSettings(hChi2_pol1_iter[k-1]);
-    // hChi2_dt_iter_test[k-1] = new TH1F(Form("hChi2_dt_iter_test_bin%02d",k-1),"",iter,0.5,(Double_t)iter+0.5);
-    // SetHistoStandardSettings(hChi2_dt_iter_test[k-1]);
 
+    ha_dt_iter[k-1] = new TH1D(Form("ha_dt_iter_bin%02d",k-1),"",iter,0.5,(Double_t)iter+0.5);
+    SetHistoStandardSettings(ha_dt_iter[k-1]);
+
+    hb_dt_iter[k-1] = new TH1D(Form("hb_dt_iter_bin%02d",k-1),"",iter,0.5,(Double_t)iter+0.5);
+    SetHistoStandardSettings(hb_dt_iter[k-1]);
+
+
+    hChi2_dt_iter_selfcalc[k-1] = new TH1D(Form("hChi2_dt_iter_selfcalc_bin%02d",k-1),"",iter,0.5,(Double_t)iter+0.5);
+    SetHistoStandardSettings(hChi2_dt_iter_selfcalc[k-1]);
+
+    hChi2_pol1_iter[k-1] = new TH1D(Form("1hChi2_pol1_iter_bin%02d",k-1),"",iter,0.5,(Double_t)iter+0.5);
+    SetHistoStandardSettings(hChi2_pol1_iter[k-1]);
+
+    hChi2_dt_iter_test[k-1] = new TH1D(Form("hChi2_dt_iter_test_bin%02d",k-1),"",iter,0.5,(Double_t)iter+0.5);
+    SetHistoStandardSettings(hChi2_dt_iter_test[k-1]);
+
+    chi2_dt_iter_selfcalc.pop_back();
     for(int i = 0; i < iter; i++){
       hChi2_dt_iter[k-1]->SetBinContent(i+1,chi2_dt_iter[i]);
+      ha_dt_iter[k-1]->SetBinContent(i+1,a_dt_iter[i]);
+      hb_dt_iter[k-1]->SetBinContent(i+1,b_dt_iter[i]);
+      hChi2_dt_iter_selfcalc[k-1]->SetBinContent(i+1,chi2_dt_iter_selfcalc[i]);
       hChi2_pol1_iter[k-1]->SetBinContent(i+1,chi2_pol1_iter[i]);
-      // hChi2_dt_iter_test[k-1]->SetBinContent(i+1,chi2_dt_iter_test[i]);
+      hChi2_dt_iter_test[k-1]->SetBinContent(i+1,chi2_dt_iter_test[i]);
+
       hChi2_dt_iter[k-1]->SetYTitle("#chi^{2}/ndf");
       hChi2_dt_iter[k-1]->SetXTitle("Iterationstep");
       hChi2_dt_iter[k-1]->SetLineColor(kTeal-7);
       hChi2_dt_iter[k-1]->SetMarkerColor(kTeal-7);
+
+      hChi2_dt_iter_selfcalc[k-1]->SetYTitle("#chi^{2}/ndf");
+      hChi2_dt_iter_selfcalc[k-1]->SetXTitle("Iterationstep");
+      hChi2_dt_iter_selfcalc[k-1]->SetLineColor(kViolet+3);
+      hChi2_dt_iter_selfcalc[k-1]->SetMarkerColor(kViolet+3);
+
       hChi2_pol1_iter[k-1]->SetYTitle("#chi^{2}/ndf");
       hChi2_pol1_iter[k-1]->SetXTitle("Iterationstep");
       hChi2_pol1_iter[k-1]->SetLineColor(kRed);
       hChi2_pol1_iter[k-1]->SetMarkerColor(kRed);
-      // hChi2_dt_iter_test[k-1]->SetYTitle("#chi^{2}/ndf");
-      // hChi2_dt_iter_test[k-1]->SetXTitle("Iterationstep");
-      // hChi2_dt_iter_test[k-1]->SetLineColor(kBlue+2);
-      // hChi2_dt_iter_test[k-1]->SetMarkerColor(kBlue+2);
+
+      hChi2_dt_iter_test[k-1]->SetYTitle("#chi^{2}/ndf");
+      hChi2_dt_iter_test[k-1]->SetXTitle("Iterationstep");
+      hChi2_dt_iter_test[k-1]->SetLineColor(kBlue+2);
+      hChi2_dt_iter_test[k-1]->SetMarkerColor(kBlue+2);
     }
     gDirectory->Cd(sPath.Data());
     ///////////////////////////////////////////////////////////////////////////
     // final  2 temp fit
-    mc_full_clone1 = (TH1F*) mc_full->Clone("mc_full_clone1");
-    korrBG_clone1 = (TH1F*) korrBG->Clone("korrBG_clone1");
+    mc_full_clone1 = (TH1D*) mc_full->Clone("mc_full_clone1");
+    korrBG_clone1 = (TH1D*) korrBG->Clone("korrBG_clone1");
 
 
 
     TFitResultPtr r_double_temp = data_clone4->Fit("fit_eq_double_temp", "M0S","",lowerparamrange , upperparamrange);
-    TH1F* mc_full_clone3 = (TH1F*) mc_full->Clone("mc_full_clone3");
-    TH1F* korrBG_clone3 = (TH1F*) korrBG->Clone("korrBG_clone3");
+    TH1D* mc_full_clone3 = (TH1D*) mc_full->Clone("mc_full_clone3");
+    TH1D* korrBG_clone3 = (TH1D*) korrBG->Clone("korrBG_clone3");
     Double_t corrbackerror[101];
     for(int i = 0; i <= 100; i++){
       corrbackerror[i] = sqrt(pow(korrBG_clone3->GetBinError(i)
@@ -402,7 +473,7 @@ void IterTempCreation(void){
 
     ////////////////////////////////////////////////////////////////////////////
     //  making full histogram of the DoubleTemplate Param.
-    hDoubleTemp = (TH1F*) mc_full_clone3->Clone("hDoubleTemp");
+    hDoubleTemp = (TH1D*) mc_full_clone3->Clone("hDoubleTemp");
     hDoubleTemp->Add(korrBG_clone3);
     hDoubleTemp->SetMarkerStyle(20);
     hDoubleTemp->SetMarkerSize(1.5);
@@ -416,9 +487,9 @@ void IterTempCreation(void){
 
     ///////////////////////////////////////////////////////////////////////////
     // final pol 1 + temp fit
-    mc_full_clone2 = (TH1F*) mc_full->Clone("mc_full_clone2");
+    mc_full_clone2 = (TH1D*) mc_full->Clone("mc_full_clone2");
     TFitResultPtr r_pol1_temp = data_clone3->Fit("fit_eq_1", "M0S","", lowerparamrange, upperparamrange);
-    TH1F* mc_full_clone4 = (TH1F*) mc_full->Clone("mc_full_clone4");
+    TH1D* mc_full_clone4 = (TH1D*) mc_full->Clone("mc_full_clone4");
     mc_full_clone4->Scale(r_pol1_temp->Parameter(0));
     mc_full_clone4->SetLineColor(kRed);
     mc_full_clone4->SetMarkerColor(kRed);
@@ -431,7 +502,7 @@ void IterTempCreation(void){
 
     ////////////////////////////////////////////////////////////////////////////
     //  making full histogram of the DoubleTemplate Param.
-    hPol1 = (TH1F*) mc_full_clone4->Clone("hDoubleTemp");
+    hPol1 = (TH1D*) mc_full_clone4->Clone("hDoubleTemp");
     hPol1->Add(fpol1);
     hPol1->SetMarkerStyle(20);
     hPol1->SetMarkerSize(1.5);
@@ -449,8 +520,8 @@ void IterTempCreation(void){
     data_clone4->SetTitle("");
     fpol1->SetLineColor(kRed);
 
-    hRatioDoubleTemp = (TH1F*) data_clone4->Clone("RatioDoubleTemp");
-    hRatioPol1 = (TH1F*) data_clone3->Clone("RatioPol1");
+    hRatioDoubleTemp = (TH1D*) data_clone4->Clone("RatioDoubleTemp");
+    hRatioPol1 = (TH1D*) data_clone3->Clone("RatioPol1");
     hRatioDoubleTemp->Add(fit_eq_double_temp,-1.);
     hRatioPol1->Add(fit_eq_1, -1.);
     for (int i = 0; i < 101; i++) {
@@ -482,7 +553,24 @@ void IterTempCreation(void){
     ////////////////////////////////////////////////////////////////////////////
     // testitesti
     ////////////////////////////////////////////////////////////////////////////
-    testtest[k-1] = chi2test(data, mc_full, korrBG);
+    hChi2_2D[k-1] = chi2test(data, mc_full, korrBG, temp_chi2_dt, signalAreaScaling, corrbackAreaScaling, x_min, y_min, ndf);
+
+    std::cout << "chi^2_min = " << temp_chi2_dt << std::endl;
+
+    hChi2_2D_sigma[k-1] = getErrorHist(Form("hChi2_2D_sigma_bin%02",k), hChi2_2D[k-1],temp_chi2_dt);
+    chi2_dt.push_back(temp_chi2_dt);
+    vSignalAreaScaling.push_back(signalAreaScaling);
+    vCorrbackAreaScaling.push_back(corrbackAreaScaling);
+    v_x_min.push_back(x_min);
+    v_y_min.push_back(y_min);
+    vsigma_dt.push_back(getErrors(hChi2_2D_sigma[k-1], x_min, y_min));
+
+    f_ChiOverNdf->SetParameter(0,temp_chi2_dt/ndf);
+    temp_chi2_dt = 0;
+
+
+
+
 
     data->SetTitle(str);
     IterTemp = new TFile("IterTemp.root","UPDATE");
@@ -499,9 +587,16 @@ void IterTempCreation(void){
     hDoubleTemp->Write(Form("hDoubleTemp_bin%02d",k));
     hPol1->Write(Form("hPol1_bin%02d",k));
     hChi2_dt_iter[k-1]->Write(Form("hChi2_dt_iter_bin%02d",k));
+    ha_dt_iter[k-1]->Write(Form("ha_dt_iter_bin%02d",k));
+    hb_dt_iter[k-1]->Write(Form("hb_dt_iter_bin%02d",k));
+    hChi2_dt_iter_selfcalc[k-1]->Write(Form("hChi2_dt_iter_selfcalc_bin%02d",k));
     hChi2_pol1_iter[k-1]->Write(Form("hChi2_pol1_iter_bin%02d",k));
-    // hChi2_dt_iter_test[k-1]->Write(Form("hChi2_dt_iter_test_bin%02d",k));
-    testtest[k-1]->Write(Form("hTestTest_bin%02d",k));
+    hChi2_dt_iter_test[k-1]->Write(Form("hChi2_dt_iter_test_bin%02d",k));
+    hChi2_2D[k-1]->Write(Form("hChi2_2Dbin%02d",k));
+    hChi2_2D_sigma[k-1]->Write(Form("hChi2_2D_sigma_bin%02d",k));
+    mc_full->Write(Form("hSignal_bin%02d",k));
+    korrBG->Write(Form("hCorrBack_bin%02d",k));
+    f_ChiOverNdf->Write(Form("f_ChiOverNdf%02d",k));
 
     gDirectory->Cd(sPath.Data());
     ////////////////////////////////////////////////////////////////////////////
@@ -511,13 +606,13 @@ void IterTempCreation(void){
 
 
 
-    data_clone_for_int_dt = (TH1F*) data->Clone("hYield_dt_uncorr");
+    data_clone_for_int_dt = (TH1D*) data->Clone("hYield_dt_uncorr");
     data_clone_for_int_dt->Add(korrBG_clone3, -1);
     int_value = data_clone_for_int_dt->IntegralAndError(0, data_clone_for_int_dt->GetXaxis()->FindBin(0.3), int_error);
     hYield_dt_uncorr->SetBinContent(k+1, int_value);
     hYield_dt_uncorr->SetBinError(k+1, int_error);
 
-    data_clone_for_int_pol1 = (TH1F*) data->Clone("hYield_pol1_uncorr");
+    data_clone_for_int_pol1 = (TH1D*) data->Clone("hYield_pol1_uncorr");
     data_clone_for_int_pol1->Add(fpol1, -1);
     int_value = data_clone_for_int_pol1->IntegralAndError(0, data_clone_for_int_pol1->GetXaxis()->FindBin(0.3), int_error);
     hYield_pol1_uncorr->SetBinContent(k+1, int_value);
@@ -573,6 +668,7 @@ void IterTempCreation(void){
     delete data;
     delete fpol1;
     delete fit_eq_double_temp;
+    delete f_ChiOverNdf;
     delete fit_eq_1;
 
     if(k < numberbins-1){
@@ -583,10 +679,63 @@ void IterTempCreation(void){
     IterTemp->Close();
     std::cout << "bin number" << k << "Ende" << std::endl << std::endl;
     delete hChi2_dt_iter[k-1];
+    delete ha_dt_iter[k-1];
+    delete hb_dt_iter[k-1];
     delete hChi2_pol1_iter[k-1];
-    // delete hChi2_dt_iter_test[k-1];
-    delete testtest[k-1];
+    delete hChi2_dt_iter_test[k-1];
+    delete hChi2_2D[k-1];
   }
+
+  TH1D* hChi2_dt = new TH1D("hChi2_dt", "", nbins, 0.5, (Double_t)nbins + 0.5);
+  hChi2_dt->SetYTitle("#chi^{2}");
+  hChi2_dt->SetXTitle("#it{p}_{T} Bin");
+
+  TH1D* hSignalAreaScaling = new TH1D("hSignalAreaScaling", "", nbins, 0.5, (Double_t)nbins + 0.5);
+  hSignalAreaScaling->SetYTitle("signal areascaling factor");
+  hSignalAreaScaling->SetXTitle("#it{p}_{T} Bin");
+
+  TH1D* hCorrbackAreaScaling = new TH1D("hCorrbackAreaScaling", "", nbins, 0.5, (Double_t)nbins + 0.5);
+  hCorrbackAreaScaling->SetYTitle("corr. back. areascaling factor");
+  hCorrbackAreaScaling->SetXTitle("#it{p}_{T} Bin");
+
+  TH1D* h_x_min = new TH1D("h_x_min", "", nbins, 0.5, (Double_t)nbins + 0.5);
+  h_x_min->SetYTitle("signal scaling factor");
+  h_x_min->SetXTitle("#it{p}_{T} Bin");
+  TH1D* h_y_min = new TH1D("h_y_min", "", nbins, 0.5, (Double_t)nbins + 0.5);
+  h_y_min->SetYTitle("corr. back. scaling factor");
+  h_y_min->SetXTitle("#it{p}_{T} Bin");
+
+
+  TH1D* hErrXlow = new TH1D("hErrXlow", "", nbins, 0.5, (Double_t)nbins + 0.5);
+  hErrXlow->SetXTitle("lower signal scaling factor uncertainty");
+  hErrXlow->SetYTitle("#it{p}_{T} Bin");
+
+  TH1D* hErrXhigh = new TH1D("hErrXhigh", "", nbins, 0.5, (Double_t)nbins + 0.5);
+  hErrXhigh->SetXTitle("upper signal scaling factor uncertainty");
+  hErrXhigh->SetYTitle("#it{p}_{T} Bin");
+
+  TH1D* hErrYlow = new TH1D("hErrYlow", "", nbins, 0.5, (Double_t)nbins + 0.5);
+  hErrYlow->SetXTitle("lower corr. back. scaling factor uncertainty");
+  hErrYlow->SetYTitle("#it{p}_{T} Bin");
+
+  TH1D* hErrYhigh = new TH1D("hErrYhigh", "", nbins, 0.5, (Double_t)nbins + 0.5);
+  hErrYhigh->SetXTitle("upper corr. back. scaling factor uncertainty");
+  hErrYhigh->SetYTitle("#it{p}_{T} Bin");
+
+
+  for (int k = 0; k < nbins; k++) {
+    hChi2_dt->SetBinContent(k+1, chi2_dt[k]);
+    hSignalAreaScaling->SetBinContent(k+1, vSignalAreaScaling[k]);
+    hCorrbackAreaScaling->SetBinContent(k+1, vCorrbackAreaScaling[k]);
+    h_x_min->SetBinContent(k+1, v_x_min[k]);
+    h_y_min->SetBinContent(k+1, v_y_min[k]);
+    hErrXlow->SetBinContent(k+1, vsigma_dt[0][k]);
+    hErrXhigh->SetBinContent(k+1, vsigma_dt[1][k]);
+    hErrYlow->SetBinContent(k+1, vsigma_dt[2][k]);
+    hErrYhigh->SetBinContent(k+1, vsigma_dt[3][k]);
+  }
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Writing of Chi2(pT)
   IterTemp = new TFile("IterTemp.root","UPDATE");
@@ -622,6 +771,16 @@ void IterTempCreation(void){
   hYield_pol1_uncorr->SetXTitle(massaxis);
   hYield_dt_uncorr->Write("hYield_dt_uncorr");
   hYield_pol1_uncorr->Write("hYield_pol1_uncorr");
+  hChi2_dt->Write("hChi2_dt");
+  hSignalAreaScaling->Write("hSignalAreaScaling");
+  hCorrbackAreaScaling->Write("hCorrbackAreaScaling");
+  h_x_min->Write("h_x_min");
+  h_y_min->Write("h_y_min");
+  hErrXlow->Write("hErrXlow");
+  hErrXhigh->Write("hErrXhigh");
+  hErrYlow->Write("hErrYlow");
+  hErrYhigh->Write("hErrYhigh");
+
 
   delete hpeakratio;
   delete hpeakcomp;
@@ -633,6 +792,25 @@ void IterTempCreation(void){
   delete hYield_pol1_uncorr;
   delete hDoubleTemp;
   delete hPol1;
+  delete hChi2_dt;
+  delete hSignalAreaScaling;
+  delete hCorrbackAreaScaling;
+  delete h_x_min;
+  delete h_y_min;
+  delete hErrXlow;
+  delete hErrXhigh;
+  delete hErrYlow;
+  delete hErrYhigh;
+
+  chi2_dt.clear();
+  vSignalAreaScaling.clear();
+  vCorrbackAreaScaling.clear();
+  v_x_min.clear();
+  v_y_min.clear();
+  vsigma_dt.clear();
+  chi2_dt_iter.clear();
+  chi2_pol1_iter.clear();
+  chi2_dt_iter_test.clear();
   IterTemp->Close();
 
 }

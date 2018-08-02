@@ -1,18 +1,4 @@
 #include "CommonHeader.h"
-#include "TFractionFitter.h"
-
-
-// Double_t mc_full_func1(Double_t x){
-//   return mc_full_clone1->GetBinContent(mc_full_clone1->FindBin(x));
-// }
-//
-// Double_t mc_full_func2(Double_t x){
-//   return mc_full_clone1->GetBinContent(mc_full_clone1->FindBin(x));
-// }
-//
-// Double_t PeakAKorrBG(Double_t x){
-//   return korrBG_clone1->GetBinContent(korrBG_clone1->FindBin(x));
-// }
 
 // wpsid = which picture should I draw
 void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
@@ -21,6 +7,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
   const Int_t nbins = 45;
   const Int_t ndrawpoints = 1.e5;
   const int n_iter = 4;
+  Double_t somelist[2] = {1., 2.};
   TString doubletempstring = "double temp.";
   TString pol1string = "signal temp. + 1^{st} ord. pol.";
 
@@ -34,6 +21,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
   c1->SetLeftMargin(0.09);
   c1->SetTicky();
   c1->SetTickx();
+  c1->SetLogz(1);
   TGaxis::SetMaxDigits(3);
   gStyle->SetOptStat(0);
 
@@ -68,27 +56,40 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
   // well as peak factor comp. between pol 1 and double temp fit and the ratio
   // of BG. scaling factor and the Peak scaling factor
 
-  TH1F* hChi2_dt = NULL;
-  TH1F* hChi2_pol1 = NULL;
-  TH1F* hPeakRatio = NULL;
-  TH1F* hPeakComp = NULL;
-  TH1F* hRatioDoubleTemp = NULL;
-  TH1F* hRatioPol1 = NULL;
-  TH1F* hData = NULL;
-  TH1F* hData_Pol1Error = NULL;
-  TH1F* hData_DTError = NULL;
-  TH1F* hDTPeak = NULL;
-  TH1F* hDTBG = NULL;
-  TH1F* hPol1Peak = NULL;
-  TH1F* hDoubleTemplatePeakFactor = NULL;
-  TH1F* hDoubleTemplatecorrBGFactor = NULL;
-  TH1F* hPol1PeakFactor = NULL;
-  TH1F* hYield_dt_uncorr = NULL;
-  TH1F* hYield_pol1_uncorr = NULL;
-  TH1F* hDoubleTemp = NULL;
-  TH1F* hPol1 = NULL;
-  TH1F* hChi2_dt_iter = NULL;
-  TH1F* hChi2_pol1_iter = NULL;
+  TH1D* hChi2ndf_dt = NULL;
+  TH1D* hChi2_pol1 = NULL;
+  TH1D* hPeakRatio = NULL;
+  TH1D* hPeakComp = NULL;
+  TH1D* hRatioDoubleTemp = NULL;
+  TH1D* hRatioPol1 = NULL;
+  TH1D* hData = NULL;
+  TH1D* hData_Pol1Error = NULL;
+  TH1D* hData_DTError = NULL;
+  TH1D* hDTPeak = NULL;
+  TH1D* hDTBG = NULL;
+  TH1D* hPol1Peak = NULL;
+  TH1D* hDoubleTemplatePeakFactor = NULL;
+  TH1D* hDoubleTemplatecorrBGFactor = NULL;
+  TH1D* hPol1PeakFactor = NULL;
+  TH1D* hYield_dt_uncorr = NULL;
+  TH1D* hYield_pol1_uncorr = NULL;
+  TH1D* hDoubleTemp = NULL;
+  TH1D* hPol1 = NULL;
+  TH1D* hChi2_dt_iter = NULL;
+  TH1D* hChi2_pol1_iter = NULL;
+  TH2D* hChi2_2D = NULL;
+  TH2D* hChi2_2D_sigma = NULL;
+  TH1D* hChi2_dt = NULL;
+  TH1D* hSignalAreaScaling = NULL;
+  TH1D* hCorrbackAreaScaling = NULL;
+  TH1D* h_x_min = NULL;
+  TH1D* h_y_min = NULL;
+  TH1D* hErrXlow = NULL;
+  TH1D* hErrXhigh = NULL;
+  TH1D* hErrYlow = NULL;
+  TH1D* hErrYhigh = NULL;
+  TH1D* hSignal = NULL;
+  TH1D* hCorrBack = NULL;
   TF1* fpol1 = NULL;
   TLine* fitrange2 = NULL;
   TLine* line_0 = NULL;
@@ -97,21 +98,31 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
   TLine* line_p3 = NULL;
   TLine* line_m3 = NULL;
   TLine* line_one = NULL;
+
   Double_t line_y = 0;
 
 
   TFile* IterTemp = SafelyOpenRootfile("IterTemp.root");
   if (IterTemp->IsOpen() ) printf("IterTemp opened successfully\n");
 
-  hChi2_dt = (TH1F*) IterTemp->Get(Form("hchi2_dt"));
-  hChi2_pol1 = (TH1F*) IterTemp->Get(Form("hchi2_pol1"));
-  hPeakRatio = (TH1F*) IterTemp->Get(Form("hpeakratio"));
-  hPeakComp = (TH1F*) IterTemp->Get(Form("hpeakcomp"));
-  hDoubleTemplatePeakFactor = (TH1F*) IterTemp->Get(Form("DoubleTemplatePeakFactor"));
-  hDoubleTemplatecorrBGFactor = (TH1F*) IterTemp->Get(Form("DoubleTemplatecorrBGFactor"));
-  hPol1PeakFactor = (TH1F*) IterTemp->Get(Form("Pol1PeakFactor"));
-  hYield_dt_uncorr = (TH1F*) IterTemp->Get(Form("hYield_dt_uncorr"));
-  hYield_pol1_uncorr = (TH1F*) IterTemp->Get(Form("hYield_pol1_uncorr"));
+  hChi2ndf_dt = (TH1D*) IterTemp->Get(Form("hchi2_dt"));
+  hChi2_pol1 = (TH1D*) IterTemp->Get(Form("hchi2_pol1"));
+  hPeakRatio = (TH1D*) IterTemp->Get(Form("hpeakratio"));
+  hPeakComp = (TH1D*) IterTemp->Get(Form("hpeakcomp"));
+  hDoubleTemplatePeakFactor = (TH1D*) IterTemp->Get(Form("DoubleTemplatePeakFactor"));
+  hDoubleTemplatecorrBGFactor = (TH1D*) IterTemp->Get(Form("DoubleTemplatecorrBGFactor"));
+  hPol1PeakFactor = (TH1D*) IterTemp->Get(Form("Pol1PeakFactor"));
+  hYield_dt_uncorr = (TH1D*) IterTemp->Get(Form("hYield_dt_uncorr"));
+  hYield_pol1_uncorr = (TH1D*) IterTemp->Get(Form("hYield_pol1_uncorr"));
+  hChi2_dt = (TH1D*)IterTemp->Get("hChi2_dt");
+  hSignalAreaScaling = (TH1D*)IterTemp->Get("hSignalAreaScaling");
+  hCorrbackAreaScaling = (TH1D*)IterTemp->Get("hCorrbackAreaScaling");
+  h_x_min = (TH1D*)IterTemp->Get("h_x_min");
+  h_y_min = (TH1D*)IterTemp->Get("h_y_min");
+  hErrXlow = (TH1D*)IterTemp->Get("hErrXlow");
+  hErrXhigh = (TH1D*)IterTemp->Get("hErrXhigh");
+  hErrYlow = (TH1D*)IterTemp->Get("hErrYlow");
+  hErrYhigh = (TH1D*)IterTemp->Get("hErrYhigh");
 
 
   line_0 = new TLine(0.0, 0.0, 0.4, 0.0);
@@ -147,23 +158,27 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
   for (int k = 1; k < numberbins; k++) {
 
     if(binnumber <=  0 || binnumber > numberbins){
-      hData = (TH1F*) IterTemp->Get(Form("data_bin%02i",k));
+      hData = (TH1D*) IterTemp->Get(Form("data_bin%02i",k));
       str = hData->GetTitle();
       hData->SetTitle("");
-      hData_Pol1Error = (TH1F*) IterTemp->Get(Form("data_addedErrosPol1_bin%02i",k));
-      hData_DTError = (TH1F*) IterTemp->Get(Form("data_addedErrosDT_bin%02i",k));
-      hPol1Peak = (TH1F*) IterTemp->Get(Form("mc_peak_pol1_bin%02i",k));
-      hDTPeak = (TH1F*) IterTemp->Get(Form("mc_full_DT_bin%02i",k));
-      hDTBG = (TH1F*) IterTemp->Get(Form("korrBG_bin%02i",k));
+      hData_Pol1Error = (TH1D*) IterTemp->Get(Form("data_addedErrosPol1_bin%02i",k));
+      hData_DTError = (TH1D*) IterTemp->Get(Form("data_addedErrosDT_bin%02i",k));
+      hPol1Peak = (TH1D*) IterTemp->Get(Form("mc_peak_pol1_bin%02i",k));
+      hDTPeak = (TH1D*) IterTemp->Get(Form("mc_full_DT_bin%02i",k));
+      hDTBG = (TH1D*) IterTemp->Get(Form("korrBG_bin%02i",k));
       fpol1 = (TF1*) IterTemp->Get(Form("fpol1_bin%02i",k));
-      hRatioDoubleTemp = (TH1F*) IterTemp->Get(Form("hRatioDoubleTemp_bin%02i",k));
-      hRatioPol1 = (TH1F*) IterTemp->Get(Form("hRatioPol1_bin%02i",k));
-      // mc_full_clone1 = (TH1F*) IterTemp->Get(Form("mc_full_clone_beforeIterFit_bin%02d",k));
-      // korrBG_clone1 = (TH1F*) IterTemp->Get(Form("korrBG_clone_beforeIterFit_bin%02d",k));
-      hDoubleTemp = (TH1F*) IterTemp->Get(Form("hDoubleTemp_bin%02d",k));
-      hPol1 = (TH1F*) IterTemp->Get(Form("hPol1_bin%02d",k));
-      hChi2_dt_iter = (TH1F*) IterTemp->Get(Form("hChi2_dt_iter_bin%02d",k));
-      hChi2_pol1_iter = (TH1F*) IterTemp->Get(Form("hChi2_pol1_iter_bin%02d",k));
+      hRatioDoubleTemp = (TH1D*) IterTemp->Get(Form("hRatioDoubleTemp_bin%02i",k));
+      hRatioPol1 = (TH1D*) IterTemp->Get(Form("hRatioPol1_bin%02i",k));
+      // mc_full_clone1 = (TH1D*) IterTemp->Get(Form("mc_full_clone_beforeIterFit_bin%02d",k));
+      // korrBG_clone1 = (TH1D*) IterTemp->Get(Form("korrBG_clone_beforeIterFit_bin%02d",k));
+      hDoubleTemp = (TH1D*) IterTemp->Get(Form("hDoubleTemp_bin%02d",k));
+      hPol1 = (TH1D*) IterTemp->Get(Form("hPol1_bin%02d",k));
+      hChi2_dt_iter = (TH1D*) IterTemp->Get(Form("hChi2_dt_iter_bin%02d",k));
+      hChi2_pol1_iter = (TH1D*) IterTemp->Get(Form("hChi2_pol1_iter_bin%02d",k));
+      hChi2_2D = (TH2D*) IterTemp->Get(Form("hChi2_2Dbin%02d",k));
+      hChi2_2D_sigma = (TH2D*) IterTemp->Get(Form("hChi2_2D_sigma_bin%02d",k));
+      hSignal = (TH1D*) IterTemp->Get(Form("hSignal_bin%02d",k));
+      hCorrBack = (TH1D*) IterTemp->Get(Form("hCorrBack_bin%02d",k));
       // mc_full_clone1->SetName("mc_full_clone1");
       // korrBG_clone1->SetName("korrBG_clone1");
 
@@ -284,27 +299,66 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
 
         delete leg;
       }
+
+      if(wpsid == "all" || wpsid.Contains("chi2map")){
+        ////////////////////////////////////////////////////////////////////////
+        // Drawing Chi2 maps
+        c1->cd();
+
+        hChi2_2D->Draw("colz");
+        hChi2_2D_sigma->SetLineColor(kWhite);
+        hChi2_2D_sigma->SetLineWidth(2);
+        hChi2_2D_sigma->SetContour(2, somelist);
+        hChi2_2D_sigma->Draw("same cont3");
+        c1->Update();
+
+        c1->Update();
+        c1->SaveAs(Form("MCTemplatesAnData/Chi2Map%02i.png",k));
+        c1->Clear();
+      }
+
+        if(wpsid == "all" || wpsid.Contains("chi2map")){
+          ////////////////////////////////////////////////////////////////////////
+          // Drawing the Plot coming from the chi2map data
+          c1->cd();
+          hSignal->Scale(hSignalAreaScaling->GetBinContent(k)*h_x_min->GetBinContent(k));
+          hCorrBack->Scale(hCorrbackAreaScaling->GetBinContent(k)*h_y_min->GetBinContent(k));
+          hSignal->Add(hCorrBack);
+
+          hData->Draw("");
+          hSignal->Draw("same");
+
+          c1->Update();
+
+          c1->Update();
+          c1->SaveAs(Form("MCTemplatesAnData/ParamResultWithChi2Map%02i.png",k));
+          c1->Clear();
+        }
     }
 
       else{
         if(binnumber == k){
-          hData = (TH1F*) IterTemp->Get(Form("data_bin%02i",k));
+          hData = (TH1D*) IterTemp->Get(Form("data_bin%02i",k));
           str = hData->GetTitle();
           hData->SetTitle("");
-          hData_Pol1Error = (TH1F*) IterTemp->Get(Form("data_addedErrosPol1_bin%02i",k));
-          hData_DTError = (TH1F*) IterTemp->Get(Form("data_addedErrosDT_bin%02i",k));
-          hPol1Peak = (TH1F*) IterTemp->Get(Form("mc_peak_pol1_bin%02i",k));
-          hDTPeak = (TH1F*) IterTemp->Get(Form("mc_full_DT_bin%02i",k));
-          hDTBG = (TH1F*) IterTemp->Get(Form("korrBG_bin%02i",k));
+          hData_Pol1Error = (TH1D*) IterTemp->Get(Form("data_addedErrosPol1_bin%02i",k));
+          hData_DTError = (TH1D*) IterTemp->Get(Form("data_addedErrosDT_bin%02i",k));
+          hPol1Peak = (TH1D*) IterTemp->Get(Form("mc_peak_pol1_bin%02i",k));
+          hDTPeak = (TH1D*) IterTemp->Get(Form("mc_full_DT_bin%02i",k));
+          hDTBG = (TH1D*) IterTemp->Get(Form("korrBG_bin%02i",k));
           fpol1 = (TF1*) IterTemp->Get(Form("fpol1_bin%02i",k));
-          hRatioDoubleTemp = (TH1F*) IterTemp->Get(Form("hRatioDoubleTemp_bin%02i",k));
-          hRatioPol1 = (TH1F*) IterTemp->Get(Form("hRatioPol1_bin%02i",k));
-          // mc_full_clone1 = (TH1F*) IterTemp->Get(Form("mc_full_clone_beforeIterFit_bin%02d",k));
-          // korrBG_clone1 = (TH1F*) IterTemp->Get(Form("korrBG_clone_beforeIterFit_bin%02d",k));
-          hDoubleTemp = (TH1F*) IterTemp->Get(Form("hDoubleTemp_bin%02d",k));
-          hPol1 = (TH1F*) IterTemp->Get(Form("hPol1_bin%02d",k));
-          hChi2_dt_iter = (TH1F*) IterTemp->Get(Form("hChi2_dt_iter_bin%02d",k));
-          hChi2_pol1_iter = (TH1F*) IterTemp->Get(Form("hChi2_pol1_iter_bin%02d",k));
+          hRatioDoubleTemp = (TH1D*) IterTemp->Get(Form("hRatioDoubleTemp_bin%02i",k));
+          hRatioPol1 = (TH1D*) IterTemp->Get(Form("hRatioPol1_bin%02i",k));
+          // mc_full_clone1 = (TH1D*) IterTemp->Get(Form("mc_full_clone_beforeIterFit_bin%02d",k));
+          // korrBG_clone1 = (TH1D*) IterTemp->Get(Form("korrBG_clone_beforeIterFit_bin%02d",k));
+          hDoubleTemp = (TH1D*) IterTemp->Get(Form("hDoubleTemp_bin%02d",k));
+          hPol1 = (TH1D*) IterTemp->Get(Form("hPol1_bin%02d",k));
+          hChi2_dt_iter = (TH1D*) IterTemp->Get(Form("hChi2_dt_iter_bin%02d",k));
+          hChi2_pol1_iter = (TH1D*) IterTemp->Get(Form("hChi2_pol1_iter_bin%02d",k));
+          hChi2_2D = (TH2D*) IterTemp->Get(Form("hChi2_2Dbin%02d",k));
+          hChi2_2D_sigma = (TH2D*) IterTemp->Get(Form("hChi2_2D_sigma_bin%02d",k));
+          hSignal = (TH1D*) IterTemp->Get(Form("hSignal_bin%02d",k));
+          hCorrBack = (TH1D*) IterTemp->Get(Form("hCorrBack_bin%02d",k));
           // mc_full_clone1->SetName("mc_full_clone1");
           // korrBG_clone1->SetName("korrBG_clone1");
 
@@ -428,6 +482,23 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
 
             delete leg;
           }
+
+          if(wpsid == "all" || wpsid.Contains("chi2map")){
+            ////////////////////////////////////////////////////////////////////////
+            // Drawing chi2maps
+            c1->cd();
+
+            hChi2_2D->Draw("colz");
+            hChi2_2D_sigma->SetLineColor(kWhite);
+            hChi2_2D_sigma->SetLineWidth(2);
+            hChi2_2D_sigma->SetContour(2, somelist);
+            hChi2_2D_sigma->Draw("same cont3");
+            c1->Update();
+
+            c1->Update();
+            c1->SaveAs(Form("MCTemplatesAnData/Chi2Map%02i.png",k));
+            c1->Clear();
+          }
         }
       }
   }
@@ -437,12 +508,12 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
 
     TLegend* leg = new TLegend(0.6,0.75,0.9,0.9);
     SetLegendSettigns(leg);
-    leg->AddEntry(hChi2_dt, doubletempstring, "l");
+    leg->AddEntry(hChi2ndf_dt, doubletempstring, "l");
     leg->AddEntry(hChi2_pol1, pol1string, "l");
     Double_t chi2_dt_mean = 0;
     Double_t chi2_pol1_mean = 0;
     for (int i = 0; i < numberbins; i++) {
-      chi2_dt_mean += hChi2_dt->GetBinContent(i);
+      chi2_dt_mean += hChi2ndf_dt->GetBinContent(i);
       chi2_pol1_mean += hChi2_pol1->GetBinContent(i);
     }
     chi2_dt_mean /= (Double_t)numberbins;
@@ -450,7 +521,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
 
     c1->cd();
     c1->Clear();
-    hChi2_dt->Draw("");
+    hChi2ndf_dt->Draw("");
     hChi2_pol1->Draw("same");
     line_one->Draw("same");
     leg->Draw("same");
@@ -522,7 +593,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
   delete canInvMass;
   // delete fit_eq_double_temp;
   // delete fit_eq_1;
-  delete hChi2_dt;
+  delete hChi2ndf_dt;
   delete hChi2_pol1;
   delete hPeakRatio;
   delete hPeakComp;
@@ -549,5 +620,18 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all"){
   delete hPol1;
   delete hChi2_dt_iter;
   delete hChi2_pol1_iter;
+  delete hChi2_2D;
+  delete hChi2_2D_sigma;
+  delete hChi2_dt;
+  delete hSignalAreaScaling;
+  delete hCorrbackAreaScaling;
+  delete h_x_min;
+  delete h_y_min;
+  delete hErrXlow;
+  delete hErrXhigh;
+  delete hErrYlow;
+  delete hErrYhigh;
+  delete hSignal;
+  delete hCorrBack;
   IterTemp->Close();
 }
