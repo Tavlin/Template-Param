@@ -5,8 +5,10 @@ Double_t chi2_selfmade(TH1D* h1, TH1D* h2, TH1D* h3, Double_t &ndf, Double_t a,
                        Double_t b){
   Double_t chi2 = 0;
   Double_t temp_error = 0;
+  Int_t lowerfitrange = h3->FindBin(0.085);
+  Int_t upperfitrange = h3->FindBin(0.225);
 
-  for (int j = 16; j <= 63; j++) {
+  for (int j = lowerfitrange; j <= upperfitrange; j++) {
 
     if(h1->GetBinContent(j) != 0 && h1->GetBinError(j) != 0
       && h2->GetBinError(j) != 0 && h2->GetBinContent(j) != 0){
@@ -23,7 +25,10 @@ Double_t chi2_selfmade(TH1D* h1, TH1D* h2, TH1D* h3, Double_t &ndf, Double_t a,
       ndf -= 1;
     }
   }
-  if(chi2 == 0){
+  //////////////////////////////////////////////////////////////////////////////
+  // constraint for parameter b. b should not be too big!
+  chi2 += pow(b-a-0.8, 2.)/pow(0.8, 2.);
+  if(chi2 == pow(b-a-0.8, 2.)/pow(0.8, 2.)){
     return 1000;
   }
   else{
@@ -47,7 +52,7 @@ TH2D* chi2test(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi2_min,
 
   TH2D* hChi2map;
 
-  hChi2map = new TH2D("hChi2map", "", binnumber2D, 0.5, 2.5, binnumber2D, -2.5, 2.5);
+  hChi2map = new TH2D("hChi2map", "", binnumber2D, 0., 2.5, binnumber2D, -2.5, 2.5);
   SetHistoStandardSettings2(hChi2map);
 
   hChi2map->SetXTitle("signal scaling factor");
@@ -58,11 +63,14 @@ TH2D* chi2test(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi2_min,
   TH1D* hSignal_clone = (TH1D*) hSignal->Clone("hSignal");
   TH1D* hCorrback_clone = (TH1D*) hCorrback->Clone("hCorrback");
 
+  Int_t lowerfitrange = hData_clone->FindBin(0.085);
+  Int_t upperfitrange = hData_clone->FindBin(0.225);
+
   //////////////////////////////////////////////////////////////////////////////
   // Setting all the bins with pT > 0.3 GeV/c to 0
   //////////////////////////////////////////////////////////////////////////////
   for (int i = 0; i < 200; i++) {
-    if(i < 16 || i > 63){
+    if(i < lowerfitrange || i > upperfitrange){
       hData_clone->SetBinContent(i,0.);
       hData_clone->SetBinError(i,0.);
       hSignal_clone->SetBinContent(i,0.);
@@ -115,8 +123,8 @@ TH2D* chi2test(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi2_min,
 
       if(chi2 < chi2_min_temp){
         chi2_min_temp = chi2;
-        x_min = ix*dx;
-        y_min = (iy-250)*dy;
+        x_min = (Double_t)ix*dx;
+        y_min = (Double_t)(iy-250)*dy;
       }
       hChi2map->SetBinContent(ix+1, iy+1, chi2);
     }

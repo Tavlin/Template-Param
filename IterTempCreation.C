@@ -43,7 +43,7 @@ void IterTempCreation(void){
   TString str;
   Double_t int_error = 0;
   Double_t int_value = 0;
-  const Int_t nbins = 45;
+  const Int_t nbins = numberbins;
   const Int_t ndrawpoints = 1.e5;
   const int n_iter = 4;
   const int epsilon = 1.e-6;
@@ -101,6 +101,7 @@ void IterTempCreation(void){
   TH1D* hpeakratio = new TH1D("hpeakratio", "", numberbins, fBinsPi013TeVEMCPt);
   TH1D* hpeakcomp = new TH1D("hpeakcomp", "", numberbins, fBinsPi013TeVEMCPt);
   TH1D* hRatioDoubleTemp;
+  TH1D* hRatioDoubleTemp_chi2map;
   TH1D* hRatioPol1;
   TH1D* hDataCloneforCHi2;
   TH1D* hDoubleTemp;
@@ -566,6 +567,19 @@ void IterTempCreation(void){
     vsigma_dt.push_back(getErrors(hChi2_2D_sigma[k-1], x_min, y_min));
 
     f_ChiOverNdf->SetParameter(0,temp_chi2_dt/ndf);
+
+    hRatioDoubleTemp_chi2map = (TH1D*) data_clone4->Clone("hRatioDoubleTemp_chi2map");
+    for (int j = 0; j < 75; j++) {
+        Double_t temp_error = sqrt(pow(x_min*mc_full->GetBinError(j), 2.)
+        +pow(y_min*korrBG->GetBinError(j), 2.));
+
+        Double_t chi2 = (x_min*mc_full->GetBinContent(j) + y_min*korrBG->GetBinContent(j)
+        -data->GetBinContent(j))
+        /sqrt((pow(temp_error,2.)+pow(data->GetBinError(j),2.)));
+      hRatioDoubleTemp_chi2map->SetBinContent(j, chi2/(Double_t)ndf);
+      }
+
+
     temp_chi2_dt = 0;
 
 
@@ -583,6 +597,7 @@ void IterTempCreation(void){
     korrBG_clone3->Write(Form("korrBG_bin%02d", k));
     fpol1->Write(Form("fpol1_bin%02d",k));
     hRatioDoubleTemp->Write(Form("hRatioDoubleTemp_bin%02d", k));
+    hRatioDoubleTemp_chi2map->Write(Form("hRatioDoubleTemp_chi2map_bin%02d", k));
     hRatioPol1->Write(Form("hRatioPol1_bin%02d", k));
     hDoubleTemp->Write(Form("hDoubleTemp_bin%02d",k));
     hPol1->Write(Form("hPol1_bin%02d",k));
@@ -698,41 +713,41 @@ void IterTempCreation(void){
   hCorrbackAreaScaling->SetYTitle("corr. back. areascaling factor");
   hCorrbackAreaScaling->SetXTitle("#it{p}_{T} Bin");
 
-  TH1D* h_x_min = new TH1D("h_x_min", "", nbins, 0.5, (Double_t)nbins + 0.5);
+  TH1D* h_x_min = new TH1D("h_x_min", "", nbins-1, 0.5, (Double_t)nbins - 0.5);
   h_x_min->SetYTitle("signal scaling factor");
   h_x_min->SetXTitle("#it{p}_{T} Bin");
-  TH1D* h_y_min = new TH1D("h_y_min", "", nbins, 0.5, (Double_t)nbins + 0.5);
+  TH1D* h_y_min = new TH1D("h_y_min", "", nbins-1, 0.5, (Double_t)nbins - 0.5);
   h_y_min->SetYTitle("corr. back. scaling factor");
   h_y_min->SetXTitle("#it{p}_{T} Bin");
 
 
-  TH1D* hErrXlow = new TH1D("hErrXlow", "", nbins, 0.5, (Double_t)nbins + 0.5);
+  TH1D* hErrXlow = new TH1D("hErrXlow", "", nbins-1, 0.5, (Double_t)nbins - 0.5);
   hErrXlow->SetXTitle("lower signal scaling factor uncertainty");
   hErrXlow->SetYTitle("#it{p}_{T} Bin");
 
-  TH1D* hErrXhigh = new TH1D("hErrXhigh", "", nbins, 0.5, (Double_t)nbins + 0.5);
+  TH1D* hErrXhigh = new TH1D("hErrXhigh", "", nbins-1, 0.5, (Double_t)nbins - 0.5);
   hErrXhigh->SetXTitle("upper signal scaling factor uncertainty");
   hErrXhigh->SetYTitle("#it{p}_{T} Bin");
 
-  TH1D* hErrYlow = new TH1D("hErrYlow", "", nbins, 0.5, (Double_t)nbins + 0.5);
+  TH1D* hErrYlow = new TH1D("hErrYlow", "", nbins-1, 0.5, (Double_t)nbins - 0.5);
   hErrYlow->SetXTitle("lower corr. back. scaling factor uncertainty");
   hErrYlow->SetYTitle("#it{p}_{T} Bin");
 
-  TH1D* hErrYhigh = new TH1D("hErrYhigh", "", nbins, 0.5, (Double_t)nbins + 0.5);
+  TH1D* hErrYhigh = new TH1D("hErrYhigh", "", nbins-1, 0.5, (Double_t)nbins - 0.5);
   hErrYhigh->SetXTitle("upper corr. back. scaling factor uncertainty");
   hErrYhigh->SetYTitle("#it{p}_{T} Bin");
 
 
-  for (int k = 0; k < nbins; k++) {
-    hChi2_dt->SetBinContent(k+1, chi2_dt[k]);
-    hSignalAreaScaling->SetBinContent(k+1, vSignalAreaScaling[k]);
-    hCorrbackAreaScaling->SetBinContent(k+1, vCorrbackAreaScaling[k]);
-    h_x_min->SetBinContent(k+1, v_x_min[k]);
-    h_y_min->SetBinContent(k+1, v_y_min[k]);
-    hErrXlow->SetBinContent(k+1, vsigma_dt[0][k]);
-    hErrXhigh->SetBinContent(k+1, vsigma_dt[1][k]);
-    hErrYlow->SetBinContent(k+1, vsigma_dt[2][k]);
-    hErrYhigh->SetBinContent(k+1, vsigma_dt[3][k]);
+  for (int k = 1; k < nbins; k++) {
+    hChi2_dt->SetBinContent(k, chi2_dt[k-1]);
+    hSignalAreaScaling->SetBinContent(k, vSignalAreaScaling[k-1]);
+    hCorrbackAreaScaling->SetBinContent(k, vCorrbackAreaScaling[k-1]);
+    h_x_min->SetBinContent(k, v_x_min[k-1]);
+    h_y_min->SetBinContent(k, v_y_min[k-1]);
+    hErrXlow->SetBinContent(k, vsigma_dt[k-1][0]);
+    hErrXhigh->SetBinContent(k, vsigma_dt[k-1][1]);
+    hErrYlow->SetBinContent(k, vsigma_dt[k-1][2]);
+    hErrYhigh->SetBinContent(k, vsigma_dt[k-1][3]);
   }
 
 
