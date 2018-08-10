@@ -52,7 +52,7 @@ TH2D* chi2test(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi2_min,
 
   TH2D* hChi2map;
 
-  hChi2map = new TH2D("hChi2map", "", binnumber2D, 0., 2.5, binnumber2D, -2.5, 2.5);
+  hChi2map = new TH2D("hChi2map", "", binnumber2D, 0.0, 2.5, binnumber2D, -1.0, 4.0);
   SetHistoStandardSettings2(hChi2map);
 
   hChi2map->SetXTitle("signal scaling factor");
@@ -102,29 +102,12 @@ TH2D* chi2test(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi2_min,
       ndf = 61-16;
       Double_t chi2 = 0;
       chi2 = chi2_selfmade(hSignal_clone, hCorrback_clone, hData_clone, ndf,
-                           dx*(Double_t)ix, dy*(Double_t)(iy-250));
-      // for (int j = 16; j <= 63; j++) {
-
-        // if(hSignal_clone->GetBinContent(j) != 0 && hSignal_clone->GetBinError(j) != 0
-        //   && hCorrback_clone->GetBinError(j) != 0 && hCorrback_clone->GetBinContent(j) != 0){
-        //
-        //     temp_error = sqrt(pow((dx*(Double_t)ix)*hSignal_clone->GetBinError(j), 2.)
-        //     +pow(dy*((Double_t)(iy-500))*hCorrback_clone->GetBinError(j), 2.));
-        //
-        //     chi2 += pow((dx*(Double_t)ix)*hSignal_clone->GetBinContent(j)
-        //     +dy*((Double_t)(iy-500))*hCorrback_clone->GetBinContent(j)
-        //     -hData_clone->GetBinContent(j),2.)
-        //     /(pow(temp_error,2.)+pow(hData_clone->GetBinError(j),2.));
-        //   }
-        // else{
-        //   ndf -= 1;
-        // }
-      // }
+                           dx*(Double_t)ix, dy*(Double_t)(iy-100));
 
       if(chi2 < chi2_min_temp){
         chi2_min_temp = chi2;
         x_min = (Double_t)ix*dx;
-        y_min = (Double_t)(iy-250)*dy;
+        y_min = (Double_t)(iy-100)*dy;
       }
       hChi2map->SetBinContent(ix+1, iy+1, chi2);
     }

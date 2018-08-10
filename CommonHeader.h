@@ -9,6 +9,7 @@
 #include "TString.h"
 #include "TMath.h"
 #include "TGaxis.h"
+#include "TList.h"
 #include "TFile.h"
 #include "TH1F.h"
 #include "TH1D.h"
@@ -91,7 +92,7 @@ void drawchi_and_param42(TLatex* tex,TFitResultPtr r ){
 TString strData = "data (signal + corr. back.)";
 TString MCInfo = "#splitline{pp, #sqrt{#it{s}} = 13TeV}{MC Monasch 13}";
 TString massaxis = "#it{M}_{#gamma #gamma} (GeV/#it{c}^{2})";
-TString rawyield = "#frac{d#it{N}}{d#it{p}_{T}}";
+TString rawyield = "#frac{1}{N_{evt}}#frac{d#it{N}}{d#it{p}_{T}}";
 TString DoubleTempStr = "signal + corr. back.";
 TString Pol1Str = "Peak temp. + 1^{st} ord. pol param.";
 TLatex* texMCInfo = new TLatex();
