@@ -99,7 +99,7 @@ TH2D* chi2test(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi2_min,
 
   for (int ix = 0; ix < binnumber2D; ix++) {
     for (int iy = 0; iy < binnumber2D; iy++) {
-      ndf = 61-16;
+      ndf = upperfitrange-lowerfitrange-3;                 
       Double_t chi2 = 0;
       chi2 = chi2_selfmade(hSignal_clone, hCorrback_clone, hData_clone, ndf,
                            dx*(Double_t)ix, dy*(Double_t)(iy-100));

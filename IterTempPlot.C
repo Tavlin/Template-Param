@@ -66,7 +66,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
   // well as peak factor comp. between pol 1 and double temp fit and the ratio
   // of BG. scaling factor and the Peak scaling factor
 
-  TH1D* hChi2ndf_dt = NULL;
+  TH1D* hChi2_DT_Iter = NULL;
   TH1D* hChi2_pol1 = NULL;
   TH1D* hPeakRatio = NULL;
   TH1D* hPeakComp = NULL;
@@ -93,9 +93,14 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
   TH1D* hChi2_dt_iter_selfcalc = NULL;
   TH2D* hChi2_2D = NULL;
   TH2D* hChi2_2D_sigma = NULL;
-  TH1D* hChi2_dt = NULL;
+  TH1D* hChi2_DT_Chi2map = NULL;
+  TH1D* histoChi2_0 = NULL;
   TH1D* hSignalAreaScaling = NULL;
   TH1D* hCorrbackAreaScaling = NULL;
+  TH1D* hYield_dt_corrected = NULL;
+  TH1D* hYield_dt_chi2map_corrected = NULL;
+  TH1D* hYield_pol1_corrected = NULL;
+  TH1D* hCorrectedYieldTrueEff = NULL;
   TH1D* h_x_min = NULL;
   TH1D* h_y_min = NULL;
   TH1D* hErrXlow = NULL;
@@ -120,7 +125,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
   TFile* IterTemp = SafelyOpenRootfile("IterTemp.root");
   if (IterTemp->IsOpen() ) printf("IterTemp opened successfully\n");
 
-  hChi2ndf_dt = (TH1D*) IterTemp->Get(Form("hchi2_dt"));
+  hChi2_DT_Iter = (TH1D*) IterTemp->Get(Form("hChi2_DT_Iter"));
   hChi2_pol1 = (TH1D*) IterTemp->Get(Form("hchi2_pol1"));
   hPeakRatio = (TH1D*) IterTemp->Get(Form("hpeakratio"));
   hPeakComp = (TH1D*) IterTemp->Get(Form("hpeakcomp"));
@@ -130,9 +135,14 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
   hYield_dt_uncorr = (TH1D*) IterTemp->Get(Form("hYield_dt_uncorr"));
   hYield_pol1_uncorr = (TH1D*) IterTemp->Get(Form("hYield_pol1_uncorr"));
   hYield_dt_chi2map_uncorr = (TH1D*) IterTemp->Get(Form("hYield_dt_chi2map_uncorr"));
-  hChi2_dt = (TH1D*)IterTemp->Get("hChi2_dt");
+  hChi2_DT_Chi2map = (TH1D*)IterTemp->Get("hChi2_DT_Chi2map");
+  histoChi2_0 = (TH1D*) IterTemp->Get("histoChi2_0");
   hSignalAreaScaling = (TH1D*)IterTemp->Get("hSignalAreaScaling");
   hCorrbackAreaScaling = (TH1D*)IterTemp->Get("hCorrbackAreaScaling");
+  hYield_dt_corrected = (TH1D*)IterTemp->Get("hYield_dt_corrected");
+  hYield_pol1_corrected = (TH1D*)IterTemp->Get("hYield_pol1_corrected");
+  hYield_dt_chi2map_corrected = (TH1D*)IterTemp->Get("hYield_dt_chi2map_corrected");
+  hCorrectedYieldTrueEff = (TH1D*) IterTemp->Get("hCorrectedYieldTrueEff");
   h_x_min = (TH1D*)IterTemp->Get("h_x_min");
   h_y_min = (TH1D*)IterTemp->Get("h_y_min");
 
@@ -157,9 +167,9 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
   line_m3->SetLineWidth(2);
   line_m3->SetLineStyle(2);
   line_m3->SetLineColor(kGray+2);
-  line_one = new TLine(0.0, 1.0, 21.0, 1.0);
-  line_one->SetLineWidth(3);
-  line_one->SetLineStyle(1);
+  line_one = new TLine(0.0, 1.0, 20.0, 1.0);
+  line_one->SetLineWidth(2);
+  line_one->SetLineStyle(3);
   line_one->SetLineColor(kBlack);
 
 
@@ -274,8 +284,8 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
         TH1D* hCorrBack_Clone = NULL;
         hSignal_Clone = (TH1D*) hSignal->Clone("hSignal_Clone");
         hCorrBack_Clone = (TH1D*) hCorrBack->Clone("hCorrBack_Clone");
-        hSignal_Clone->Scale(hSignalAreaScaling->GetBinContent(k)*h_x_min->GetBinContent(k));
-        hCorrBack_Clone->Scale(hCorrbackAreaScaling->GetBinContent(k)*h_y_min->GetBinContent(k));
+        hSignal_Clone->Scale(hSignalAreaScaling->GetBinContent(k)*h_x_min->GetBinContent(k+1));
+        hCorrBack_Clone->Scale(hCorrbackAreaScaling->GetBinContent(k)*h_y_min->GetBinContent(k+1));
         hSignal_Clone->Add(hCorrBack_Clone);
         hSignal_Clone->SetMarkerStyle(20);
         hSignal_Clone->SetMarkerSize(1.5);
@@ -314,87 +324,30 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
         // delete hCorrBack_Clone;
       }
 
-      if(wpsid == "all" || wpsid.Contains("paramcompmap")){
-
-        TH1D* hSignal_Clone = NULL;
-        TH1D* hCorrBack_Clone = NULL;
-        hSignal_Clone = (TH1D*) hSignal->Clone("hSignal_Clone");
-        hCorrBack_Clone = (TH1D*) hCorrBack->Clone("hCorrBack_Clone");
-        hSignal_Clone->Scale(hSignalAreaScaling->GetBinContent(k)*h_x_min->GetBinContent(k));
-        hCorrBack_Clone->Scale(hCorrbackAreaScaling->GetBinContent(k)*h_y_min->GetBinContent(k));
-        hSignal_Clone->Add(hCorrBack_Clone);
-
-        canInvMass->cd();
-        pad1InvMass->Draw();
-        pad2InvMass->Draw("same");
-        pad1InvMass->cd();
-
-        TLegend* leg = new TLegend(0.5,0.35,0.9,0.55);
-        SetLegendSettigns(leg, 0.03*3./2.);
-        leg->AddEntry(hData, strData, "p");
-        leg->AddEntry((TObject*)0x0, "parametrization:", "");
-        leg->AddEntry(hSignal_Clone, doubletempstring + " with chi2map", "p");
-        leg->AddEntry(hDoubleTemp, doubletempstring, "p");
-
-        SetHistoStandardSettings(hData, 0., 0., 0.03*3./2.);
-        hData->GetYaxis()->SetRangeUser(
-          1.5*hData->GetBinContent(hData->GetMinimumBin()),
-          1.1*hData->GetBinContent(hData->GetMaximumBin()));
-
-        hData->SetTitle("");
-        hData->GetYaxis()->SetTitleOffset(0.9);
-        hData->Draw("p");
-        hDoubleTemp->Draw("same");
-        hSignal_Clone->Draw("same");
-        canInvMass->Update();
-        line_y = gPad->GetUymax()*0.995;
-        fitrange2 = new TLine(lowerparamrange, line_y, upperparamrange, line_y);
-        fitrange2->SetLineColor(kAzure+10);
-        fitrange2->SetLineWidth(7);
-        fitrange2->Draw("same");
-        leg->AddEntry(fitrange2, "range", "l");
-        leg->Draw("same");
-        DrawLabelALICE(0.5, 0.9, 0.035, 0.03*3./2., str);
-        pad1InvMass->Update();
-
-
-        pad2InvMass->cd();
-        hRatioDoubleTemp->DrawCopy("P");
-        line_0->Draw("same");
-        line_p1->Draw("same");
-        line_m1->Draw("same");
-        line_p3->Draw("same");
-        line_m3->Draw("same");
-        hRatioDoubleTemp->DrawCopy("SAME P");
-        hRatioDoubleTemp_chi2map->DrawCopy("SAME P");
-        pad2InvMass->Update();
-
-        canInvMass->Update();
-        canInvMass->SaveAs(Form("MCTemplatesAnData/DataFitNormalizedPullPlot%02i." + PicFormat,k));
-        canInvMass->Clear("D");
-
-        delete leg;
-        // delete hSignal_Clone;
-        // delete hCorrBack_Clone;
-
-      }
-
       if(wpsid == "all" || wpsid.Contains("bgcomp")){
-        std::cout << "bgcomp start" << std::endl;
         //////////////////////////////////////////////////////////////////////
         // Drawing both corr. BG versions to Data with normal errors
+
+        TH1D* hCorrBack_Chi2Map = (TH1D*) hCorrBack->Clone("hCorrBack_Chi2Map");
+        hCorrBack_Chi2Map->Scale(h_y_min->GetBinContent(k+1));
+        hCorrBack_Chi2Map->SetLineColor(kMagenta+2);
+        hCorrBack_Chi2Map->SetMarkerColor(kMagenta+2);
+
         c1->cd();
         TLegend* leg = new TLegend(0.5,0.5,0.9,0.63);
         SetLegendSettigns(leg, 0.03);
         leg->AddEntry(fpol1, "1^{st} ord. pol.", "l");
         leg->AddEntry(hDTBG, "scaled corr. back. temp.", "p");
+        leg->AddEntry(hCorrBack_Chi2Map, "scaled corr. back. temp with chi2map");
+
         hData->GetXaxis()->SetTitleSize(0.03);
         hData->GetYaxis()->SetTitleSize(0.03);
         hData->GetXaxis()->SetLabelSize(0.03);
         hData->GetYaxis()->SetLabelSize(0.03);
 
-        hDTBG->Draw("");
+        hCorrBack_Chi2Map->Draw("");
         fpol1->Draw("same");
+        hDTBG->Draw("same");
         c1->Update();
         line_y = gPad->GetUymax()*0.995;
         TLine* fitrange = new TLine(lowerparamrange, line_y, upperparamrange, line_y);
@@ -514,8 +467,8 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
           TH1D* hCorrBack_Clone = NULL;
           hSignal_Clone = (TH1D*) hSignal->Clone("hSignal_Clone");
           hCorrBack_Clone = (TH1D*) hCorrBack->Clone("hCorrBack_Clone");
-          hSignal_Clone->Scale(hSignalAreaScaling->GetBinContent(k)*h_x_min->GetBinContent(k));
-          hCorrBack_Clone->Scale(hCorrbackAreaScaling->GetBinContent(k)*h_y_min->GetBinContent(k));
+          hSignal_Clone->Scale(hSignalAreaScaling->GetBinContent(k)*h_x_min->GetBinContent(k+1));
+          hCorrBack_Clone->Scale(hCorrbackAreaScaling->GetBinContent(k)*h_y_min->GetBinContent(k+1));
           hSignal_Clone->Add(hCorrBack_Clone);
 
           hData->Draw("");
@@ -639,8 +592,8 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
             TH1D* hCorrBack_Clone = NULL;
             hSignal_Clone = (TH1D*) hSignal->Clone("hSignal_Clone");
             hCorrBack_Clone = (TH1D*) hCorrBack->Clone("hCorrBack_Clone");
-            hSignal_Clone->Scale(hSignalAreaScaling->GetBinContent(k)*h_x_min->GetBinContent(k));
-            hCorrBack_Clone->Scale(hCorrbackAreaScaling->GetBinContent(k)*h_y_min->GetBinContent(k));
+            hSignal_Clone->Scale(hSignalAreaScaling->GetBinContent(k)*h_x_min->GetBinContent(k+1));
+            hCorrBack_Clone->Scale(hCorrbackAreaScaling->GetBinContent(k)*h_y_min->GetBinContent(k+1));
             hSignal_Clone->Add(hCorrBack_Clone);
             hSignal_Clone->SetMarkerStyle(20);
             hSignal_Clone->SetMarkerSize(1.5);
@@ -679,85 +632,31 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
             // delete hCorrBack_Clone;
           }
 
-          if(wpsid == "all" || wpsid.Contains("paramcompmap")){
-            canInvMass->cd();
-            pad1InvMass->Draw();
-            pad2InvMass->Draw("same");
-            pad1InvMass->cd();
-
-            TH1D* hSignal_Clone = NULL;
-            TH1D* hCorrBack_Clone = NULL;
-            hSignal_Clone = (TH1D*) hSignal->Clone("hSignal_Clone");
-            hCorrBack_Clone = (TH1D*) hCorrBack->Clone("hCorrBack_Clone");
-            hSignal_Clone->Scale(hSignalAreaScaling->GetBinContent(k)*h_x_min->GetBinContent(k));
-            hCorrBack_Clone->Scale(hCorrbackAreaScaling->GetBinContent(k)*h_y_min->GetBinContent(k));
-            hSignal_Clone->Add(hCorrBack_Clone);
-
-            TLegend* leg = new TLegend(0.5,0.35,0.9,0.55);
-            SetLegendSettigns(leg, 0.03*3./2.);
-            leg->AddEntry(hData, strData, "p");
-            leg->AddEntry((TObject*)0x0, "parametrization:", "");
-            leg->AddEntry(hSignal_Clone, doubletempstring + " with chi2map", "p");
-            leg->AddEntry(hDoubleTemp, doubletempstring, "p");
-
-            SetHistoStandardSettings(hData, 0., 0., 0.03*3./2.);
-            hData->GetYaxis()->SetRangeUser(
-              1.5*hData->GetBinContent(hData->GetMinimumBin()),
-              1.1*hData->GetBinContent(hData->GetMaximumBin()));
-
-            hData->SetTitle("");
-            hData->GetYaxis()->SetTitleOffset(0.9);
-            hData->Draw("p");
-            hDoubleTemp->Draw("same");
-            hSignal_Clone->Draw("same");
-            canInvMass->Update();
-            line_y = gPad->GetUymax()*0.995;
-            fitrange2 = new TLine(lowerparamrange, line_y, upperparamrange, line_y);
-            fitrange2->SetLineColor(kAzure+10);
-            fitrange2->SetLineWidth(7);
-            fitrange2->Draw("same");
-            leg->AddEntry(fitrange2, "range", "l");
-            leg->Draw("same");
-            DrawLabelALICE(0.5, 0.9, 0.035, 0.03*3./2., str);
-            pad1InvMass->Update();
-
-
-            pad2InvMass->cd();
-            hRatioDoubleTemp->DrawCopy("P");
-            line_0->Draw("same");
-            line_p1->Draw("same");
-            line_m1->Draw("same");
-            line_p3->Draw("same");
-            line_m3->Draw("same");
-            hRatioDoubleTemp->DrawCopy("SAME P");
-            hRatioDoubleTemp_chi2map->DrawCopy("SAME P");
-            pad2InvMass->Update();
-
-            canInvMass->Update();
-            canInvMass->SaveAs(Form("MCTemplatesAnData/DataFitNormalizedPullPlot%02i." + PicFormat,k));
-            canInvMass->Clear("D");
-
-            delete leg;
-            // delete hSignal_Clone;
-            // delete hCorrBack_Clone;
-
-          }
 
           if(wpsid == "all" || wpsid.Contains("bgcomp")){
             //////////////////////////////////////////////////////////////////////
             // Drawing both corr. BG versions to Data with normal errors
+
+            TH1D* hCorrBack_Chi2Map = (TH1D*) hCorrBack->Clone("hCorrBack_Chi2Map");
+            hCorrBack_Chi2Map->Scale(h_y_min->GetBinContent(k+1));
+            hCorrBack_Chi2Map->SetLineColor(kMagenta+2);
+            hCorrBack_Chi2Map->SetMarkerColor(kMagenta+2);
+
             c1->cd();
-            TLegend* leg = new TLegend(0.5,0.5,0.9,0.64);
+            TLegend* leg = new TLegend(0.5,0.5,0.9,0.63);
             SetLegendSettigns(leg, 0.03);
-            leg->AddEntry(hPol1, "1^{st} ord. pol.", "l");
-            leg->AddEntry(hDoubleTemp, "scaled corr. back. temp.", "p");
+            leg->AddEntry(fpol1, "1^{st} ord. pol.", "l");
+            leg->AddEntry(hDTBG, "scaled corr. back. temp.", "p");
+            leg->AddEntry(hCorrBack_Chi2Map, "scaled corr. back. temp with chi2map");
+
             hData->GetXaxis()->SetTitleSize(0.03);
             hData->GetYaxis()->SetTitleSize(0.03);
             hData->GetXaxis()->SetLabelSize(0.03);
             hData->GetYaxis()->SetLabelSize(0.03);
 
-            hDTBG->Draw("");
+            hCorrBack_Chi2Map->Draw("");
             fpol1->Draw("same");
+            hDTBG->Draw("same");
             c1->Update();
             line_y = gPad->GetUymax()*0.995;
             TLine* fitrange = new TLine(lowerparamrange, line_y, upperparamrange, line_y);
@@ -860,8 +759,8 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
             TH1D* hCorrBack_Clone = NULL;
             hSignal_Clone = (TH1D*) hSignal->Clone("hSignal_Clone");
             hCorrBack_Clone = (TH1D*) hCorrBack->Clone("hCorrBack_Clone");
-            hSignal_Clone->Scale(hSignalAreaScaling->GetBinContent(k)*h_x_min->GetBinContent(k));
-            hCorrBack_Clone->Scale(hCorrbackAreaScaling->GetBinContent(k)*h_y_min->GetBinContent(k));
+            hSignal_Clone->Scale(hSignalAreaScaling->GetBinContent(k)*h_x_min->GetBinContent(k+1));
+            hCorrBack_Clone->Scale(hCorrbackAreaScaling->GetBinContent(k)*h_y_min->GetBinContent(k+1));
             hSignal_Clone->Add(hCorrBack_Clone);
 
             hData->Draw("");
@@ -885,12 +784,12 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
 
     TLegend* leg = new TLegend(0.6,0.75,0.9,0.9);
     SetLegendSettigns(leg);
-    leg->AddEntry(hChi2ndf_dt, doubletempstring, "l");
+    leg->AddEntry(hChi2_DT_Iter, doubletempstring, "l");
     leg->AddEntry(hChi2_pol1, pol1string, "l");
     Double_t chi2_dt_mean = 0;
     Double_t chi2_pol1_mean = 0;
     for (int i = 0; i < numberbins; i++) {
-      chi2_dt_mean += hChi2ndf_dt->GetBinContent(i);
+      chi2_dt_mean += hChi2_DT_Iter->GetBinContent(i);
       chi2_pol1_mean += hChi2_pol1->GetBinContent(i);
     }
     chi2_dt_mean /= (Double_t)numberbins;
@@ -898,9 +797,10 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
 
     c1->cd();
     c1->Clear();
-    hChi2ndf_dt->Draw("");
+    hChi2_DT_Iter->Draw("");
     hChi2_pol1->Draw("same");
     line_one->Draw("same");
+    hChi2_DT_Iter->Draw("same");
     leg->Draw("same");
     DrawLabelALICE(0.2, 0.9, 0.018, 0.03);
 
@@ -912,7 +812,40 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
     c1->Update();
     c1->SaveAs(Form("MCTemplatesAnData/Chi2." + PicFormat));
     c1->Clear();
+
+    TLegend* leg2 = new TLegend(0.6,0.75,0.9,0.9);
+    SetLegendSettigns(leg2);
+    leg2->AddEntry(hChi2_pol1, pol1string, "l");
+    leg2->AddEntry(hChi2_DT_Chi2map, doubletempstring, "l");
+    leg2->AddEntry(histoChi2_0, "parametrization with function", "l");
+
+
+    hChi2_pol1->SetLineColor(kRed);
+    hChi2_DT_Chi2map->SetLineColor(kMagenta+2);
+    histoChi2_0->SetLineWidth(3);
+
+    c1->cd();
+    c1->Clear();
+    histoChi2_0->Draw();
+    line_one->Draw("same");
+    histoChi2_0->Draw("same");
+    hChi2_pol1->Draw("same");
+    hChi2_DT_Chi2map->Draw("same");
+    leg2->Draw("same");
+    DrawLabelALICE(0.2, 0.9, 0.018, 0.03);
+
+
+    c1->Update();
+    c1->SaveAs(Form("MCTemplatesAnData/Chi2Iter_vs_Map." + PicFormat));
+    c1->Clear();
+
+
+
+
+
+
     delete leg;
+    delete leg2;
     delete tex;
   }
   // draing of b_double/a_double temp
@@ -967,6 +900,102 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
     c1->SetLogy(0);
     c1->SetLeftMargin(0.09);
     delete leg;
+  }
+
+  // drawing uncorrected yields
+  if(wpsid == "all" || wpsid.Contains("corryield")){
+
+    hCorrectedYieldTrueEff->SetMarkerSize(1.5);
+
+    // TLegend* leg = new TLegend(0.2,0.2,0.4,0.4);
+    // SetLegendSettigns(leg);
+    // leg->AddEntry(hYield_dt_corrected, doubletempstring, "lp");
+    // leg->AddEntry(hYield_dt_chi2map_corrected, doubletempstring + " with chi2map" , "lp");
+    // leg->AddEntry(hYield_pol1_corrected, pol1string, "lp");
+    //
+    // c1->cd();
+    // c1->SetLeftMargin(0.11);
+    // c1->Clear();
+    // c1->SetLogy(1);
+    // hYield_pol1_corrected->GetYaxis()->SetTitleOffset(1.5);
+    // hYield_pol1_corrected->Draw("lp");
+    // hYield_dt_corrected->Draw("samelp");
+    // hYield_dt_chi2map_corrected->Draw("samelp");
+    // leg->Draw("same");
+    //
+    // DrawLabelALICE(0.55, 0.9, 0.018, 0.03);
+    // c1->Update();
+    // c1->SaveAs(Form("MCTemplatesAnData/CorrYields." + PicFormat));
+    // c1->Clear();
+    // c1->SetLogy(0);
+    // c1->SetLeftMargin(0.09);
+    // delete leg;
+
+    ////////////////////////////////////////////////////////////////////////////
+    // drwaing yields + ratios
+    canInvMass->cd();
+    pad1InvMass->Draw();
+    pad2InvMass->Draw("same");
+    pad1InvMass->cd();
+
+    pad1InvMass->SetLogy(1);
+
+    TLegend* leg = new TLegend(0.5,0.35,0.9,0.55);
+    SetLegendSettigns(leg, 0.03*3./2.);
+    leg->AddEntry(hYield_dt_corrected, doubletempstring, "lp");
+    leg->AddEntry(hYield_dt_chi2map_corrected, doubletempstring + " with chi2map" , "lp");
+    leg->AddEntry(hYield_pol1_corrected, pol1string, "lp");
+    leg->AddEntry(hCorrectedYieldTrueEff, "standard method from framework", "lp");
+
+    hYield_dt_corrected->GetYaxis()->SetTitleOffset(1.2);
+    hYield_dt_corrected->GetYaxis()->SetRangeUser(1.e-8,1.e-1-5.e-9);
+    hYield_dt_corrected->Draw("p");
+    hYield_dt_chi2map_corrected->Draw("same");
+    hYield_pol1_corrected->Draw("same");
+    hCorrectedYieldTrueEff->Draw("same");
+    leg->Draw("same");
+    canInvMass->Update();
+    DrawLabelALICE(0.5, 0.9, 0.035, 0.03*3./2., "");
+    pad1InvMass->Update();
+
+    TH1D* hYield_dt_corrected_ratio = (TH1D*) hCorrectedYieldTrueEff->Clone("hYield_dt_corrected_ratio");
+    hYield_dt_corrected_ratio->Divide(hYield_dt_corrected);
+    hYield_dt_corrected_ratio->SetLineColor(kTeal-7);
+    hYield_dt_corrected_ratio->SetMarkerColor(kTeal-7);
+    hYield_dt_corrected_ratio->SetYTitle("Ratio");
+
+    TH1D* hYield_dt_chi2map_corrected_ratio = (TH1D*) hCorrectedYieldTrueEff->Clone("hYield_dt_chi2map_corrected_ratio");
+    hYield_dt_chi2map_corrected_ratio->Divide(hYield_dt_chi2map_corrected);
+    hYield_dt_chi2map_corrected_ratio->SetLineColor(kMagenta+2);
+    hYield_dt_chi2map_corrected_ratio->SetMarkerColor(kMagenta+2);
+    hYield_dt_chi2map_corrected_ratio->SetYTitle("Ratio");
+
+    TH1D* hYield_pol1_corrected_ratio = (TH1D*) hCorrectedYieldTrueEff->Clone("hYield_pol1_corrected_ratio");
+    hYield_pol1_corrected_ratio->Divide(hYield_pol1_corrected);
+    hYield_pol1_corrected_ratio->SetLineColor(kRed);
+    hYield_pol1_corrected_ratio->SetMarkerColor(kRed);
+    hYield_pol1_corrected_ratio->SetYTitle("Ratio");
+
+    pad2InvMass->cd();
+    TLine* line_ratio1 = new TLine(0.0, 1.0, 21.0, 1.0);
+    line_ratio1->SetLineWidth(2);
+    line_ratio1->SetLineStyle(3);
+
+    hYield_dt_chi2map_corrected_ratio->DrawCopy("P");
+    line_ratio1->Draw("SAME");
+    hYield_dt_corrected_ratio->DrawCopy("SAME P");
+    hYield_dt_chi2map_corrected_ratio->DrawCopy("SAME P");
+    hYield_pol1_corrected_ratio->DrawCopy("SAME P");
+    pad2InvMass->Update();
+
+    canInvMass->Update();
+    canInvMass->SaveAs(Form("MCTemplatesAnData/CorrectedYieldComp." + PicFormat));
+    canInvMass->Clear("D");
+
+    delete leg;
+    delete hYield_dt_corrected_ratio;
+    delete hYield_dt_chi2map_corrected_ratio;
+    delete hYield_pol1_corrected_ratio;
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -1045,7 +1074,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
   delete canInvMass;
   // delete fit_eq_double_temp;
   // delete fit_eq_1;
-  delete hChi2ndf_dt;
+  delete hChi2_DT_Iter;
   delete hChi2_pol1;
   delete hPeakRatio;
   delete hPeakComp;
@@ -1076,7 +1105,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
   delete hChi2_pol1_iter;
   delete hChi2_2D;
   delete hChi2_2D_sigma;
-  delete hChi2_dt;
+  delete hChi2_DT_Chi2map;
   delete hSignalAreaScaling;
   delete hCorrbackAreaScaling;
   delete h_x_min;
@@ -1091,6 +1120,12 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
   delete hYield_dt_uncorr;
   delete hYield_pol1_uncorr;
   delete hYield_dt_chi2map_uncorr;
+  delete hYield_dt_corrected;
+  delete hYield_dt_chi2map_corrected;
+  delete hYield_pol1_corrected;
+  delete hCorrectedYieldTrueEff;
+  delete histoChi2_0;
+
 
   delete c1;
   delete c2;
