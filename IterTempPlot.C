@@ -1,7 +1,8 @@
 #include "CommonHeader.h"
+//MCTemplatesAnData
 
 // wpsid = which picture should I draw
-void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = "png"){
+void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = "png", TString SaveFile = "MCTemplatesAnData"){
 
   TString str;
   const Int_t nbins = numberbins;
@@ -268,7 +269,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
         pad2InvMass->Update();
 
         canInvMass->Update();
-        canInvMass->SaveAs(Form("MCTemplatesAnData/DataFitWithMCCompIter%02i." + PicFormat,k));
+        canInvMass->SaveAs(Form(SaveFile + "/DataFitWithMCCompIter%02i." + PicFormat,k));
         canInvMass->Clear("D");
 
         delete leg;
@@ -315,7 +316,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
         leg->Draw("same");
         DrawLabelALICE(0.5, 0.9, 0.03, 0.03, str);
         c1->Update();
-        c1->SaveAs(Form("MCTemplatesAnData/DataFitDTComp%02i." + PicFormat,k));
+        c1->SaveAs(Form(SaveFile + "/DataFitDTComp%02i." + PicFormat,k));
         c1->Clear("D");
 
 
@@ -360,7 +361,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
         DrawLabelALICE(0.5, 0.9, 0.02, 0.03, str);
 
         c1->Update();
-        c1->SaveAs(Form("MCTemplatesAnData/CorrBGComp%02i." + PicFormat,k));
+        c1->SaveAs(Form(SaveFile + "/CorrBGComp%02i." + PicFormat,k));
         c1->Clear();
 
         delete leg;
@@ -384,7 +385,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
 
 
         c1->Update();
-        c1->SaveAs(Form("MCTemplatesAnData/Monitoring%02i." + PicFormat,k));
+        c1->SaveAs(Form(SaveFile + "/Monitoring%02i." + PicFormat,k));
         c1->Clear();
 
         delete leg;
@@ -409,7 +410,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
         DrawLabelALICE(0.5, 0.9, 0.02, 0.03, str);
 
         c1->Update();
-        c1->SaveAs(Form("MCTemplatesAnData/MonitoringLesserXRangep%02i." + PicFormat,k));
+        c1->SaveAs(Form(SaveFile + "/MonitoringLesserXRangep%02i." + PicFormat,k));
         c1->Clear();
 
         delete leg3;
@@ -435,7 +436,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
         DrawLabelALICE(0.5, 0.9, 0.02, 0.03, str);
 
         c1->Update();
-        c1->SaveAs(Form("MCTemplatesAnData/MonitoringChi2DTComp%02i." + PicFormat,k));
+        c1->SaveAs(Form(SaveFile + "/MonitoringChi2DTComp%02i." + PicFormat,k));
         c1->Clear();
 
         delete leg2;
@@ -455,7 +456,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
         c2->Update();
 
         c2->Update();
-        c2->SaveAs(Form("MCTemplatesAnData/Chi2Map%02i." + PicFormat,k));
+        c2->SaveAs(Form(SaveFile + "/Chi2Map%02i." + PicFormat,k));
         c2->Clear();
       }
 
@@ -477,7 +478,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
           c1->Update();
 
           c1->Update();
-          c1->SaveAs(Form("MCTemplatesAnData/ParamResultWithChi2Map%02i." + PicFormat,k));
+          c1->SaveAs(Form(SaveFile + "/ParamResultWithChi2Map%02i." + PicFormat,k));
           c1->Clear();
 
           // delete hSignal_Clone;
@@ -576,7 +577,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
             pad2InvMass->Update();
 
             canInvMass->Update();
-            canInvMass->SaveAs(Form("MCTemplatesAnData/DataFitWithMCCompIter%02i." + PicFormat,k));
+            canInvMass->SaveAs(Form(SaveFile + "/DataFitWithMCCompIter%02i." + PicFormat,k));
             canInvMass->Clear("D");
 
             delete leg;
@@ -623,7 +624,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
             leg->Draw("same");
             DrawLabelALICE(0.5, 0.9, 0.03, 0.03, str);
             c1->Update();
-            c1->SaveAs(Form("MCTemplatesAnData/DataFitDTComp%02i." + PicFormat,k));
+            c1->SaveAs(Form(SaveFile + "/DataFitDTComp%02i." + PicFormat,k));
             c1->Clear("D");
 
 
@@ -669,7 +670,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
             DrawLabelALICE(0.5, 0.9, 0.02, 0.03, str);
 
             c1->Update();
-            c1->SaveAs(Form("MCTemplatesAnData/CorrBGComp%02i." + PicFormat,k));
+            c1->SaveAs(Form(SaveFile + "/CorrBGComp%02i." + PicFormat,k));
             c1->Clear();
 
             delete leg;
@@ -693,7 +694,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
 
 
             c1->Update();
-            c1->SaveAs(Form("MCTemplatesAnData/Monitoring%02i." + PicFormat,k));
+            c1->SaveAs(Form(SaveFile + "/Monitoring%02i." + PicFormat,k));
             c1->Clear();
 
             delete leg;
@@ -718,7 +719,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
             DrawLabelALICE(0.5, 0.9, 0.02, 0.03, str);
 
             c1->Update();
-            c1->SaveAs(Form("MCTemplatesAnData/MonitoringChi2DTCompLesserXRange%02i." + PicFormat,k));
+            c1->SaveAs(Form(SaveFile + "/MonitoringChi2DTCompLesserXRange%02i." + PicFormat,k));
             c1->Clear();
 
             delete leg3;
@@ -744,7 +745,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
             DrawLabelALICE(0.5, 0.9, 0.02, 0.03, str);
 
             c1->Update();
-            c1->SaveAs(Form("MCTemplatesAnData/MonitoringChi2DTComp%02i." + PicFormat,k));
+            c1->SaveAs(Form(SaveFile + "/MonitoringChi2DTComp%02i." + PicFormat,k));
             c1->Clear();
 
             delete leg2;
@@ -769,7 +770,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
             c1->Update();
 
             c1->Update();
-            c1->SaveAs(Form("MCTemplatesAnData/ParamResultWithChi2Map%02i." + PicFormat,k));
+            c1->SaveAs(Form(SaveFile + "/ParamResultWithChi2Map%02i." + PicFormat,k));
             c1->Clear();
 
             // delete hSignal_Clone;
@@ -794,13 +795,19 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
     }
     chi2_dt_mean /= (Double_t)numberbins;
     chi2_pol1_mean /= (Double_t)numberbins;
+    hChi2_DT_Iter->SetMarkerStyle(1);
+    hChi2_DT_Iter->SetMarkerSize(1);
+    hChi2_pol1->SetMarkerStyle(1);
+    hChi2_pol1->SetMarkerSize(1);
 
     c1->cd();
     c1->Clear();
-    hChi2_DT_Iter->Draw("");
-    hChi2_pol1->Draw("same");
+    hChi2_DT_Iter->Draw("AXIS");
     line_one->Draw("same");
-    hChi2_DT_Iter->Draw("same");
+    hChi2_DT_Iter->Draw("SAME HIST");
+    hChi2_DT_Iter->Draw("SAME P");
+    hChi2_pol1->Draw("SAME HIST");
+    hChi2_pol1->Draw("SAME P");
     leg->Draw("same");
     DrawLabelALICE(0.2, 0.9, 0.018, 0.03);
 
@@ -810,7 +817,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
     tex->DrawLatexNDC(0.6,0.65,Form("#LT#chi^{2}_{pol1}/ndf#GT = %1.2lf",chi2_pol1_mean));
 
     c1->Update();
-    c1->SaveAs(Form("MCTemplatesAnData/Chi2." + PicFormat));
+    c1->SaveAs(Form(SaveFile + "/Chi2." + PicFormat));
     c1->Clear();
 
     TLegend* leg2 = new TLegend(0.6,0.75,0.9,0.9);
@@ -826,18 +833,22 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
 
     c1->cd();
     c1->Clear();
-    histoChi2_0->Draw();
+    c1->SetLogx(1);
+    histoChi2_0->Draw("AXIS");
     line_one->Draw("same");
-    histoChi2_0->Draw("same");
-    hChi2_pol1->Draw("same");
-    hChi2_DT_Chi2map->Draw("same");
+    histoChi2_0->Draw("SAME HIST");
+    hChi2_pol1->Draw("SAME HIST");
+    hChi2_pol1->Draw("SAME P");
+    hChi2_DT_Chi2map->Draw("SAME HIST");
+    hChi2_DT_Chi2map->Draw("SAME P");
     leg2->Draw("same");
     DrawLabelALICE(0.2, 0.9, 0.018, 0.03);
 
 
     c1->Update();
-    c1->SaveAs(Form("MCTemplatesAnData/Chi2Iter_vs_Map." + PicFormat));
+    c1->SaveAs(Form(SaveFile + "/Chi2Iter_vs_Map." + PicFormat));
     c1->Clear();
+    c1->SetLogx(0);
 
 
 
@@ -857,7 +868,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
     line_one->Draw("same");
     DrawLabelALICE(0.34, 0.9, 0.018, 0.03);
     c1->Update();
-    c1->SaveAs(Form("MCTemplatesAnData/corr_BG_to_peak." + PicFormat));
+    c1->SaveAs(Form(SaveFile + "/corr_BG_to_peak." + PicFormat));
     c1->Clear();
   }
 
@@ -870,7 +881,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
     line_one->Draw("same");
     DrawLabelALICE(0.15, 0.9, 0.018, 0.03);
     c1->Update();
-    c1->SaveAs(Form("MCTemplatesAnData/Peakcomp." + PicFormat));
+    c1->SaveAs(Form(SaveFile + "/Peakcomp." + PicFormat));
     c1->Clear();
   }
   // drawing uncorrected yields
@@ -895,7 +906,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
 
     DrawLabelALICE(0.55, 0.9, 0.018, 0.03);
     c1->Update();
-    c1->SaveAs(Form("MCTemplatesAnData/UncorrYields." + PicFormat));
+    c1->SaveAs(Form(SaveFile + "/UncorrYields." + PicFormat));
     c1->Clear();
     c1->SetLogy(0);
     c1->SetLeftMargin(0.09);
@@ -925,7 +936,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
     //
     // DrawLabelALICE(0.55, 0.9, 0.018, 0.03);
     // c1->Update();
-    // c1->SaveAs(Form("MCTemplatesAnData/CorrYields." + PicFormat));
+    // c1->SaveAs(Form(SaveFile + "/CorrYields." + PicFormat));
     // c1->Clear();
     // c1->SetLogy(0);
     // c1->SetLeftMargin(0.09);
@@ -948,7 +959,8 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
     leg->AddEntry(hCorrectedYieldTrueEff, "standard method from framework", "lp");
 
     hYield_dt_corrected->GetYaxis()->SetTitleOffset(1.2);
-    hYield_dt_corrected->GetYaxis()->SetRangeUser(1.e-8,1.e-1-5.e-9);
+    hYield_dt_corrected->GetYaxis()->SetRangeUser(1.e-7-5.e-8,1.e-1);
+    hYield_dt_corrected->GetXaxis()->SetRangeUser(0.0, 16.0);
     hYield_dt_corrected->Draw("p");
     hYield_dt_chi2map_corrected->Draw("same");
     hYield_pol1_corrected->Draw("same");
@@ -977,9 +989,12 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
     hYield_pol1_corrected_ratio->SetYTitle("Ratio");
 
     pad2InvMass->cd();
-    TLine* line_ratio1 = new TLine(0.0, 1.0, 21.0, 1.0);
+    TLine* line_ratio1 = new TLine(0.0, 1.0, 16.0, 1.0);
     line_ratio1->SetLineWidth(2);
     line_ratio1->SetLineStyle(3);
+
+    hYield_dt_chi2map_corrected_ratio->GetXaxis()->SetRangeUser(0.0, 16.0);
+    hYield_dt_chi2map_corrected_ratio->GetYaxis()->SetRangeUser(0.69, 1.25);
 
     hYield_dt_chi2map_corrected_ratio->DrawCopy("P");
     line_ratio1->Draw("SAME");
@@ -989,7 +1004,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
     pad2InvMass->Update();
 
     canInvMass->Update();
-    canInvMass->SaveAs(Form("MCTemplatesAnData/CorrectedYieldComp." + PicFormat));
+    canInvMass->SaveAs(Form(SaveFile + "/CorrectedYieldComp." + PicFormat));
     canInvMass->Clear("D");
 
     delete leg;
@@ -1005,7 +1020,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
   //   h_y_min_clone->Add(h_x_min,-1);
   //   h_y_min_clone->Draw();
   //   c1->Update();
-  //   c1->SaveAs(Form("MCTemplatesAnData/ConstraintPloti." + PicFormat));
+  //   c1->SaveAs(Form(SaveFile + "/ConstraintPloti." + PicFormat));
   //   c1->Clear();
   //   delete h_y_min_clone;
   // }
@@ -1033,7 +1048,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
     leg->Draw("same");
 
     c1->Update();
-    c1->SaveAs(Form("MCTemplatesAnData/SignalFactorComp." + PicFormat));
+    c1->SaveAs(Form(SaveFile + "/SignalFactorComp." + PicFormat));
     c1->Clear();
 
     delete leg;
@@ -1062,11 +1077,50 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
     leg->Draw("same");
 
     c1->Update();
-    c1->SaveAs(Form("MCTemplatesAnData/BGFactorComp." + PicFormat));
+    c1->SaveAs(Form(SaveFile + "/BGFactorComp." + PicFormat));
     c1->Clear();
 
     delete leg;
+
+    hDoubleTemplatecorrBGFactor->Add(hDoubleTemplatePeakFactor,-1);
+    double mean = 0;
+    for (int i = 1; i < 18; i++) {
+      mean += hDoubleTemplatecorrBGFactor->GetBinContent(i);
+    }
+    mean /= 17.;
+
+    double variance = 0;
+    for (int i = 1; i < 18; i++) {
+      variance += pow(hDoubleTemplatecorrBGFactor->GetBinContent(i)-mean, 2.);
+    }
+    variance = variance/17.;
+    variance = sqrt(variance);
+
+    std::cout << "IterMethod:" << '\n';
+    std::cout << "mean = " << mean << '\n';
+    std::cout << "variance = " << variance << '\n';
+
+    h_y_min->Add(h_x_min, -1);
+    mean = 0;
+    variance = 0;
+    for (int i = 1; i < 17; i++) {
+      mean += h_y_min->GetBinContent(i);
+    }
+    mean /= 16.;
+
+    for (int i = 1; i < 17; i++) {
+      variance += pow(h_y_min->GetBinContent(i)-mean, 2.);
+    }
+    variance = variance/16.;
+    variance = sqrt(variance);
+
+    std::cout << "Chi2MapMethod:" << '\n';
+    std::cout << "mean = " << mean << '\n';
+    std::cout << "variance = " << variance << '\n';
+
   }
+
+
 
 
   delete pad1InvMass;

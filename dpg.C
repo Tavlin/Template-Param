@@ -1,7 +1,7 @@
 #include "CommonHeader.h"
 
 // wpsid = which picture should I draw
-void dpg(int binnumber = 3, TString wpsid = "all", TString PicFormat = "png"){
+void dpg(int binnumber = 3, TString wpsid = "all", TString PicFormat = "png", TString SaveFile = "DPG"){
 
   TString str;
   const Int_t nbins = numberbins;
@@ -162,11 +162,12 @@ void dpg(int binnumber = 3, TString wpsid = "all", TString PicFormat = "png"){
       hSignal                  = (TH1D*) IterTemp->Get(Form("hSignal_bin%02d",k));
       hCorrBack                = (TH1D*) IterTemp->Get(Form("hCorrBack_bin%02d",k));
 
-    if(wpsid == "all" || wpsid.Contains("dtcomp")){
+    if(wpsid == "all" || wpsid.Contains("Chi2mapParam")){
       ////////////////////////////////////////////////////////////////////////
       // Comparison between the two double temp methods with data
       c1->cd();
 
+      TH1D* hChi2Map_Param = NULL;
       TH1D* hSignal_Clone = NULL;
       TH1D* hCorrBack_Clone = NULL;
       hChi2Map_Param = (TH1D*) hSignal->Clone("hSignal_Clone");
@@ -179,39 +180,114 @@ void dpg(int binnumber = 3, TString wpsid = "all", TString PicFormat = "png"){
 
       hSignal_Clone->SetMarkerStyle(20);
       hSignal_Clone->SetMarkerSize(1.5);
+
+
+      hData->SetMarkerColor(kBlack);
+      hData->SetLineColor(kBlack);
+      hData->SetMarkerStyle(21);
+      hChi2Map_Param->SetMarkerColor(kTeal-7);
+      hChi2Map_Param->SetLineColor(kTeal-7);
+      hChi2Map_Param->SetMarkerStyle(1);
+      hChi2Map_Param->SetMarkerSize(1);
       hSignal_Clone->SetMarkerColor(kMagenta+2);
       hSignal_Clone->SetLineColor(kMagenta+2);
+      hSignal_Clone->SetMarkerStyle(1);
+      hSignal_Clone->SetMarkerSize(1);
+      hCorrBack_Clone->SetMarkerColor(kRed);
+      hCorrBack_Clone->SetLineColor(kRed);
+      hCorrBack_Clone->SetMarkerStyle(1);
+      hCorrBack_Clone->SetMarkerSize(1);
 
-      TLegend* leg = new TLegend(0.5,0.35,0.9,0.55);
-      SetLegendSettigns(leg, 0.03);
+      TLegend* leg = new TLegend(0.6,0.9,0.9,0.65);
+      SetLegendSettigns(leg, 0.035);
       leg->AddEntry(hData, strData, "p");
-      leg->AddEntry(hChi2Map_Param, doubletempstring + " parametrization", "p");
-      leg->AddEntry(hSignal_Clone, "scaled signal template", "p");
-      leg->AddEntry(hCorrBack_Clone, "scaled corr. back. template", "p");
+      leg->AddEntry(hChi2Map_Param, "double temp. param. ", "l");
+      leg->AddEntry(hSignal_Clone, "scaled signal template", "l");
+      leg->AddEntry(hCorrBack_Clone, "scaled back. template", "l");
 
       SetHistoStandardSettings(hData, 0., 0., 0.03);
+
+      hData->GetXaxis()->SetRangeUser(0.0, 0.3);
       hData->SetTitle("");
-      hData->GetYaxis()->SetTitleOffset(0.9);
-      hData->Draw("p");
-      hDoubleTemp->Draw("same");
-      hSignal_Clone->Draw("same");
+      hData->GetYaxis()->SetTitleOffset(1.1);
+      hData->Draw("AXIS");
+      hChi2Map_Param->Draw("same HIST");
+      hChi2Map_Param->Draw("SAME P");
+      hSignal_Clone->Draw("same HIST");
+      hSignal_Clone->Draw("SAME P");
+      hCorrBack_Clone->Draw("same HIST");
+      hCorrBack_Clone->Draw("SAME P");
+      hData->Draw("SAME P");
       c1->Update();
       line_y = gPad->GetUymax()*0.995;
       fitrange2 = new TLine(lowerparamrange, line_y, upperparamrange, line_y);
       fitrange2->SetLineColor(kAzure+10);
       fitrange2->SetLineWidth(7);
       fitrange2->Draw("same");
-      leg->AddEntry(fitrange2, "range", "l");
+      leg->AddEntry(fitrange2, "parametrization range", "l");
       leg->Draw("same");
-      DrawLabelALICE(0.5, 0.9, 0.03, 0.03, str);
+      DrawLabelALICE(0.12, 0.9, 0.03, 0.035, str);
       c1->Update();
-      c1->SaveAs(Form("DGP/Chi2mapParam%02i." + PicFormat,k));
+      c1->SaveAs(Form(SaveFile + "/Chi2mapParam%02i." + PicFormat,k));
       c1->Clear("D");
 
 
       delete leg;
-      // delete hSignal_Clone;
-      // delete hCorrBack_Clone;
+    }
+
+    if(wpsid == "all" || wpsid.Contains("Pol1Param")){
+      ////////////////////////////////////////////////////////////////////////
+      // Comparison between the two double temp methods with data
+      c1->cd();
+
+      TLegend* leg = new TLegend(0.6,0.9,0.9,0.65);
+      SetLegendSettigns(leg, 0.035);
+      leg->AddEntry(hData, strData, "p");
+      leg->AddEntry(hPol1, "signal temp. + 1^{st} ord. pol.", "l");
+      leg->AddEntry((TObject*) 0x0, "parametrization", "");
+      leg->AddEntry(hPol1Peak, "scaled signal template", "l");
+      leg->AddEntry(fpol1, " 1^{st} polynomial order", "l");
+
+      hData->GetXaxis()->SetRangeUser(0.0, 0.3);
+      hData->SetMarkerColor(kBlack);
+      hData->SetLineColor(kBlack);
+      hData->SetMarkerStyle(21);
+      hPol1->SetMarkerColor(kTeal-7);
+      hPol1->SetLineColor(kTeal-7);
+      hPol1->SetMarkerStyle(1);
+      hPol1->SetMarkerSize(1);
+      hPol1Peak->SetMarkerColor(kMagenta+2);
+      hPol1Peak->SetLineColor(kMagenta+2);
+      hPol1Peak->SetMarkerStyle(1);
+      hPol1Peak->SetMarkerSize(1);
+      fpol1->SetLineColor(kRed);
+
+
+      SetHistoStandardSettings(hData, 0., 0., 0.03);
+      hData->SetTitle("");
+      hData->GetYaxis()->SetTitleOffset(1.1);
+      hData->Draw("AXIS");
+      hPol1->Draw("SAME HIST");
+      hPol1->Draw("SAME P");
+      hPol1Peak->Draw("SAME HIST");
+      hPol1Peak->Draw("SAME P");
+      hData->Draw("SAME P");
+      fpol1->Draw("same");
+      c1->Update();
+      line_y = gPad->GetUymax()*0.995;
+      fitrange2 = new TLine(lowerparamrange, line_y, upperparamrange, line_y);
+      fitrange2->SetLineColor(kAzure+10);
+      fitrange2->SetLineWidth(7);
+      fitrange2->Draw("same");
+      leg->AddEntry(fitrange2, "parametrization range", "l");
+      leg->Draw("same");
+      DrawLabelALICE(0.12, 0.9, 0.03, 0.035, str);
+      c1->Update();
+      c1->SaveAs(Form(SaveFile + "/Pol1Param%02i." + PicFormat,k));
+      c1->Clear("D");
+
+
+      delete leg;
     }
   }
     else{

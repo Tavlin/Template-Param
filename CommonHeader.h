@@ -52,7 +52,7 @@ Double_t fBinsPi013TeVEMCPt[40]                  =   {0.0,  1.4,   1.6,   1.8,  
 
 
 const Int_t kMaxHit = 2000;
-const Double_t lowerparamrange = 0.085;
+const Double_t lowerparamrange = 0.085;         //0.085;
 const Double_t upperparamrange = 0.225;
 const int numberbins = 39;
 TH1D* data = NULL;                              //data histogram
@@ -347,16 +347,46 @@ TString pi0togamma_str = TString("#pi^{0} #rightarrow #gamma #gamma");
 void DrawLabelALICE(Double_t startTextX = 0.13, Double_t startTextY = 0.9, Double_t textHeight = 0.04, Double_t textSize = 0.03, TString str = " "){
   TString textAlice       = "ALICE work in progress";
   TString textEvents      = "Data";
+  TLatex *alice           = NULL;
+  TLatex *pt              = NULL;
+  TLatex *energy          = NULL;
+  TLatex *detprocess      = NULL;
+  TLatex *detprocess2     = NULL;
+  TLatex *Template        = NULL;
+  TLatex *Template2       = NULL;
 
-  Double_t differenceText     = textHeight*1.7;
-  TLatex *alice               = new TLatex(startTextX, startTextY, Form("%s",textAlice.Data()));
-  TLatex *energy             = new TLatex(startTextX, (startTextY-1.5*differenceText), "pp, #sqrt{s} = 13 TeV");
+  Double_t differenceText  = textHeight*1.7;
+  if(str == "" || str == " "){
+    alice            = new TLatex(startTextX, startTextY, Form("%s",textAlice.Data()));
 
-  TLatex *Template             = new TLatex(startTextX, (startTextY-2.5*differenceText), "Templates from Pythia 8 Monash 2013");
+    pt               = new TLatex(startTextX, (startTextY-1.5*differenceText), str);
 
-  TLatex *detprocess          = new TLatex(startTextX, (startTextY-3.5*differenceText), "#pi^{0}#rightarrow#gamma#gamma, #gamma's rec. with EMCal ");
+    energy           = new TLatex(startTextX, (startTextY-1.5*differenceText), "pp, #sqrt{s} = 13 TeV");
 
-  TLatex *pt          = new TLatex(startTextX, (startTextY-4.5*differenceText), str);
+    detprocess       = new TLatex(startTextX, (startTextY-2.5*differenceText), "#pi^{0}#rightarrow#gamma#gamma");
+
+    detprocess2      = new TLatex(startTextX, (startTextY-3.5*differenceText), "#gamma's rec. with EMCal ");
+
+    Template         = new TLatex(startTextX, (startTextY-4.5*differenceText), "Templates:");
+
+    Template2        = new TLatex(startTextX, (startTextY-5.5*differenceText), "Pythia 8 Monash 2013");
+  }
+
+  else{
+    alice            = new TLatex(startTextX, startTextY, Form("%s",textAlice.Data()));
+
+    pt               = new TLatex(startTextX, (startTextY-1.5*differenceText), str);
+
+    energy           = new TLatex(startTextX, (startTextY-2.5*differenceText), "pp, #sqrt{s} = 13 TeV");
+
+    detprocess       = new TLatex(startTextX, (startTextY-3.5*differenceText), "#pi^{0}#rightarrow#gamma#gamma");
+
+    detprocess2      = new TLatex(startTextX, (startTextY-4.5*differenceText), "#gamma's rec. with EMCal ");
+
+    Template         = new TLatex(startTextX, (startTextY-5.5*differenceText), "Templates:");
+
+    Template2        = new TLatex(startTextX, (startTextY-6.5*differenceText), "Pythia 8 Monash 2013");
+  }
 
   alice->SetNDC();
   alice->SetTextColor(1);
@@ -376,6 +406,12 @@ void DrawLabelALICE(Double_t startTextX = 0.13, Double_t startTextY = 0.9, Doubl
   Template->SetTextFont(42);
   Template->DrawClone();
 
+  Template2->SetNDC();
+  Template2->SetTextColor(1);
+  Template2->SetTextSize(textSize);
+  Template2->SetTextFont(42);
+  Template2->DrawClone();
+
 
   detprocess->SetNDC();
   detprocess->SetTextColor(1);
@@ -383,11 +419,19 @@ void DrawLabelALICE(Double_t startTextX = 0.13, Double_t startTextY = 0.9, Doubl
   detprocess->SetTextFont(42);
   detprocess->DrawClone();
 
+  detprocess2->SetNDC();
+  detprocess2->SetTextColor(1);
+  detprocess2->SetTextSize(textSize);
+  detprocess2->SetTextFont(42);
+  detprocess2->DrawClone();
+
   pt->SetNDC();
   pt->SetTextColor(1);
   pt->SetTextSize(textSize);
   pt->SetTextFont(42);
-  pt->DrawClone();
+  if(!(str == "" || str == " ")){
+    pt->DrawClone();
+  }
 
 
   delete alice;

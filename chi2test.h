@@ -27,8 +27,8 @@ Double_t chi2_selfmade(TH1D* h1, TH1D* h2, TH1D* h3, Double_t &ndf, Double_t a,
   }
   //////////////////////////////////////////////////////////////////////////////
   // constraint for parameter b. b should not be too big!
-  chi2 += pow(b-a-0.8, 2.)/pow(0.8, 2.);
-  if(chi2 == pow(b-a-0.8, 2.)/pow(0.8, 2.)){
+  chi2 += pow(a-b-0.236159, 2.)/pow(0.262405, 2.);
+  if(chi2 == pow(a-b, 2.)/pow(0.1, 2.)){
     return 1000;
   }
   else{
@@ -82,7 +82,7 @@ TH2D* chi2test(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi2_min,
   // A_c = hData_clone->Integral();
   // A_b = hCorrback_clone->Integral();
   // A_a = hSignal_clone->Integral();
-
+  //
   // if(A_b < 0){
   //   hCorrback_clone->Scale(-1.*(A_c/A_b));
   //   corrbackAreaScaling = -1.*(A_c/A_b);
@@ -99,7 +99,7 @@ TH2D* chi2test(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi2_min,
 
   for (int ix = 0; ix < binnumber2D; ix++) {
     for (int iy = 0; iy < binnumber2D; iy++) {
-      ndf = upperfitrange-lowerfitrange-3;                 
+      ndf = upperfitrange-lowerfitrange-3;
       Double_t chi2 = 0;
       chi2 = chi2_selfmade(hSignal_clone, hCorrback_clone, hData_clone, ndf,
                            dx*(Double_t)ix, dy*(Double_t)(iy-100));

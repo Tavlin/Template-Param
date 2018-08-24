@@ -30,7 +30,7 @@ Double_t mc_full_func2(Double_t *x,  Double_t *par){
 
 ////////////////////////////////////////////////////////////////////////////////
 // Start of the Main
-void IterTempCreation(std::string current_path){
+void IterTempCreation(std::string current_path, int cutmode){
 
   TString sPath = gDirectory->GetPath();            // retrieve neutral path
 
@@ -40,22 +40,59 @@ void IterTempCreation(std::string current_path){
   TFile* ESDFile_MC    = SafelyOpenRootfile("./../Daten/" + current_path + ".root");
   if (ESDFile_MC->IsOpen() ) printf("ESDFile_MC opened successfully\n");
 
+  //503 for pp
+  //00010113_1111112067032220000_01631031000000d0 for pp
 
-  TFile* ESDFile_data    = SafelyOpenRootfile("./../Daten/GammaCalo-data_503.root");
-  if (ESDFile_data->IsOpen() ) printf("ESDFile_data opened successfully\n");
+  //208 for p-Pb
+  //80010113_1111141057032230000_01631031000000d0
+  TFile* ESDFile_data = NULL;
+  TList* lGammaCalo_data = NULL;
+  TList* lCutNumber_data = NULL;
+  TList* lESD_data = NULL;
+  TList* lGammaCalo_MC = NULL;
+  TList* lCutNumber_MC = NULL;
+  TList* lESD_MC = NULL;
+  TList* lMC_MC = NULL;
+  TList* lTrue_MC = NULL;
+  TH1D* hNEvents = NULL;
+  TH1D* hMC_Pi0InAcc_Pt = NULL;
+  TH2D* hTrueDoubleCounting_Pi0 = NULL;
 
-  TList* lGammaCalo_data        = (TList*) ESDFile_data->Get("GammaCalo_503");
-  TList* lCutNumber_data        = (TList*) lGammaCalo_data->FindObject("Cut Number 00010113_1111112067032220000_01631031000000d0");
-  TList* lESD_data              = (TList*) lCutNumber_data->FindObject("00010113_1111112067032220000_01631031000000d0 ESD histograms");
 
-  TList* lGammaCalo_MC          = (TList*) ESDFile_MC->Get("GammaCalo_503");
-  TList* lCutNumber_MC          = (TList*) lGammaCalo_MC->FindObject("Cut Number 00010113_1111112067032220000_01631031000000d0");
-  TList* lESD_MC                = (TList*) lCutNumber_MC->FindObject("00010113_1111112067032220000_01631031000000d0 ESD histograms");
-  TList* lMC_MC                 = (TList*) lCutNumber_MC->FindObject("00010113_1111112067032220000_01631031000000d0 MC histograms");
-  TList* lTrue_MC               = (TList*) lCutNumber_MC->FindObject("00010113_1111112067032220000_01631031000000d0 True histograms");
-  TH1D* hNEvents                = (TH1D*)  lESD_data->FindObject("NEvents");
-  TH1D* hMC_Pi0InAcc_Pt         = (TH1D*)  lMC_MC->FindObject("MC_Pi0InAcc_Pt");
-  TH2D* hTrueDoubleCounting_Pi0 = (TH2D*)  lTrue_MC->FindObject("ESD_TrueDoubleCountPi0_InvMass_Pt");
+  if(cutmode != 1){
+    ESDFile_data    = SafelyOpenRootfile("./../Daten/GammaCalo-data_503.root");
+    if (ESDFile_data->IsOpen() ) printf("ESDFile_data opened successfully\n");
+
+    lGammaCalo_data        = (TList*) ESDFile_data->Get("GammaCalo_503");
+    lCutNumber_data        = (TList*) lGammaCalo_data->FindObject("Cut Number 00010113_1111112067032220000_01631031000000d0");
+    lESD_data              = (TList*) lCutNumber_data->FindObject("00010113_1111112067032220000_01631031000000d0 ESD histograms");
+
+    lGammaCalo_MC          = (TList*) ESDFile_MC->Get("GammaCalo_503");
+    lCutNumber_MC          = (TList*) lGammaCalo_MC->FindObject("Cut Number 00010113_1111112067032220000_01631031000000d0");
+    lESD_MC                = (TList*) lCutNumber_MC->FindObject("00010113_1111112067032220000_01631031000000d0 ESD histograms");
+    lMC_MC                 = (TList*) lCutNumber_MC->FindObject("00010113_1111112067032220000_01631031000000d0 MC histograms");
+    lTrue_MC               = (TList*) lCutNumber_MC->FindObject("00010113_1111112067032220000_01631031000000d0 True histograms");
+    hNEvents                = (TH1D*)  lESD_data->FindObject("NEvents");
+    hMC_Pi0InAcc_Pt         = (TH1D*)  lMC_MC->FindObject("MC_Pi0InAcc_Pt");
+    hTrueDoubleCounting_Pi0 = (TH2D*)  lTrue_MC->FindObject("ESD_TrueDoubleCountPi0_InvMass_Pt");
+  }
+  else{
+    ESDFile_data    = SafelyOpenRootfile("./../Daten/GammaCalo-data_208.root");
+    if (ESDFile_data->IsOpen() ) printf("ESDFile_data opened successfully\n");
+
+    lGammaCalo_data        = (TList*) ESDFile_data->Get("GammaCalo_208");
+    lCutNumber_data        = (TList*) lGammaCalo_data->FindObject("Cut Number 80010113_1111141057032230000_01631031000000d0");
+    lESD_data              = (TList*) lCutNumber_data->FindObject("80010113_1111141057032230000_01631031000000d0 ESD histograms");
+
+    lGammaCalo_MC          = (TList*) ESDFile_MC->Get("GammaCalo_208");
+    lCutNumber_MC          = (TList*) lGammaCalo_MC->FindObject("Cut Number 80010113_1111141057032230000_01631031000000d0");
+    lESD_MC                = (TList*) lCutNumber_MC->FindObject("80010113_1111141057032230000_01631031000000d0 ESD histograms");
+    lMC_MC                 = (TList*) lCutNumber_MC->FindObject("80010113_1111141057032230000_01631031000000d0 MC histograms");
+    lTrue_MC               = (TList*) lCutNumber_MC->FindObject("80010113_1111141057032230000_01631031000000d0 True histograms");
+    hNEvents                = (TH1D*)  lESD_data->FindObject("NEvents");
+    hMC_Pi0InAcc_Pt         = (TH1D*)  lMC_MC->FindObject("MC_Pi0InAcc_Pt");
+    hTrueDoubleCounting_Pi0 = (TH2D*)  lTrue_MC->FindObject("ESD_TrueDoubleCountPi0_InvMass_Pt");
+  }
   //////////////////////////////////////////////////////////////////////////////
 
 
@@ -299,33 +336,65 @@ void IterTempCreation(std::string current_path){
   hYield_pol1_uncorr->SetMarkerColor(kRed);
 
 
+
   //////////////////////////////////////////////////////////////////////////////
   // open True Yield Path
-  TFile* FData_corrected = SafelyOpenRootfile("./00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_data_GammaConvV1Correction_00010113_1111112067032220000_01631031000000d0.root");
-  if (FData_corrected->IsOpen() ) printf("FData_corrected opened successfully\n");
+  TH1D* CorrectedYieldTrueEff;
+  if(cutmode != 1){
+    TFile* FData_corrected = SafelyOpenRootfile("./00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_data_GammaConvV1Correction_00010113_1111112067032220000_01631031000000d0.root");
+    if (FData_corrected->IsOpen() ) printf("FData_corrected opened successfully\n");
 
-  TH1D* CorrectedYieldTrueEff = (TH1D*) FData_corrected->Get(Form("CorrectedYieldNormEff"));
+    CorrectedYieldTrueEff = (TH1D*) FData_corrected->Get(Form("CorrectedYieldNormEff"));
+  }
 
-  //////////////////////////////////////////////////////////////////////////////
-  // going over all pt bins despite first one, which is some framework bs.
-  for (int k = 1; k < numberbins; k++) {
-    std::cout << "starte bin " << k << " reading and wrinting!" << std::endl << std::endl;
+  else{
+    TFile* FData_corrected = SafelyOpenRootfile("./80010113_1111141057032230000_01631031000000d0/13TeV/Pi0_data_GammaConvV1Correction_80010113_1111141057032230000_01631031000000d0.root");
+    if (FData_corrected->IsOpen() ) printf("FData_corrected opened successfully\n");
 
-    ////////////////////////////////////////////////////////////////////////////
-    // open MC histo path
-    TFile* MCFile = SafelyOpenRootfile("./00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_MC_GammaConvV1WithoutCorrection_00010113_1111112067032220000_01631031000000d0.root");
-    if (MCFile->IsOpen() ) printf("MCFile opened successfully\n");
+    CorrectedYieldTrueEff = (TH1D*) FData_corrected->Get(Form("CorrectedYieldNormEff"));
+  }
+    //////////////////////////////////////////////////////////////////////////////
+    // going over all pt bins despite first one, which is some framework bs.
+    for (int k = 1; k < numberbins; k++) {
+      std::cout << "starte bin " << k << " reading and wrinting!" << std::endl << std::endl;
+      TFile* MCFile = NULL;
+      TFile* DataFile = NULL;
+
+      if(cutmode != 1){
+        ////////////////////////////////////////////////////////////////////////////
+        // open MC histo path
+        MCFile = SafelyOpenRootfile("./00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_MC_GammaConvV1WithoutCorrection_00010113_1111112067032220000_01631031000000d0.root");
+        if (MCFile->IsOpen() ) printf("MCFile opened successfully\n");
 
 
-    ////////////////////////////////////////////////////////////////////////////
-    // retrieve MC histograms
-    data_MC = (TH1D*) MCFile->Get(Form("fHistoMappingSignalInvMass_in_Pt_Bin%02i",k));
-    mc_full = (TH1D*) MCFile->Get(Form("Mapping_TrueMeson_InvMass_in_Pt_Bin%02i",k));
+        ////////////////////////////////////////////////////////////////////////////
+        // retrieve MC histograms
+        data_MC = (TH1D*) MCFile->Get(Form("fHistoMappingSignalInvMass_in_Pt_Bin%02i",k));
+        mc_full = (TH1D*) MCFile->Get(Form("Mapping_TrueMeson_InvMass_in_Pt_Bin%02i",k));
 
 
-    TFile* DataFile = SafelyOpenRootfile("./00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_data_GammaConvV1WithoutCorrection_00010113_1111112067032220000_01631031000000d0.root");
-    if (DataFile->IsOpen() ) printf("DataFile opened successfully\n");
-    data = (TH1D*) DataFile->Get(Form("fHistoMappingSignalInvMass_in_Pt_Bin%02i",k));
+        DataFile = SafelyOpenRootfile("./00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_data_GammaConvV1WithoutCorrection_00010113_1111112067032220000_01631031000000d0.root");
+        if (DataFile->IsOpen() ) printf("DataFile opened successfully\n");
+        data = (TH1D*) DataFile->Get(Form("fHistoMappingSignalInvMass_in_Pt_Bin%02i",k));
+      }
+
+      else{
+        ////////////////////////////////////////////////////////////////////////////
+        // open MC histo path
+        MCFile = SafelyOpenRootfile("./80010113_1111141057032230000_01631031000000d0/13TeV/Pi0_MC_GammaConvV1WithoutCorrection_80010113_1111141057032230000_01631031000000d0.root");
+        if (MCFile->IsOpen() ) printf("MCFile opened successfully\n");
+
+
+        ////////////////////////////////////////////////////////////////////////////
+        // retrieve MC histograms
+        data_MC = (TH1D*) MCFile->Get(Form("fHistoMappingSignalInvMass_in_Pt_Bin%02i",k));
+        mc_full = (TH1D*) MCFile->Get(Form("Mapping_TrueMeson_InvMass_in_Pt_Bin%02i",k));
+
+
+        DataFile = SafelyOpenRootfile("./80010113_1111141057032230000_01631031000000d0/13TeV/Pi0_data_GammaConvV1WithoutCorrection_80010113_1111141057032230000_01631031000000d0.root");
+        if (DataFile->IsOpen() ) printf("DataFile opened successfully\n");
+        data = (TH1D*) DataFile->Get(Form("fHistoMappingSignalInvMass_in_Pt_Bin%02i",k));
+      }
 
 
     mc_full->GetXaxis()->SetRangeUser(0.,0.4);
@@ -343,7 +412,7 @@ void IterTempCreation(std::string current_path){
                                                    mc_full->FindBin(upperparamrange))/
                                                    (Double_t)hMC_Pi0InAcc_Pt->Integral(
                                                      hMC_Pi0InAcc_Pt->FindBin(fBinsPi013TeVEMCPt[k]),
-                                                     hMC_Pi0InAcc_Pt->FindBin(fBinsPi013TeVEMCPt[k+1]));
+                                                     hMC_Pi0InAcc_Pt->FindBin(fBinsPi013TeVEMCPt[k+1])-1);
 
     std::cout << "InIntRangePercent = " << InIntRangePercent << '\n';
     std::cout << "InIntRangeDoubleCounting = " << InIntRangeDoubleCounting << '\n';
@@ -804,27 +873,29 @@ void IterTempCreation(std::string current_path){
     ////////////////////////////////////////////////////////////////////////////
     // getting the chi2 of the current pT bin
     hchi2_pol1->SetBinContent(k+1,r_pol1_temp->Chi2()/temp_ndf);
+    hchi2_pol1->SetBinError(k+1, sqrt(2./(temp_ndf+3)));
     hChi2_DT_Iter->SetBinContent(k+1,r_double_temp->Chi2()/temp_ndf);
+    hChi2_DT_Iter->SetBinError(k+1, sqrt(2./(temp_ndf+3)));
 
 
 
     data_clone_for_int_dt = (TH1D*) data->Clone("hYield_dt_uncorr");
     data_clone_for_int_dt->Add(korrBG_clone3, -1);
-    int_value = data_clone_for_int_dt->IntegralAndError(data_clone_for_int_dt->GetXaxis()->FindBin(0.085), data_clone_for_int_dt->GetXaxis()->FindBin(0.225), int_error);
+    int_value = data_clone_for_int_dt->IntegralAndError(data_clone_for_int_dt->GetXaxis()->FindBin(lowerparamrange), data_clone_for_int_dt->GetXaxis()->FindBin(upperparamrange), int_error);
     hYield_dt_uncorr->SetBinContent(k+1, int_value);
     hYield_dt_uncorr->SetBinError(k+1, int_error);
 
     data_clone_for_int_dt_chi2map = (TH1D*) data->Clone("data_clone_for_int_dt_chi2map");
     korrBG->Scale(y_min);
     data_clone_for_int_dt_chi2map->Add(korrBG, -1);
-    int_value = data_clone_for_int_dt_chi2map->IntegralAndError(data_clone_for_int_dt_chi2map->GetXaxis()->FindBin(0.085), data_clone_for_int_dt_chi2map->GetXaxis()->FindBin(0.225), int_error);
+    int_value = data_clone_for_int_dt_chi2map->IntegralAndError(data_clone_for_int_dt_chi2map->GetXaxis()->FindBin(lowerparamrange), data_clone_for_int_dt_chi2map->GetXaxis()->FindBin(upperparamrange), int_error);
     hYield_dt_chi2map_uncorr->SetBinContent(k+1, int_value);
     hYield_dt_chi2map_uncorr->SetBinError(k+1, int_error);
 
 
     data_clone_for_int_pol1 = (TH1D*) data->Clone("hYield_pol1_uncorr");
     data_clone_for_int_pol1->Add(fpol1, -1);
-    int_value = data_clone_for_int_pol1->IntegralAndError(data_clone_for_int_pol1->GetXaxis()->FindBin(0.085), data_clone_for_int_pol1->GetXaxis()->FindBin(0.225), int_error);
+    int_value = data_clone_for_int_pol1->IntegralAndError(data_clone_for_int_pol1->GetXaxis()->FindBin(lowerparamrange), data_clone_for_int_pol1->GetXaxis()->FindBin(upperparamrange), int_error);
     hYield_pol1_uncorr->SetBinContent(k+1, int_value);
     hYield_pol1_uncorr->SetBinError(k+1, int_error);
 
@@ -936,6 +1007,7 @@ void IterTempCreation(std::string current_path){
 
   for (int k = 1; k < numberbins; k++) {
     hChi2_DT_Chi2map->SetBinContent(k+1, vChi2_DT_Chi2Map[k-1]/vNDF_DT_Chi2Map[k-1]);
+    hChi2_DT_Chi2map->SetBinError(k+1, sqrt(2./vNDF_DT_Chi2Map[k-1]));
     hSignalAreaScaling->SetBinContent(k, vSignalAreaScaling[k-1]);
     hCorrbackAreaScaling->SetBinContent(k, vCorrbackAreaScaling[k-1]);
     h_x_min->SetBinContent(k+1, v_x_min[k-1]);
@@ -951,6 +1023,21 @@ void IterTempCreation(std::string current_path){
     max(hErrYhigh->GetBinContent(k+1) - h_y_min->GetBinContent(k+1),
     h_y_min->GetBinContent(k+1) - hErrYlow->GetBinContent(k+1)));
   }
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Getting Gaussian distributed scaling factor difference
+  // COMMENT IT OUT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  TH1D* a_minus_b = (TH1D*) h_y_min->Clone("scaling_gauss");
+  a_minus_b->Add(h_x_min, -1);
+  TH1D* scaling_gauss = new TH1D("scaling_gauss", "", 10, 0., 0.9);
+
+  for(int k = 1; k < numberbins; k++){
+    scaling_gauss->Fill(a_minus_b->GetBinContent(k+1));
+  }
+  scaling_gauss->Sumw2();
+  TF1* fscaling_gauss = new TF1("fscaling_gauss", "expo(0)", 0., 1.);
+  scaling_gauss->Fit("fscaling_gauss", "QM0PS");
+
 
 
   /////////////////////////////////////////////////////////////////////////////
@@ -975,8 +1062,16 @@ void IterTempCreation(std::string current_path){
 
   ////////////////////////////////////////////////////////////////////////////
   // open MC histo path
-  TFile* CorrectionFile = SafelyOpenRootfile("./00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_MC_GammaConv_OnlyCorrectionFactor_00010113_1111112067032220000_01631031000000d0.root");
-  if (CorrectionFile->IsOpen() ) printf("CorrectionFile opened successfully\n");
+  TFile* CorrectionFile = NULL;
+  if(cutmode != 1){
+    CorrectionFile = SafelyOpenRootfile("./00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_MC_GammaConv_OnlyCorrectionFactor_00010113_1111112067032220000_01631031000000d0.root");
+    if (CorrectionFile->IsOpen() ) printf("CorrectionFile opened successfully\n");
+  }
+
+  else{
+    CorrectionFile = SafelyOpenRootfile("./80010113_1111141057032230000_01631031000000d0/13TeV/Pi0_MC_GammaConv_OnlyCorrectionFactor_80010113_1111141057032230000_01631031000000d0.root");
+    if (CorrectionFile->IsOpen() ) printf("CorrectionFile opened successfully\n");
+  }
 
   TH1D* hAcc    = (TH1D*) CorrectionFile->Get(Form("fMCMesonAccepPt"));
   TH1D* hEffi   = (TH1D*) CorrectionFile->Get(Form("TrueMesonEffiPt"));
@@ -997,6 +1092,8 @@ void IterTempCreation(std::string current_path){
   ha_DT->Write("DoubleTemplatePeakFactor");
   hb_DT->Write("DoubleTemplatecorrBGFactor");
   ha_pol1->Write("Pol1PeakFactor");
+  scaling_gauss->Write("scaling_gauss");
+  fscaling_gauss->Write("fscaling_gauss");
 
   hYield_dt_uncorr->Scale(1./(NEvents*2*M_PI*1.6*0.98798),"width");
   // hYield_dt_uncorr->Scale(1, "width");
@@ -1016,9 +1113,16 @@ void IterTempCreation(std::string current_path){
   hYield_dt_chi2map_uncorr->SetYTitle(rawyield);
   hYield_dt_chi2map_uncorr->SetXTitle(pt_str);
 
+  TFile* DataFile = NULL;
 
+  if(cutmode != 1){
+  DataFile = SafelyOpenRootfile("./00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_data_GammaConvV1WithoutCorrection_00010113_1111112067032220000_01631031000000d0.root");
+  }
 
-  TFile* DataFile = SafelyOpenRootfile("./00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_data_GammaConvV1WithoutCorrection_00010113_1111112067032220000_01631031000000d0.root");
+  else{
+  DataFile = SafelyOpenRootfile("./80010113_1111141057032230000_01631031000000d0/13TeV/Pi0_data_GammaConvV1WithoutCorrection_80010113_1111141057032230000_01631031000000d0.root");
+  }
+
   if (DataFile->IsOpen() ) printf("DataFile opened successfully\n");
   TH1D* hYield_framework = (TH1D*) DataFile->Get(Form("histoYieldMeson"));
   TH1D* histoChi2_0 = (TH1D*) DataFile->Get(Form("histoChi2_0"));
