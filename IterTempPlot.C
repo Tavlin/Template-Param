@@ -36,15 +36,15 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
   c2->SetTickx();
   c2->SetLogz(1);
 
-  TCanvas *canInvMass = new TCanvas("canInvMass","",1200,1200);
+  TCanvas *canInvMass = new TCanvas("canInvMass","",1200,1600);
   TPad *pad1InvMass = new TPad("pad1InvMass","",0.0,0.33,1.0,1.0);
   pad1InvMass->SetTopMargin(0.05);
-  pad1InvMass->SetLeftMargin(0.09);
+  pad1InvMass->SetLeftMargin(0.15);
   pad1InvMass->SetBottomMargin(0.0);
   pad1InvMass->SetRightMargin(0.02);
   TPad *pad2InvMass = new TPad("pad2InvMass","",0.0,0.0,1.0,0.33);
   pad2InvMass->SetTopMargin(0.0);
-  pad2InvMass->SetLeftMargin(0.09);
+  pad2InvMass->SetLeftMargin(0.15);
   pad2InvMass->SetBottomMargin(0.3);
   pad2InvMass->SetRightMargin(0.02);
   pad2InvMass->SetTicky();
@@ -447,6 +447,11 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
         ////////////////////////////////////////////////////////////////////////
         // Drawing Chi2 maps
         c2->cd();
+
+        hChi2_2D->GetXaxis()->SetTitleSize(0.035);
+        hChi2_2D->GetYaxis()->SetTitleSize(0.035);
+        hChi2_2D->GetXaxis()->SetLabelSize(0.035);
+        hChi2_2D->GetYaxis()->SetLabelSize(0.035);
 
         hChi2_2D->Draw("colz");
         hChi2_2D_sigma->SetLineColor(kWhite);
@@ -898,7 +903,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
     c1->Clear();
     c1->SetLogy(1);
     hYield_pol1_uncorr->GetYaxis()->SetRangeUser(1.e-8,1.e-2);
-    hYield_pol1_uncorr->GetYaxis()->SetTitleOffset(1.5);
+    hYield_pol1_uncorr->GetYaxis()->SetTitleOffset(1.6);
     hYield_pol1_uncorr->Draw("lp");
     hYield_dt_uncorr->Draw("samelp");
     hYield_dt_chi2map_uncorr->Draw("samelp");
@@ -951,30 +956,27 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
 
     pad1InvMass->SetLogy(1);
 
-    TLegend* leg = new TLegend(0.5,0.35,0.9,0.55);
-    SetLegendSettigns(leg, 0.03*3./2.);
-    leg->AddEntry(hYield_dt_corrected, doubletempstring, "lp");
-    leg->AddEntry(hYield_dt_chi2map_corrected, doubletempstring + " with chi2map" , "lp");
+    TLegend* leg = new TLegend(0.2,0.07,0.35,0.3);
+    SetLegendSettigns(leg, 0.025*3./2.);
+    leg->AddEntry(hYield_dt_chi2map_corrected, "signal + back. temp." , "lp");
     leg->AddEntry(hYield_pol1_corrected, pol1string, "lp");
-    leg->AddEntry(hCorrectedYieldTrueEff, "standard method from framework", "lp");
+    leg->AddEntry(hCorrectedYieldTrueEff, "standard method", "lp");
 
-    hYield_dt_corrected->GetYaxis()->SetTitleOffset(1.2);
-    hYield_dt_corrected->GetYaxis()->SetRangeUser(1.e-7-5.e-8,1.e-1);
-    hYield_dt_corrected->GetXaxis()->SetRangeUser(0.0, 16.0);
-    hYield_dt_corrected->Draw("p");
-    hYield_dt_chi2map_corrected->Draw("same");
+    hYield_dt_chi2map_corrected->GetYaxis()->SetTitleOffset(1.7);
+    hYield_dt_chi2map_corrected->GetYaxis()->SetRangeUser(1.e-7-5.e-8,1.e-1);
+    hYield_dt_chi2map_corrected->GetXaxis()->SetRangeUser(0.0, 16.0);
+    hYield_dt_chi2map_corrected->GetXaxis()->SetTitleSize(0.025*3./2.);
+    hYield_dt_chi2map_corrected->GetYaxis()->SetTitleSize(0.025*3./2.);
+    hYield_dt_chi2map_corrected->GetXaxis()->SetLabelSize(0.025*3./2.);
+    hYield_dt_chi2map_corrected->GetYaxis()->SetLabelSize(0.025*3./2.);
+
+    hYield_dt_chi2map_corrected->Draw("p");
     hYield_pol1_corrected->Draw("same");
     hCorrectedYieldTrueEff->Draw("same");
     leg->Draw("same");
     canInvMass->Update();
-    DrawLabelALICE(0.5, 0.9, 0.035, 0.03*3./2., "");
+    DrawLabelALICE(0.64, 0.9, 0.035, 0.025*3./2., "");
     pad1InvMass->Update();
-
-    TH1D* hYield_dt_corrected_ratio = (TH1D*) hCorrectedYieldTrueEff->Clone("hYield_dt_corrected_ratio");
-    hYield_dt_corrected_ratio->Divide(hYield_dt_corrected);
-    hYield_dt_corrected_ratio->SetLineColor(kTeal-7);
-    hYield_dt_corrected_ratio->SetMarkerColor(kTeal-7);
-    hYield_dt_corrected_ratio->SetYTitle("Ratio");
 
     TH1D* hYield_dt_chi2map_corrected_ratio = (TH1D*) hCorrectedYieldTrueEff->Clone("hYield_dt_chi2map_corrected_ratio");
     hYield_dt_chi2map_corrected_ratio->Divide(hYield_dt_chi2map_corrected);
@@ -993,12 +995,26 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
     line_ratio1->SetLineWidth(2);
     line_ratio1->SetLineStyle(3);
 
+    hYield_dt_chi2map_corrected_ratio->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    hYield_dt_chi2map_corrected_ratio->GetXaxis()->SetTitleOffset(1.0);
+    hYield_dt_chi2map_corrected_ratio->GetXaxis()->SetLabelOffset(0.008);
+    hYield_dt_chi2map_corrected_ratio->GetYaxis()->SetTitleOffset(0.8);
+    hYield_dt_chi2map_corrected_ratio->GetYaxis()->SetLabelOffset(0.008);
+
     hYield_dt_chi2map_corrected_ratio->GetXaxis()->SetRangeUser(0.0, 16.0);
     hYield_dt_chi2map_corrected_ratio->GetYaxis()->SetRangeUser(0.69, 1.25);
+    hYield_dt_chi2map_corrected_ratio->GetXaxis()->SetTitleSize(0.025*3./1.);
+    hYield_dt_chi2map_corrected_ratio->GetYaxis()->SetTitleSize(0.025*3./1.);
+    hYield_dt_chi2map_corrected_ratio->GetXaxis()->SetLabelSize(0.025*3./1.);
+    hYield_dt_chi2map_corrected_ratio->GetYaxis()->SetLabelSize(0.025*3./1.);
+
+    hYield_dt_chi2map_corrected_ratio->GetXaxis()->SetTitleFont(42);
+    hYield_dt_chi2map_corrected_ratio->GetYaxis()->SetTitleFont(42);
+    hYield_dt_chi2map_corrected_ratio->GetXaxis()->SetLabelFont(42);
+    hYield_dt_chi2map_corrected_ratio->GetYaxis()->SetLabelFont(42);
 
     hYield_dt_chi2map_corrected_ratio->DrawCopy("P");
     line_ratio1->Draw("SAME");
-    hYield_dt_corrected_ratio->DrawCopy("SAME P");
     hYield_dt_chi2map_corrected_ratio->DrawCopy("SAME P");
     hYield_pol1_corrected_ratio->DrawCopy("SAME P");
     pad2InvMass->Update();
@@ -1008,7 +1024,6 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
     canInvMass->Clear("D");
 
     delete leg;
-    delete hYield_dt_corrected_ratio;
     delete hYield_dt_chi2map_corrected_ratio;
     delete hYield_pol1_corrected_ratio;
   }
@@ -1082,41 +1097,61 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
 
     delete leg;
 
-    hDoubleTemplatecorrBGFactor->Add(hDoubleTemplatePeakFactor,-1);
-    double mean = 0;
-    for (int i = 1; i < 18; i++) {
-      mean += hDoubleTemplatecorrBGFactor->GetBinContent(i);
-    }
-    mean /= 17.;
+    h_y_min->Divide(h_x_min);
 
-    double variance = 0;
-    for (int i = 1; i < 18; i++) {
-      variance += pow(hDoubleTemplatecorrBGFactor->GetBinContent(i)-mean, 2.);
-    }
-    variance = variance/17.;
-    variance = sqrt(variance);
+    c1->cd();
 
-    std::cout << "IterMethod:" << '\n';
-    std::cout << "mean = " << mean << '\n';
-    std::cout << "variance = " << variance << '\n';
+    h_y_min->SetLineColor(kMagenta+2);
+    h_y_min->SetMarkerColor(kMagenta+2);
+    h_y_min->SetMarkerStyle(25);
+    h_y_min->SetMarkerSize(1.5);
+    h_y_min->GetYaxis()->SetRangeUser(-0.2, 5.);
 
-    h_y_min->Add(h_x_min, -1);
-    mean = 0;
-    variance = 0;
-    for (int i = 1; i < 17; i++) {
-      mean += h_y_min->GetBinContent(i);
-    }
-    mean /= 16.;
 
-    for (int i = 1; i < 17; i++) {
-      variance += pow(h_y_min->GetBinContent(i)-mean, 2.);
-    }
-    variance = variance/16.;
-    variance = sqrt(variance);
 
-    std::cout << "Chi2MapMethod:" << '\n';
-    std::cout << "mean = " << mean << '\n';
-    std::cout << "variance = " << variance << '\n';
+    h_y_min->Draw();
+    h_y_min->SetYTitle("back. scaling/signal scaling");
+
+    c1->Update();
+    c1->SaveAs(Form(SaveFile + "/b_to_a_ratio." + PicFormat));
+    c1->Clear();
+
+
+    // hDoubleTemplatecorrBGFactor->Add(hDoubleTemplatePeakFactor,-1);
+    // double mean = 0;
+    // for (int i = 1; i < 18; i++) {
+    //   mean += hDoubleTemplatecorrBGFactor->GetBinContent(i);
+    // }
+    // mean /= 17.;
+    //
+    // double variance = 0;
+    // for (int i = 1; i < 18; i++) {
+    //   variance += pow(hDoubleTemplatecorrBGFactor->GetBinContent(i)-mean, 2.);
+    // }
+    // variance = variance/17.;
+    // variance = sqrt(variance);
+    //
+    // std::cout << "IterMethod:" << '\n';
+    // std::cout << "mean = " << mean << '\n';
+    // std::cout << "variance = " << variance << '\n';
+    //
+    // h_y_min->Add(h_x_min, -1);
+    // mean = 0;
+    // variance = 0;
+    // for (int i = 1; i < 17; i++) {
+    //   mean += h_y_min->GetBinContent(i);
+    // }
+    // mean /= 16.;
+    //
+    // for (int i = 1; i < 17; i++) {
+    //   variance += pow(h_y_min->GetBinContent(i)-mean, 2.);
+    // }
+    // variance = variance/16.;
+    // variance = sqrt(variance);
+    //
+    // std::cout << "Chi2MapMethod:" << '\n';
+    // std::cout << "mean = " << mean << '\n';
+    // std::cout << "variance = " << variance << '\n';
 
   }
 

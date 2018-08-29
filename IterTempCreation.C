@@ -886,7 +886,7 @@ void IterTempCreation(std::string current_path, int cutmode){
     hYield_dt_uncorr->SetBinError(k+1, int_error);
 
     data_clone_for_int_dt_chi2map = (TH1D*) data->Clone("data_clone_for_int_dt_chi2map");
-    korrBG->Scale(y_min);
+    korrBG->Scale(y_min*corrbackAreaScaling);
     data_clone_for_int_dt_chi2map->Add(korrBG, -1);
     int_value = data_clone_for_int_dt_chi2map->IntegralAndError(data_clone_for_int_dt_chi2map->GetXaxis()->FindBin(lowerparamrange), data_clone_for_int_dt_chi2map->GetXaxis()->FindBin(upperparamrange), int_error);
     hYield_dt_chi2map_uncorr->SetBinContent(k+1, int_value);

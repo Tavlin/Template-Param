@@ -28,14 +28,14 @@ void dpg(int binnumber = 3, TString wpsid = "all", TString PicFormat = "png", TS
   TCanvas *c2 = new TCanvas("c2","",1200,1000);
   c2->cd();
   c2->SetTopMargin(0.05);
-  c2->SetBottomMargin(0.09);
+  c2->SetBottomMargin(0.1);
   c2->SetRightMargin(0.15);
   c2->SetLeftMargin(0.09);
   c2->SetTicky();
   c2->SetTickx();
   c2->SetLogz(1);
 
-  TCanvas *canInvMass = new TCanvas("canInvMass","",1200,1200);
+  TCanvas *canInvMass = new TCanvas("canInvMass","",1200,1600);
   TPad *pad1InvMass = new TPad("pad1InvMass","",0.0,0.33,1.0,1.0);
   pad1InvMass->SetTopMargin(0.05);
   pad1InvMass->SetLeftMargin(0.09);
@@ -185,36 +185,31 @@ void dpg(int binnumber = 3, TString wpsid = "all", TString PicFormat = "png", TS
       hData->SetMarkerColor(kBlack);
       hData->SetLineColor(kBlack);
       hData->SetMarkerStyle(21);
-      hChi2Map_Param->SetMarkerColor(kTeal-7);
-      hChi2Map_Param->SetLineColor(kTeal-7);
+      hChi2Map_Param->SetMarkerColor(kRed);
+      hChi2Map_Param->SetLineColor(kRed);
       hChi2Map_Param->SetMarkerStyle(1);
       hChi2Map_Param->SetMarkerSize(1);
-      hSignal_Clone->SetMarkerColor(kMagenta+2);
-      hSignal_Clone->SetLineColor(kMagenta+2);
-      hSignal_Clone->SetMarkerStyle(1);
-      hSignal_Clone->SetMarkerSize(1);
-      hCorrBack_Clone->SetMarkerColor(kRed);
-      hCorrBack_Clone->SetLineColor(kRed);
+      hCorrBack_Clone->SetMarkerColor(kMagenta+2);
+      hCorrBack_Clone->SetLineColor(kMagenta+2);
       hCorrBack_Clone->SetMarkerStyle(1);
       hCorrBack_Clone->SetMarkerSize(1);
 
       TLegend* leg = new TLegend(0.6,0.9,0.9,0.65);
       SetLegendSettigns(leg, 0.035);
       leg->AddEntry(hData, strData, "p");
-      leg->AddEntry(hChi2Map_Param, "double temp. param. ", "l");
-      leg->AddEntry(hSignal_Clone, "scaled signal template", "l");
+      leg->AddEntry(hChi2Map_Param, "signal + back. temp.", "l");
+      leg->AddEntry((TObject*) 0x0, "parametrization", "");
       leg->AddEntry(hCorrBack_Clone, "scaled back. template", "l");
 
-      SetHistoStandardSettings(hData, 0., 0., 0.03);
+      SetHistoStandardSettings(hData, 0., 0., 0.035);
 
       hData->GetXaxis()->SetRangeUser(0.0, 0.3);
       hData->SetTitle("");
       hData->GetYaxis()->SetTitleOffset(1.1);
+      hData->GetXaxis()->SetTitleOffset(1.);
       hData->Draw("AXIS");
       hChi2Map_Param->Draw("same HIST");
       hChi2Map_Param->Draw("SAME P");
-      hSignal_Clone->Draw("same HIST");
-      hSignal_Clone->Draw("SAME P");
       hCorrBack_Clone->Draw("same HIST");
       hCorrBack_Clone->Draw("SAME P");
       hData->Draw("SAME P");
@@ -245,32 +240,26 @@ void dpg(int binnumber = 3, TString wpsid = "all", TString PicFormat = "png", TS
       leg->AddEntry(hData, strData, "p");
       leg->AddEntry(hPol1, "signal temp. + 1^{st} ord. pol.", "l");
       leg->AddEntry((TObject*) 0x0, "parametrization", "");
-      leg->AddEntry(hPol1Peak, "scaled signal template", "l");
-      leg->AddEntry(fpol1, " 1^{st} polynomial order", "l");
+      leg->AddEntry(fpol1, " 1^{st} order polynomial", "l");
 
       hData->GetXaxis()->SetRangeUser(0.0, 0.3);
       hData->SetMarkerColor(kBlack);
       hData->SetLineColor(kBlack);
       hData->SetMarkerStyle(21);
-      hPol1->SetMarkerColor(kTeal-7);
-      hPol1->SetLineColor(kTeal-7);
+      hPol1->SetMarkerColor(kRed);
+      hPol1->SetLineColor(kRed);
       hPol1->SetMarkerStyle(1);
       hPol1->SetMarkerSize(1);
-      hPol1Peak->SetMarkerColor(kMagenta+2);
-      hPol1Peak->SetLineColor(kMagenta+2);
-      hPol1Peak->SetMarkerStyle(1);
-      hPol1Peak->SetMarkerSize(1);
-      fpol1->SetLineColor(kRed);
+      fpol1->SetLineColor(kMagenta+2);
 
 
-      SetHistoStandardSettings(hData, 0., 0., 0.03);
+      SetHistoStandardSettings(hData, 0., 0., 0.035);
+      hData->GetXaxis()->SetTitleOffset(1.);
       hData->SetTitle("");
       hData->GetYaxis()->SetTitleOffset(1.1);
       hData->Draw("AXIS");
       hPol1->Draw("SAME HIST");
       hPol1->Draw("SAME P");
-      hPol1Peak->Draw("SAME HIST");
-      hPol1Peak->Draw("SAME P");
       hData->Draw("SAME P");
       fpol1->Draw("same");
       c1->Update();

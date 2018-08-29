@@ -5,6 +5,7 @@ echo "start Iter Temp Fit"
 # rm -r MCTemplatesAnData
 # rm -r MixedBGComp
 mkdir MCTemplatesAnData
+mkdir BackGroundFitting
 # mkdir MixedBGComp
 # rm -r DPG
 mkdir DPG
@@ -20,6 +21,7 @@ DIR=${PWD##*/} # the directery where I am currently to make things a bit more
 # $4 mode 1 for p-Pb else for pp
 # $5 Saving in another Diretory, for like testing and stuff.
 
-time root -l -b -q IterTempCreation.C++\(\"$DIR\",$4\)
-time root -l -b -q IterTempPlot.C++\($1,\"$2\",\"$3\",\"$5\"\)
-time root -l -b -q dpg.C++\($1,\"$2\",\"$3\",\"$5\"\)
+# time root -l -b -q IterTempCreation.C++\(\"$DIR\",$4\)
+# time root -l -b -q IterTempPlot.C++\($1,\"$2\",\"$3\",\"$5\"\)
+# time root -l -b -q dpg.C++\($1,\"$2\",\"$3\",\"$5\"\)
+# time root -l -b -q BackGroundFitting.C++\(\"$3\"\)
