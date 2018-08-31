@@ -123,7 +123,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
   Double_t line_y = 0;
 
 
-  TFile* IterTemp = SafelyOpenRootfile("IterTemp.root");
+  TFile* IterTemp = SafelyOpenRootfile("IterTemp_BGFitRange0d29.root");
   if (IterTemp->IsOpen() ) printf("IterTemp opened successfully\n");
 
   hChi2_DT_Iter = (TH1D*) IterTemp->Get(Form("hChi2_DT_Iter"));
@@ -959,7 +959,6 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
     TLegend* leg = new TLegend(0.2,0.07,0.35,0.3);
     SetLegendSettigns(leg, 0.025*3./2.);
     leg->AddEntry(hYield_dt_chi2map_corrected, "signal + back. temp." , "lp");
-    leg->AddEntry(hYield_pol1_corrected, pol1string, "lp");
     leg->AddEntry(hCorrectedYieldTrueEff, "standard method", "lp");
 
     hYield_dt_chi2map_corrected->GetYaxis()->SetTitleOffset(1.7);
@@ -969,10 +968,12 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
     hYield_dt_chi2map_corrected->GetYaxis()->SetTitleSize(0.025*3./2.);
     hYield_dt_chi2map_corrected->GetXaxis()->SetLabelSize(0.025*3./2.);
     hYield_dt_chi2map_corrected->GetYaxis()->SetLabelSize(0.025*3./2.);
+    hYield_dt_chi2map_corrected->SetMarkerColor(kRed);
+    hYield_dt_chi2map_corrected->SetLineColor(kRed);
 
-    hYield_dt_chi2map_corrected->Draw("p");
-    hYield_pol1_corrected->Draw("same");
+    hYield_dt_chi2map_corrected->Draw("AXIS");
     hCorrectedYieldTrueEff->Draw("same");
+    hYield_dt_chi2map_corrected->Draw("same");
     leg->Draw("same");
     canInvMass->Update();
     DrawLabelALICE(0.64, 0.9, 0.035, 0.025*3./2., "");
@@ -980,15 +981,10 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
 
     TH1D* hYield_dt_chi2map_corrected_ratio = (TH1D*) hCorrectedYieldTrueEff->Clone("hYield_dt_chi2map_corrected_ratio");
     hYield_dt_chi2map_corrected_ratio->Divide(hYield_dt_chi2map_corrected);
-    hYield_dt_chi2map_corrected_ratio->SetLineColor(kMagenta+2);
-    hYield_dt_chi2map_corrected_ratio->SetMarkerColor(kMagenta+2);
+    hYield_dt_chi2map_corrected_ratio->SetLineColor(kRed);
+    hYield_dt_chi2map_corrected_ratio->SetMarkerColor(kRed);
     hYield_dt_chi2map_corrected_ratio->SetYTitle("Ratio");
 
-    TH1D* hYield_pol1_corrected_ratio = (TH1D*) hCorrectedYieldTrueEff->Clone("hYield_pol1_corrected_ratio");
-    hYield_pol1_corrected_ratio->Divide(hYield_pol1_corrected);
-    hYield_pol1_corrected_ratio->SetLineColor(kRed);
-    hYield_pol1_corrected_ratio->SetMarkerColor(kRed);
-    hYield_pol1_corrected_ratio->SetYTitle("Ratio");
 
     pad2InvMass->cd();
     TLine* line_ratio1 = new TLine(0.0, 1.0, 16.0, 1.0);
@@ -1013,10 +1009,9 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
     hYield_dt_chi2map_corrected_ratio->GetXaxis()->SetLabelFont(42);
     hYield_dt_chi2map_corrected_ratio->GetYaxis()->SetLabelFont(42);
 
-    hYield_dt_chi2map_corrected_ratio->DrawCopy("P");
+    hYield_dt_chi2map_corrected_ratio->DrawCopy("AXIS");
     line_ratio1->Draw("SAME");
     hYield_dt_chi2map_corrected_ratio->DrawCopy("SAME P");
-    hYield_pol1_corrected_ratio->DrawCopy("SAME P");
     pad2InvMass->Update();
 
     canInvMass->Update();
@@ -1025,7 +1020,6 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
 
     delete leg;
     delete hYield_dt_chi2map_corrected_ratio;
-    delete hYield_pol1_corrected_ratio;
   }
 
   //////////////////////////////////////////////////////////////////////////////

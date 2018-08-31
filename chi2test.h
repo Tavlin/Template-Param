@@ -63,8 +63,8 @@ TH2D* chi2test(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi2_min,
   TH1D* hSignal_clone = (TH1D*) hSignal->Clone("hSignal");
   TH1D* hCorrback_clone = (TH1D*) hCorrback->Clone("hCorrback");
 
-  Int_t lowerfitrange = hData_clone->FindBin(0.085);
-  Int_t upperfitrange = hData_clone->FindBin(0.225);
+  Int_t lowerfitrange = hData_clone->FindBin(lowerparamrange);
+  Int_t upperfitrange = hData_clone->FindBin(upperparamrange);
 
   //////////////////////////////////////////////////////////////////////////////
   // Setting all the bins with pT > 0.3 GeV/c to 0

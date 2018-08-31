@@ -55,8 +55,10 @@ Double_t fBinsPi013TeVEMCPt[40]                  =   {0.0,  1.4,   1.6,   1.8,  
 
 
 const Int_t kMaxHit = 2000;
-const Double_t lowerparamrange = 0.085;         //0.085;
-const Double_t upperparamrange = 0.225;
+const Double_t lowerparamrange = 0.02;         //0.085;
+const Double_t upperparamrange = 0.285;
+const Double_t lowercountrange = 0.02;         //0.085;
+const Double_t uppercountrange = 0.225;
 const int numberbins = 39;
 TH1D* data = NULL;                              //data histogram
 TH1D* data_MC = NULL;
@@ -107,7 +109,7 @@ TString strData = "data (signal + corr. back.)";
 TString MCInfo = "#splitline{pp, #sqrt{#it{s}} = 13TeV}{MC Monasch 13}";
 TString massaxis = "#it{M}_{#gamma #gamma} (GeV/#it{c}^{2})";
 TString rawyield = "#frac{1}{2#pi N_{evt}} #frac{d#it{N}}{d#it{p}_{T}}";
-TString strCorrectedYield = "#frac{1}{2#pi N_{evt}} #frac{d^{2}#it{N}}{d#it{y}d#it{p}_{T}}";
+TString strCorrectedYield = "#frac{1}{2#pi #it{N}_{evt} #it{p}_{T}} #frac{d^{2}#it{N}}{d#it{y}d#it{p}_{T}}";
 TString DoubleTempStr = "signal + corr. back.";
 TString Pol1Str = "Peak temp. + 1^{st} ord. pol param.";
 TLatex* texMCInfo = new TLatex();
@@ -375,7 +377,7 @@ void DrawLabelALICE(Double_t startTextX = 0.13, Double_t startTextY = 0.9, Doubl
 
     pt               = new TLatex(startTextX, (startTextY-1.5*differenceText), str);
 
-    energy           = new TLatex(startTextX, (startTextY-1.5*differenceText), "pp, #sqrt{s} = 13 TeV");
+    energy           = new TLatex(startTextX, (startTextY-1.5*differenceText), "pp, #sqrt{#it{s}} = 13 TeV");
 
     detprocess       = new TLatex(startTextX, (startTextY-2.5*differenceText), "#pi^{0}#rightarrow#gamma#gamma");
 
@@ -391,7 +393,7 @@ void DrawLabelALICE(Double_t startTextX = 0.13, Double_t startTextY = 0.9, Doubl
 
     pt               = new TLatex(startTextX, (startTextY-1.5*differenceText), str);
 
-    energy           = new TLatex(startTextX, (startTextY-2.5*differenceText), "pp, #sqrt{s} = 13 TeV");
+    energy           = new TLatex(startTextX, (startTextY-2.5*differenceText), "pp, #sqrt{#it{s}} = 13 TeV");
 
     detprocess       = new TLatex(startTextX, (startTextY-3.5*differenceText), "#pi^{0}#rightarrow#gamma#gamma");
 

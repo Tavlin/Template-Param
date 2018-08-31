@@ -369,7 +369,7 @@ void IterTempCreation(std::string current_path, int cutmode){
 
         ////////////////////////////////////////////////////////////////////////////
         // retrieve MC histograms
-        data_MC = (TH1D*) MCFile->Get(Form("fHistoMappingSignalInvMass_in_Pt_Bin%02i",k));
+        data_MC = (TH1D*) MCFile->Get(Form("fHistoMappingSignalInvMass_in_Pt_Bin%02i",k)); //fHistoMappingSignalInvMass_in_Pt_Bin
         mc_full = (TH1D*) MCFile->Get(Form("Mapping_TrueMeson_InvMass_in_Pt_Bin%02i",k));
 
 
@@ -402,14 +402,14 @@ void IterTempCreation(std::string current_path, int cutmode){
 
     hTrueDoubleCounting_Pi0_Pro = hTrueDoubleCounting_Pi0->ProjectionX(Form("hTrueDoubleCounting_Pi0_Pro_bin%02d",k),hMC_Pi0InAcc_Pt->FindBin(fBinsPi013TeVEMCPt[k]),
     hMC_Pi0InAcc_Pt->FindBin(fBinsPi013TeVEMCPt[k+1]));
-    Double_t InIntRangeDoubleCounting = (Double_t)hTrueDoubleCounting_Pi0_Pro->Integral(hTrueDoubleCounting_Pi0_Pro->FindBin(lowerparamrange),
-                                                   hTrueDoubleCounting_Pi0_Pro->FindBin(upperparamrange))/
+    Double_t InIntRangeDoubleCounting = (Double_t)hTrueDoubleCounting_Pi0_Pro->Integral(hTrueDoubleCounting_Pi0_Pro->FindBin(lowercountrange),
+                                                   hTrueDoubleCounting_Pi0_Pro->FindBin(uppercountrange))/
                                                    (Double_t)mc_full->Integral(
-                                                    mc_full->FindBin(lowerparamrange),
-                                                    mc_full->FindBin(upperparamrange));
+                                                    mc_full->FindBin(lowercountrange),
+                                                    mc_full->FindBin(uppercountrange));
 
-    Double_t InIntRangePercent = (Double_t)mc_full->Integral(mc_full->FindBin(lowerparamrange),
-                                                   mc_full->FindBin(upperparamrange))/
+    Double_t InIntRangePercent = (Double_t)mc_full->Integral(mc_full->FindBin(lowercountrange),
+                                                   mc_full->FindBin(uppercountrange))/
                                                    (Double_t)hMC_Pi0InAcc_Pt->Integral(
                                                      hMC_Pi0InAcc_Pt->FindBin(fBinsPi013TeVEMCPt[k]),
                                                      hMC_Pi0InAcc_Pt->FindBin(fBinsPi013TeVEMCPt[k+1])-1);
@@ -538,11 +538,11 @@ void IterTempCreation(std::string current_path, int cutmode){
       // creating the new root file to safe all the related histograms and fits
       // in it.
       if(k == 1 && nIterStep == 0){
-        IterTemp      = new TFile("IterTemp.root", "RECREATE");
+        IterTemp      = new TFile("IterTemp_BGFitRange0d29.root", "RECREATE");
       }
 
       else{
-        IterTemp      = new TFile("IterTemp.root", "UPDATE");
+        IterTemp      = new TFile("IterTemp_BGFitRange0d29.root", "UPDATE");
       }
 
       //////////////////////////////////////////////////////////////////////////
@@ -605,7 +605,9 @@ void IterTempCreation(std::string current_path, int cutmode){
           + pow((r_double_temp1->Parameter(1)*korrBG->GetBinError(i)),2.)));
         }
       }
-      vChi2_DT_Iter_Test.push_back(hDataCloneforCHi2->Chi2Test(hDoubleTemp, "WW CHI2/NDF", 0));
+      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ACHTUNG !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      // vChi2_DT_Iter_Test.push_back(hDataCloneforCHi2->Chi2Test(hDoubleTemp, "WW CHI2/NDF", 0));
+      vChi2_DT_Iter_Test.push_back(0.0);
 
       //////////////////////////////////////////////////////////////////////////
       // reset data_clone histos and then calculate their new errors
@@ -843,7 +845,7 @@ void IterTempCreation(std::string current_path, int cutmode){
 
 
     data->SetTitle(str);
-    IterTemp = new TFile("IterTemp.root","UPDATE");
+    IterTemp = new TFile("IterTemp_BGFitRange0d29.root","UPDATE");
     gDirectory = IterTemp;
     data->Write(Form("data_bin%02d",k));
     data_clone3->Write(Form("data_addedErrosPol1_bin%02d",k));
@@ -881,21 +883,21 @@ void IterTempCreation(std::string current_path, int cutmode){
 
     data_clone_for_int_dt = (TH1D*) data->Clone("hYield_dt_uncorr");
     data_clone_for_int_dt->Add(korrBG_clone3, -1);
-    int_value = data_clone_for_int_dt->IntegralAndError(data_clone_for_int_dt->GetXaxis()->FindBin(lowerparamrange), data_clone_for_int_dt->GetXaxis()->FindBin(upperparamrange), int_error);
+    int_value = data_clone_for_int_dt->IntegralAndError(data_clone_for_int_dt->GetXaxis()->FindBin(lowercountrange), data_clone_for_int_dt->GetXaxis()->FindBin(uppercountrange), int_error);
     hYield_dt_uncorr->SetBinContent(k+1, int_value);
     hYield_dt_uncorr->SetBinError(k+1, int_error);
 
     data_clone_for_int_dt_chi2map = (TH1D*) data->Clone("data_clone_for_int_dt_chi2map");
     korrBG->Scale(y_min*corrbackAreaScaling);
     data_clone_for_int_dt_chi2map->Add(korrBG, -1);
-    int_value = data_clone_for_int_dt_chi2map->IntegralAndError(data_clone_for_int_dt_chi2map->GetXaxis()->FindBin(lowerparamrange), data_clone_for_int_dt_chi2map->GetXaxis()->FindBin(upperparamrange), int_error);
+    int_value = data_clone_for_int_dt_chi2map->IntegralAndError(data_clone_for_int_dt_chi2map->GetXaxis()->FindBin(lowercountrange), data_clone_for_int_dt_chi2map->GetXaxis()->FindBin(uppercountrange), int_error);
     hYield_dt_chi2map_uncorr->SetBinContent(k+1, int_value);
     hYield_dt_chi2map_uncorr->SetBinError(k+1, int_error);
 
 
     data_clone_for_int_pol1 = (TH1D*) data->Clone("hYield_pol1_uncorr");
     data_clone_for_int_pol1->Add(fpol1, -1);
-    int_value = data_clone_for_int_pol1->IntegralAndError(data_clone_for_int_pol1->GetXaxis()->FindBin(lowerparamrange), data_clone_for_int_pol1->GetXaxis()->FindBin(upperparamrange), int_error);
+    int_value = data_clone_for_int_pol1->IntegralAndError(data_clone_for_int_pol1->GetXaxis()->FindBin(lowercountrange), data_clone_for_int_pol1->GetXaxis()->FindBin(uppercountrange), int_error);
     hYield_pol1_uncorr->SetBinContent(k+1, int_value);
     hYield_pol1_uncorr->SetBinError(k+1, int_error);
 
@@ -1042,7 +1044,7 @@ void IterTempCreation(std::string current_path, int cutmode){
 
   /////////////////////////////////////////////////////////////////////////////
   // Writing of Chi2(pT)
-  IterTemp = new TFile("IterTemp.root","UPDATE");
+  IterTemp = new TFile("IterTemp_BGFitRange0d29.root","UPDATE");
 
   hchi2_pol1->SetLineColor(kRed);
   hchi2_pol1->SetLineWidth(3);
