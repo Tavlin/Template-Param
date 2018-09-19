@@ -2,31 +2,33 @@
 
 void Systematics(TString PicFormat = "png"){
 
-  TH1D* hCorrYield                   = NULL;
-  TH1D* hCorrYield_count0d06to0d225  = NULL;
-  TH1D* hCorrYield_count0d1to0d225   = NULL;
-  TH1D* hCorrYield_count0d02to0d185  = NULL;
-  TH1D* hCorrYield_count0d02to0d285  = NULL;
-  TH1D* hCorrYield_countsyserror     = NULL;
-  TH1D* hCorrYield_param0d06to0d225  = NULL;
-  TH1D* hCorrYield_param0d1to0d225   = NULL;
-  TH1D* hCorrYield_param0d02to0d185  = NULL;
-  TH1D* hCorrYield_param0d02to0d285  = NULL;
-  TH1D* hCorrYield_paramsyserror     = NULL;
-  TH1D* hCorrYield_BGFitRange0d25    = NULL;
-  TH1D* hCorrYield_BGFitRange0d29    = NULL;
-  TH1D* hCorrYield_BGLeft            = NULL;
-  TH1D* hCorrYield_BGFitsyserror     = NULL;
-  TH1D* hCorrYield_syserror          = NULL;
-  TH1D* hCorrYield_RelativSyserror   = NULL;
-  TH1D* hCorrectedYieldTrueEff       = NULL;
+  TH1D* hCorrYield                       = NULL;
+  TH1D* hCorrYield_count0d06to0d225      = NULL;
+  TH1D* hCorrYield_count0d1to0d225       = NULL;
+  TH1D* hCorrYield_count0d02to0d185      = NULL;
+  TH1D* hCorrYield_count0d02to0d285      = NULL;
+  TH1D* hCorrYield_countsyserror         = NULL;
+  TH1D* hCorrYield_param0d06to0d225      = NULL;
+  TH1D* hCorrYield_param0d1to0d225       = NULL;
+  TH1D* hCorrYield_param0d02to0d185      = NULL;
+  TH1D* hCorrYield_param0d02to0d285      = NULL;
+  TH1D* hCorrYield_paramsyserror         = NULL;
+  TH1D* hCorrYield_BGFitRange0d25        = NULL;
+  TH1D* hCorrYield_BGFitRange0d29        = NULL;
+  TH1D* hCorrYield_BGLeft                = NULL;
+  TH1D* hCorrYield_BGFitsyserror         = NULL;
+  TH1D* hCorrYield_syserror              = NULL;
+  TH1D* hCorrYield_RelativSyserror       = NULL;
+  TH1D* hCorrYield_RelativStaterror      = NULL;
+  TH1D* hCorrectedYieldTrueEff           = NULL;
+  TH1D* hCorrectedYieldTrueEff_StatError = NULL;
 
   std::vector<Double_t> vCountSys;
   std::vector<Double_t> vParamSys;
   std::vector<Double_t> vBGFitSys;
   std::vector<Double_t> vFinalSys;
 
-  TFile* IterTemp           = SafelyOpenRootfile("IterTemp.root");
+  TFile* IterTemp           = SafelyOpenRootfile("IterTempBetterBkg.root");
   if (IterTemp->IsOpen() ) printf("IterTemp opened successfully\n");
 
   hCorrYield                = (TH1D*) IterTemp->Get("hYield_dt_chi2map_corrected");
@@ -169,9 +171,16 @@ void Systematics(TString PicFormat = "png"){
   }
 
   hCorrYield_RelativSyserror = (TH1D*) hCorrYield_syserror->Clone("hCorrYield_RelativSyserror");
+  hCorrYield_RelativStaterror = (TH1D*) hCorrYield->Clone("hCorrYield_RelativStaterror");
+  hCorrectedYieldTrueEff_StatError = (TH1D*) hCorrectedYieldTrueEff->Clone("hCorrectedYieldTrueEff_StatError");
+
   for(int k = 2; k < numberbins; k++){
     hCorrYield_RelativSyserror->SetBinContent(k, hCorrYield_syserror->GetBinError(k)/(Double_t)hCorrYield->GetBinContent(k)*100.);
     std::cout << "rel Error = " <<  hCorrYield_RelativSyserror->GetBinContent(k) << '\n';
+    hCorrYield_RelativStaterror->SetBinContent(k, hCorrYield_RelativStaterror->GetBinError(k)/(Double_t)hCorrYield->GetBinContent(k)*100.);
+    hCorrYield_RelativStaterror->SetBinError(k,0.);
+    hCorrectedYieldTrueEff_StatError->SetBinContent(k, hCorrectedYieldTrueEff->GetBinError(k)/(Double_t)hCorrectedYieldTrueEff->GetBinContent(k)*100.);
+    hCorrectedYieldTrueEff_StatError->SetBinError(k,0.);
     hCorrYield_RelativSyserror->SetBinError(k,0.);
     hCorrYield_countsyserror->SetBinContent(k, hCorrYield_countsyserror->GetBinError(k)/(Double_t)hCorrYield->GetBinContent(k)*100.);
     hCorrYield_paramsyserror->SetBinContent(k, hCorrYield_paramsyserror->GetBinError(k)/(Double_t)hCorrYield->GetBinContent(k)*100.);
@@ -180,6 +189,161 @@ void Systematics(TString PicFormat = "png"){
     hCorrYield_paramsyserror->SetBinError(k,0.);
     hCorrYield_BGFitsyserror->SetBinError(k,0.);
   }
+
+  //////////////////////////////////////////////////////////////////////////////
+  // setting up canvas to draw Yield plus relative Systematic error
+  TCanvas *canError = new TCanvas("canError","",2000,1000);
+  TPad *pad1Error = new TPad("pad1Error","",0.0,0.53,1.0,1.0);
+  pad1Error->SetTopMargin(0.05);
+  pad1Error->SetLeftMargin(0.15);
+  pad1Error->SetBottomMargin(0.0);
+  pad1Error->SetRightMargin(0.02);
+  pad1Error->SetTicky();
+  pad1Error->SetTickx();
+  TPad *pad2Error = new TPad("pad2Error","",0.0,0.0,1.0,0.53);
+  pad2Error->SetTopMargin(0.0);
+  pad2Error->SetLeftMargin(0.15);
+  pad2Error->SetBottomMargin(0.18);
+  pad2Error->SetRightMargin(0.02);
+  pad2Error->SetTicky();
+  pad2Error->SetTickx();
+
+  ///////////////////////////////////////////////////////////////////////////
+  // drwaing yields + ratios
+  canError->cd();
+  pad1Error->Draw();
+  pad2Error->Draw("same");
+  pad1Error->cd();
+
+
+
+  // pad2InvMass->SetLogy(1);
+  Double_t meanSys = 0;
+  for(int i = 1; i < numberbins-3; i++){
+    meanSys += hCorrYield_RelativSyserror->GetBinContent(i);
+  }
+  meanSys /= (Double_t)(numberbins-4);
+
+  TLine* line_MeanSys = new TLine(1.4, meanSys, 12.0, meanSys);
+  line_MeanSys->SetLineWidth(2);
+  line_MeanSys->SetLineStyle(3);
+
+  TLegend* leg = new TLegend(0.18,0.7,0.5,0.9);
+  SetLegendSettigns(leg, 0.079);
+  // leg->SetHeader("systematic uncertainties");
+  leg->AddEntry(line_MeanSys, Form("mean value: %1.2lf %%", meanSys) , "l");
+  leg->AddEntry(hCorrYield_RelativSyserror, "sum" , "l");
+
+  TLegend* leg2 = new TLegend(0.55,0.6,0.9,0.9);
+  SetLegendSettigns(leg2, 0.079);
+  leg2->AddEntry(hCorrYield_paramsyserror, "param. range" , "l");
+  leg2->AddEntry(hCorrYield_countsyserror, "integration range" , "l");
+  leg2->AddEntry(hCorrYield_BGFitsyserror, "uncorr. bkg. variation" , "l");
+
+  hCorrYield_RelativSyserror->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+  hCorrYield_RelativSyserror->SetYTitle("rel. syst. uncertainty (%)");
+  hCorrYield_countsyserror->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+  hCorrYield_countsyserror->SetYTitle("rel. syst. uncertainty (%)");
+  hCorrYield_paramsyserror->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+  hCorrYield_paramsyserror->SetYTitle("rel. syst. uncertainty (%)");
+  hCorrYield_BGFitsyserror->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+  hCorrYield_BGFitsyserror->SetYTitle("rel. syst. uncertainty (%)");
+
+  hCorrYield_RelativSyserror->SetLineWidth(3);
+  hCorrYield_countsyserror->SetLineWidth(3);
+  hCorrYield_paramsyserror->SetLineWidth(3);
+  hCorrYield_BGFitsyserror->SetLineWidth(3);
+
+  hCorrYield_RelativSyserror->GetXaxis()->SetTitleOffset(1.2);
+  hCorrYield_RelativSyserror->GetXaxis()->SetLabelOffset(0.008);
+  hCorrYield_RelativSyserror->GetYaxis()->SetTitleOffset(0.9);
+  hCorrYield_RelativSyserror->GetYaxis()->SetLabelOffset(0.008);
+
+  hCorrYield_RelativSyserror->GetXaxis()->SetRangeUser(1.4, 12.0);
+  hCorrYield_paramsyserror->GetXaxis()->SetRangeUser(1.4, 12.0);
+  hCorrYield_countsyserror->GetXaxis()->SetRangeUser(1.4, 12.0);
+  hCorrYield_BGFitsyserror->GetXaxis()->SetRangeUser(1.4, 12.0);
+  hCorrYield_RelativSyserror->GetYaxis()->SetRangeUser(-0.5, 9.9);
+  hCorrYield_RelativSyserror->GetXaxis()->SetTitleSize(42);
+  hCorrYield_RelativSyserror->GetYaxis()->SetTitleSize(42);
+  hCorrYield_RelativSyserror->GetXaxis()->SetLabelSize(42);
+  hCorrYield_RelativSyserror->GetYaxis()->SetLabelSize(42);
+
+  hCorrYield_RelativSyserror->GetXaxis()->SetTitleFont(43);
+  hCorrYield_RelativSyserror->GetYaxis()->SetTitleFont(43);
+  hCorrYield_RelativSyserror->GetXaxis()->SetLabelFont(43);
+  hCorrYield_RelativSyserror->GetYaxis()->SetLabelFont(43);
+
+  hCorrYield_countsyserror->SetLineColor(kMagenta);
+  hCorrYield_paramsyserror->SetLineColor(kBlue+2);
+  hCorrYield_BGFitsyserror->SetLineColor(kTeal-7);
+  hCorrYield_RelativSyserror->SetLineColor(kRed);
+
+  hCorrYield_RelativSyserror->DrawCopy("AXIS");
+  line_MeanSys->Draw("SAME");
+  hCorrYield_countsyserror->DrawCopy("SAME HIST");
+  hCorrYield_paramsyserror->DrawCopy("SAME HIST");
+  hCorrYield_BGFitsyserror->DrawCopy("SAME HIST");
+  hCorrYield_RelativSyserror->DrawCopy("SAME HIST");
+  leg->Draw("SAME");
+  leg2->Draw("SAME");
+
+  pad1Error->Update();
+
+  pad2Error->cd();
+
+  hCorrYield_RelativStaterror->SetLineColor(kRed);
+  hCorrYield_RelativStaterror->SetMarkerColor(kRed);
+  hCorrectedYieldTrueEff_StatError->SetLineColor(kBlack);
+  hCorrectedYieldTrueEff_StatError->SetMarkerColor(kBlack);
+
+  TLegend* leg_stat = new TLegend(0.18,0.7,0.5,0.9);
+  SetLegendSettigns(leg_stat, 0.079);
+  leg_stat->SetTextFont(43);
+  leg_stat->SetTextSize(42);
+  leg_stat->AddEntry(hCorrectedYieldTrueEff_StatError, "standard method", "l");
+  leg_stat->AddEntry(hCorrYield_RelativStaterror, "this method" , "l");
+  hCorrectedYieldTrueEff_StatError->SetYTitle("rel. stat. uncertainty (%)");
+  hCorrectedYieldTrueEff_StatError->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+
+  hCorrectedYieldTrueEff_StatError->SetLineWidth(3);
+  hCorrYield_RelativStaterror->SetLineWidth(3);
+
+  hCorrectedYieldTrueEff_StatError->GetXaxis()->SetTitleOffset(1.8);
+  hCorrectedYieldTrueEff_StatError->GetXaxis()->SetLabelOffset(0.008);
+  hCorrectedYieldTrueEff_StatError->GetYaxis()->SetTitleOffset(0.9);
+  hCorrectedYieldTrueEff_StatError->GetYaxis()->SetLabelOffset(0.008);
+
+  hCorrectedYieldTrueEff_StatError->GetXaxis()->SetRangeUser(1.4, 12.0);
+  hCorrYield_RelativStaterror->GetXaxis()->SetRangeUser(1.4, 12.0);
+  hCorrectedYieldTrueEff_StatError->GetYaxis()->SetRangeUser(-0.09, 9.9);
+  hCorrectedYieldTrueEff_StatError->GetXaxis()->SetTitleSize(42);
+  hCorrectedYieldTrueEff_StatError->GetYaxis()->SetTitleSize(42);
+  hCorrectedYieldTrueEff_StatError->GetXaxis()->SetLabelSize(42);
+  hCorrectedYieldTrueEff_StatError->GetYaxis()->SetLabelSize(42);
+
+  hCorrectedYieldTrueEff_StatError->GetXaxis()->SetTitleFont(43);
+  hCorrectedYieldTrueEff_StatError->GetYaxis()->SetTitleFont(43);
+  hCorrectedYieldTrueEff_StatError->GetXaxis()->SetLabelFont(43);
+  hCorrectedYieldTrueEff_StatError->GetYaxis()->SetLabelFont(43);
+
+  hCorrectedYieldTrueEff_StatError->GetXaxis()->SetNdivisions(309);
+
+  hCorrectedYieldTrueEff_StatError->DrawCopy("AXIS");
+  hCorrYield_RelativStaterror->DrawCopy("SAME HIST");
+  hCorrectedYieldTrueEff_StatError->DrawCopy("SAME HIST");
+  leg_stat->Draw("");
+  pad2Error->Update();
+
+
+  canError->Update();
+  canError->SaveAs("Systematics/ErrorPlot." + PicFormat);
+  canError->Clear("D");
+
+  delete leg;
+  delete leg2;
+
+
 
   //////////////////////////////////////////////////////////////////////////////
   // setting up canvas to draw Yield plus relative Systematic error
@@ -212,7 +376,7 @@ void Systematics(TString PicFormat = "png"){
 
   TLegend* leg_yield = new TLegend(0.2,0.07,0.35,0.3);
   SetLegendSettigns(leg_yield, 0.025*3./2.);
-  leg_yield->AddEntry(hCorrYield, "signal + back. temp." , "lp");
+  leg_yield->AddEntry(hCorrYield, "signal + corr. bkg. temp." , "lp");
   leg_yield->AddEntry(hCorrectedYieldTrueEff, "standard method", "lp");
   hCorrectedYieldTrueEff->SetMarkerSize(1.5);
 
@@ -231,9 +395,9 @@ void Systematics(TString PicFormat = "png"){
   hCorrYield_syserror->SetFillColor(kGray+2);
   hCorrYield_syserror->SetFillStyle(1001);
 
-  hCorrYield->Draw("AXIS");
-  hCorrYield_syserror->Draw("SAME E2");
-  hCorrYield->Draw("SAME");
+  hCorrYield->DrawCopy("AXIS");
+  hCorrYield_syserror->DrawCopy("SAME E2");
+  hCorrYield->DrawCopy("SAME");
   leg_yield->Draw("SAME");
   canInvMass->Update();
   DrawLabelALICE(0.64, 0.85, 0.035, 0.025*3./2., "");
@@ -284,7 +448,6 @@ void Systematics(TString PicFormat = "png"){
   canInvMass->SaveAs(Form("Systematics/CorrectedYieldComp." + PicFormat));
   canInvMass->Clear("D");
 
-  delete line_ratio1;
   delete leg_yield;
 
   //////////////////////////////////////////////////////////////////////////////
@@ -303,27 +466,18 @@ void Systematics(TString PicFormat = "png"){
 
 
   // pad2InvMass->SetLogy(1);
-  Double_t meanSys = 0;
-  for(int i = 1; i < numberbins-3; i++){
-    meanSys += hCorrYield_RelativSyserror->GetBinContent(i);
-  }
-  meanSys /= (Double_t)(numberbins-4);
 
-  TLine* line_MeanSys = new TLine(1.4, meanSys, 12.0, meanSys);
-  line_MeanSys->SetLineWidth(2);
-  line_MeanSys->SetLineStyle(3);
-
-  TLegend* leg = new TLegend(0.15,0.7,0.5,0.9);
-  SetLegendSettigns(leg, 0.079);
+  TLegend* leg4 = new TLegend(0.15,0.7,0.5,0.9);
+  SetLegendSettigns(leg4, 0.079);
   // leg->SetHeader("systematic uncertainties");
-  leg->AddEntry(line_MeanSys, Form("mean value: %1.2lf %%", meanSys) , "l");
-  leg->AddEntry(hCorrYield_RelativSyserror, "sum" , "l");
+  leg4->AddEntry(line_MeanSys, Form("mean value: %1.2lf %%", meanSys) , "l");
+  leg4->AddEntry(hCorrYield_RelativSyserror, "sum" , "l");
 
-  TLegend* leg2 = new TLegend(0.55,0.6,0.9,0.9);
-  SetLegendSettigns(leg2, 0.079);
-  leg2->AddEntry(hCorrYield_paramsyserror, "param. range" , "l");
-  leg2->AddEntry(hCorrYield_countsyserror, "integration range" , "l");
-  leg2->AddEntry(hCorrYield_BGFitsyserror, "uncorr. back. variation" , "l");
+  TLegend* leg5 = new TLegend(0.55,0.6,0.9,0.9);
+  SetLegendSettigns(leg5, 0.079);
+  leg5->AddEntry(hCorrYield_paramsyserror, "param. range" , "l");
+  leg5->AddEntry(hCorrYield_countsyserror, "integration range" , "l");
+  leg5->AddEntry(hCorrYield_BGFitsyserror, "uncorr. bkg. variation" , "l");
 
   hCorrYield_RelativSyserror->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   hCorrYield_RelativSyserror->SetYTitle("rel. syst. uncertainty (%)");
@@ -365,15 +519,147 @@ void Systematics(TString PicFormat = "png"){
   hCorrYield_paramsyserror->DrawCopy("SAME HIST");
   hCorrYield_BGFitsyserror->DrawCopy("SAME HIST");
   hCorrYield_RelativSyserror->DrawCopy("SAME HIST");
-  leg->Draw("SAME");
-  leg2->Draw("SAME");
+  leg4->Draw("SAME");
+  leg5->Draw("SAME");
 
   c1->Update();
   c1->SaveAs("Systematics/RelativeSystematics." + PicFormat);
   c1->Clear();
 
-  delete leg;
-  delete leg2;
+  delete leg4;
+  delete leg5;
+
+  //////////////////////////////////////////////////////////////////////////////
+  // setting up canvas to draw Yield plus relative Systematic error
+  TCanvas *canYield = new TCanvas("canYield","",1000,1600);
+  TPad *pad1Yield = new TPad("pad1Yield","",0.0,0.50,1.0,1.0);
+  pad1Yield->SetTopMargin(0.05);
+  pad1Yield->SetLeftMargin(0.21);
+  pad1Yield->SetBottomMargin(0.0);
+  pad1Yield->SetRightMargin(0.02);
+  pad1Yield->SetTicky();
+  pad1Yield->SetTickx();
+  pad1Yield->SetLogy(1);
+  TPad *pad2Yield = new TPad("pad2Yield","",0.0,0.28,1.0,0.50);
+  pad2Yield->SetTopMargin(0.0);
+  pad2Yield->SetLeftMargin(0.21);
+  pad2Yield->SetBottomMargin(0.0);
+  pad2Yield->SetRightMargin(0.02);
+  pad2Yield->SetTicky();
+  pad2Yield->SetTickx();
+  TPad *pad3Yield = new TPad("pad3Yield","",0.0,0.0,1.0,0.28);
+  pad3Yield->SetTopMargin(0.0);
+  pad3Yield->SetLeftMargin(0.21);
+  pad3Yield->SetBottomMargin(0.3);
+  pad3Yield->SetRightMargin(0.02);
+  pad3Yield->SetTicky();
+  pad3Yield->SetTickx();
+
+  canYield->cd();
+  pad1Yield->Draw();
+  pad2Yield->Draw("same");
+  pad3Yield->Draw("same");
+
+  pad1Yield->cd();
+
+  TLegend* leg_yield2 = new TLegend(0.24,0.07,0.35,0.3);
+  SetLegendSettigns(leg_yield2, 0.025*2.);
+  leg_yield2->SetTextFont(43);
+  leg_yield2->SetTextSize(42);
+  leg_yield2->AddEntry(hCorrYield, "signal + corr. bkg. temp." , "lp");
+  leg_yield2->AddEntry(hCorrectedYieldTrueEff, "standard method", "lp");
+
+
+  hCorrYield->GetXaxis()->SetTitleOffset(1.4);
+  hCorrYield->GetXaxis()->SetLabelOffset(0.008);
+  hCorrYield->GetYaxis()->SetTitleOffset(3.5);
+  hCorrYield->GetYaxis()->SetLabelOffset(0.008);
+  hCorrYield->GetXaxis()->SetTitleSize(42);
+  hCorrYield->GetYaxis()->SetTitleSize(42);
+  hCorrYield->GetXaxis()->SetLabelSize(42);
+  hCorrYield->GetYaxis()->SetLabelSize(42);
+
+  hCorrYield->GetXaxis()->SetTitleFont(43);
+  hCorrYield->GetYaxis()->SetTitleFont(43);
+  hCorrYield->GetXaxis()->SetLabelFont(43);
+  hCorrYield->GetYaxis()->SetLabelFont(43);
+
+
+  hCorrYield->DrawCopy("AXIS");
+  hCorrYield_syserror->DrawCopy("SAME E2");
+  hCorrYield->DrawCopy("SAME");
+  leg_yield2->Draw("SAME");
+  canYield->Update();
+  DrawLabelALICE(0.55, 0.85, 0.035, 0.025*2., "");
+  pad1Yield->Update();
+
+  pad2Yield->cd();
+
+  hYield_dt_chi2map_corrected_ratio->GetYaxis()->SetRangeUser(0.76,1.26);
+  hYield_dt_chi2map_corrected_ratio->GetYaxis()->SetNdivisions(505);
+  hYield_dt_chi2map_corrected_ratio->SetXTitle("");
+  hYield_dt_chi2map_corrected_ratio->GetXaxis()->SetLabelOffset(0.008);
+  hYield_dt_chi2map_corrected_ratio->GetYaxis()->SetTitleOffset(3.5);
+  hYield_dt_chi2map_corrected_ratio->GetYaxis()->SetLabelOffset(0.008);
+  hYield_dt_chi2map_corrected_ratio->GetXaxis()->SetTitleSize(42);
+  hYield_dt_chi2map_corrected_ratio->GetYaxis()->SetTitleSize(42);
+  hYield_dt_chi2map_corrected_ratio->GetXaxis()->SetLabelSize(42);
+  hYield_dt_chi2map_corrected_ratio->GetYaxis()->SetLabelSize(42);
+
+  hYield_dt_chi2map_corrected_ratio->GetXaxis()->SetTitleFont(43);
+  hYield_dt_chi2map_corrected_ratio->GetYaxis()->SetTitleFont(43);
+  hYield_dt_chi2map_corrected_ratio->GetXaxis()->SetLabelFont(43);
+  hYield_dt_chi2map_corrected_ratio->GetYaxis()->SetLabelFont(43);
+
+  hYield_dt_chi2map_corrected_ratio->DrawCopy("AXIS");
+  line_ratio1->Draw("SAME");
+  hYield_dt_chi2map_corrected_ratio->DrawCopy("SAME P");
+  pad2Yield->Update();
+
+  pad3Yield->cd();
+
+  hCorrectedYieldTrueEff_StatError->GetYaxis()->SetNdivisions(505);
+
+  hCorrectedYieldTrueEff_StatError->GetXaxis()->SetTitleOffset(3.5);
+  hCorrectedYieldTrueEff_StatError->GetXaxis()->SetLabelOffset(0.008);
+  hCorrectedYieldTrueEff_StatError->GetYaxis()->SetTitleOffset(3.5);
+  hCorrectedYieldTrueEff_StatError->GetYaxis()->SetLabelOffset(0.008);
+  hCorrectedYieldTrueEff_StatError->GetXaxis()->SetTitleSize(42);
+  hCorrectedYieldTrueEff_StatError->GetYaxis()->SetTitleSize(42);
+  hCorrectedYieldTrueEff_StatError->GetXaxis()->SetLabelSize(42);
+  hCorrectedYieldTrueEff_StatError->GetYaxis()->SetLabelSize(42);
+
+  hCorrectedYieldTrueEff_StatError->GetXaxis()->SetTitleFont(43);
+  hCorrectedYieldTrueEff_StatError->GetYaxis()->SetTitleFont(43);
+  hCorrectedYieldTrueEff_StatError->GetXaxis()->SetLabelFont(43);
+  hCorrectedYieldTrueEff_StatError->GetYaxis()->SetLabelFont(43);
+
+  TLegend* leg_stat_yield = new TLegend(0.24,0.7,0.5,0.9);
+  SetLegendSettigns(leg_stat_yield, 0.079);
+  leg_stat_yield->SetTextFont(43);
+  leg_stat_yield->SetTextSize(42);
+  leg_stat_yield->AddEntry(hCorrectedYieldTrueEff_StatError, "standard method", "l");
+  leg_stat_yield->AddEntry(hCorrYield_RelativStaterror, "this method" , "l");
+
+  hCorrectedYieldTrueEff_StatError->DrawCopy("AXIS");
+  hCorrYield_RelativStaterror->DrawCopy("SAME HIST");
+  hCorrectedYieldTrueEff_StatError->DrawCopy("SAME HIST");
+  leg_stat_yield->Draw("");
+  pad3Yield->Update();
+
+  canYield->Update();
+  canYield->SaveAs(Form("Systematics/CorrectedYieldCompWithStat." + PicFormat));
+  canYield->Clear("D");
+
+
+  delete leg_yield2;
+  delete leg_stat;
+  delete leg_stat_yield;
+  delete line_ratio1;
+
+
+
+
   delete hCorrYield;
   // delete hCorrYield_count0d06to0d225;
   // delete hCorrYield_count0d1to0d225;

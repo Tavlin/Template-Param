@@ -54,29 +54,29 @@ Double_t fBinsPi013TeVEMCPt[40]                  =   {0.0,  1.4,   1.6,   1.8,  
 //                                                      12.0,  13.0,  14.0,  16.0,  20.0};
 
 
-const Int_t kMaxHit = 2000;
-const Double_t lowerparamrange = 0.02;         //0.085;
-const Double_t upperparamrange = 0.285;
-const Double_t lowercountrange = 0.02;         //0.085;
-const Double_t uppercountrange = 0.225;
-const int numberbins = 39;
-TH1D* data = NULL;                              //data histogram
-TH1D* data_MC = NULL;
-TH1D* mc_photon = NULL;                         // gamma gamma MC histogram
-TH1D* mc_MixedConvPhoton = NULL;                // gamma gamma_conv MC histogram
-TH1D* mc_ConvPhoton = NULL;                     // gamma_conv gamma_conv MC histogram
-TH1D* testhisto2 = NULL;
-TH1D* mc_full = NULL;
-TH1D* korrBG = NULL;
-TH1D* mc_full_clone1 = NULL;
-TH1D* mc_full_clone2 = NULL;
-TH1D* korrBG_clone1 = NULL;
-TH1D* MCBG = NULL;
-TH1D* DataBG = NULL;
-TLegend *legiter = NULL;
-TLatex* chi_and_param42 = NULL;
-TH1D* mc_full_clone42 = NULL;
-TH1D* korrBG_clone42 = NULL;
+const Int_t kMaxHit             = 2000;
+const Double_t lowerparamrange  = 0.05;         //0.085;
+const Double_t upperparamrange  = 0.225;
+const Double_t lowercountrange  = 0.05;         //0.085;
+const Double_t uppercountrange  = 0.225;
+const int numberbins            = 39;
+TH1D* hInvMass_Data             = NULL;         //data histogram
+TH1D* hInvMass_MC               = NULL;
+TH1D* mc_photon                 = NULL;         // gamma gamma MC histogram
+TH1D* mc_MixedConvPhoton        = NULL;         // gamma gamma_conv MC histogram
+TH1D* mc_ConvPhoton             = NULL;         // gamma_conv gamma_conv MC histogram
+TH1D* testhisto2                = NULL;
+TH1D* hPeak_MC                  = NULL;
+TH1D* hCorrBkg                  = NULL;
+TH1D* mc_full_clone1            = NULL;
+TH1D* mc_full_clone2            = NULL;
+TH1D* korrBG_clone1             = NULL;
+TH1D* MCBG                      = NULL;
+TH1D* DataBG                    = NULL;
+TLegend *legiter                = NULL;
+TLatex* chi_and_param42         = NULL;
+TH1D* mc_full_clone42           = NULL;
+TH1D* korrBG_clone42            = NULL;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Backgrund fitting stuff

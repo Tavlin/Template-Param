@@ -110,7 +110,7 @@ void dpg(int binnumber = 3, TString wpsid = "all", TString PicFormat = "png", TS
   Double_t line_y = 0;
 
 
-  TFile* IterTemp = SafelyOpenRootfile("IterTemp.root");
+  TFile* IterTemp = SafelyOpenRootfile("IterTempBetterBkg.root");
   if (IterTemp->IsOpen() ) printf("IterTemp opened successfully\n");
 
   hPol1PeakFactor = (TH1D*) IterTemp->Get(Form("Pol1PeakFactor"));
@@ -197,9 +197,9 @@ void dpg(int binnumber = 3, TString wpsid = "all", TString PicFormat = "png", TS
       TLegend* leg = new TLegend(0.6,0.9,0.9,0.65);
       SetLegendSettigns(leg, 0.035);
       leg->AddEntry(hData, strData, "p");
-      leg->AddEntry(hChi2Map_Param, "signal + back. temp.", "l");
+      leg->AddEntry(hChi2Map_Param, "signal +corr. bkg. temp.", "l");
       leg->AddEntry((TObject*) 0x0, "parametrization", "");
-      leg->AddEntry(hCorrBack_Clone, "scaled back. template", "l");
+      leg->AddEntry(hCorrBack_Clone, "scaled corr. bkg. template", "l");
 
       SetHistoStandardSettings(hData, 0., 0., 0.035);
 
@@ -207,6 +207,8 @@ void dpg(int binnumber = 3, TString wpsid = "all", TString PicFormat = "png", TS
       hData->SetTitle("");
       hData->GetYaxis()->SetTitleOffset(1.1);
       hData->GetXaxis()->SetTitleOffset(1.);
+      hData->SetYTitle("d#it{N}/d#it{m}_{inv} ((GeV/#it{c}^{2})^{-1})");
+      hData->SetXTitle("#it{m}_{inv} (GeV/#it{c}^{2})");
       hData->Draw("AXIS");
       hChi2Map_Param->Draw("same HIST");
       hChi2Map_Param->Draw("SAME P");
@@ -257,6 +259,8 @@ void dpg(int binnumber = 3, TString wpsid = "all", TString PicFormat = "png", TS
       hData->GetXaxis()->SetTitleOffset(1.);
       hData->SetTitle("");
       hData->GetYaxis()->SetTitleOffset(1.1);
+      hData->SetYTitle("d#it{N}/d#it{m}_{inv} ((GeV/#it{c}^{2})^{-1})");
+      hData->SetXTitle("#it{m}_{inv} (GeV/#it{c}^{2})");
       hData->Draw("AXIS");
       hPol1->Draw("SAME HIST");
       hPol1->Draw("SAME P");

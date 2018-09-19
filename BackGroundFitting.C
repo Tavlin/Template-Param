@@ -16,77 +16,142 @@ const Int_t ndrawpoints      = 1.e5;
 // otherwise.
 // i is the number of the bin on which you add the background from the bins j to
 // (including) k, but excluding i if i is between j and k
-void BackgroundAdding(int i = 1, int j = 2, int k = 9, TFile* file = NULL, TString PicFormat = "png"){
-  TH1D* hBack = NULL;
+void BackgroundAdding(int i, TFile* file, TString PicFormat){
+  // setting j and k right depending on the binning
+  int j = i;
+  int k = i;
+  if(i == 1){
+    j = 2;
+  }
+  else if(i == 2){
+    j = 1;
+  }
+  else{
+    j = i-2;
+  }
+  if(i >= numberbins-4){
+    exit(42);
+  }
+  else if(i == numberbins-5){
+    k = i;
+  }
+  else if(i == numberbins-6){
+    k = i+1;
+  }
+  else{
+    k = i+2;
+  }
+  int scalefactor = 0;
+  if(i == 1){
+    scalefactor = k-j+1;
+  }
+  else{
+    scalefactor = k-j;
+  }
   TH1D* (aBackStackup[k-j]);
-  TH1D* aPeak2[k-j];
-  TH1D* aBack[k-j];
+  TFile* BackFile;
+  TH1D* hBack           = NULL;
+  TList *list = new TList;
 
+  hBack                 = (TH1D*) file->Get(Form("hCorrBack_bin%02d",i));
+  list->Add(hBack);
 
-  /////////////////////////////////////////////////////////////////////////////
-  // setting up the canvas to draw on. Will later be changed for the chi2 pic
-  TCanvas *c1 = new TCanvas("c1","",1200,1000);
-  c1->SetTopMargin(0.05);
-  c1->SetBottomMargin(0.09);
-  c1->SetRightMargin(0.02);
-  c1->SetLeftMargin(0.09);
-  c1->SetTicky();
-  c1->SetTickx();
-  c1->SetLogz(1);
-  TGaxis::SetMaxDigits(3);
-  gStyle->SetOptStat(0);
-
-  hBack               = (TH1D*) file->Get(Form("hCorrBack_bin%02i",i));
-  aBack[0] = (TH1D*) hBack->Clone(Form("aBack%02d", 0));
-
-  int backscale = 0;
-
-  for(int m = j; m <= k; m++){
+  for(int m = k; m >= j; m--){
     if(m != i){
+      std::cout << "m = " << m << '\n';
 
-      hBackStackup = (TH1D*) file->Get(Form("hCorrBack_bin%02i",m));
-      aBackStackup[m] = (TH1D*) file->Get(Form("hCorrBack_bin%02i",m));
+      aBackStackup[k-m] = (TH1D*) file->Get(Form("hCorrBack_bin%02d",m));
+
+      // rebinning of the mid histo and the two to the left from rebin 4 to
+      // rebin 8
+      std::cout << "Bins not mid = " << aBackStackup[k-m]->fNcells  << '\n';
+      std::cout << "Bins mid = " << hBack->fNcells  << '\n';
+      if(aBackStackup[k-m]->fNcells < hBack->fNcells){
+        std::cout << "inside upper rebinning" << '\n';
+        hBack->Rebin(2);
+      }
+
+      // rebin of the one histogram to the right if needed
+      if(aBackStackup[k-m]->fNcells > hBack->fNcells){
+        std::cout << "inside lower rebinning" << '\n';
+        (aBackStackup[k-m])->Rebin(2);
+      }
+
+
       ////////////////////////////////////////////////////////////////////////////
       // fit function
+      if(m != k){
+        hBackStackup->Reset();
+      }
+      hBackStackup = NULL;
+      hBackStackup = (TH1D*) (aBackStackup[k-m])->Clone("hBackStackup");
       TF1* fit = new TF1("fit", &funcCorrBackFitting, 0.0 ,0.4, 1);
       fit->SetNpx(ndrawpoints);
       fit->SetNumberFitPoints(numberbins);
       fit->SetLineColor(kRed);
       fit->SetLineWidth(3);
-      hBack->Fit("fit", "QM0P","", 0.1, 0.3);
-      hBackStackup->Scale(fit->GetParameter(0));
-      aBackStackup[m]->Scale(fit->GetParameter(0));
+      hBack->Fit("fit", "QM0P","", 0.1, 0.2);
+      aBackStackup[k-m]->Scale(fit->GetParameter(0));
 
-      if(m == j){
-        aBack[m] = (TH1D*) aBack[0]->Clone(Form("aBack%02d", m));
+      SetHistoStandardSettings(aBackStackup[k-m]);
+      aBackStackup[k-m]->SetMarkerStyle(1);
+      if(m == i-2){
+        aBackStackup[k-m]->SetLineColor(kRed);
+        aBackStackup[k-m]->SetMarkerColor(kRed);
       }
-      else{
-        aBack[m] = (TH1D*) aBack[m-1]->Clone(Form("aBack%02d", m));
+
+      if(m == i-1){
+        aBackStackup[k-m]->SetLineColor(kTeal-7);
+        aBackStackup[k-m]->SetMarkerColor(kTeal-7);
       }
-      aBack[m]->Add(aBackStackup[m], 1);
-      backscale++;
+
+      if(m == i+1){
+        aBackStackup[k-m]->SetLineColor(kMagenta+2);
+        aBackStackup[k-m]->SetMarkerColor(kMagenta+2);
+      }
+
+      if(m == i+2){
+        aBackStackup[k-m]->SetLineColor(kBlue+2);
+        aBackStackup[k-m]->SetMarkerColor(kBlue+2);
+      }
+
+      list->Add(aBackStackup[k-m]);
       delete fit;
     }
     else{
       continue;
     }
   }
-  hBack->Clear();
-  aBack[k]->Scale(1./(Double_t) backscale);
-  hBack = (TH1D*) aBack[k]->Clone("hBack");
 
+  TH1D* hPilledUpBack = (TH1D*) hBack->Clone("hPilledUpBack");
+  hPilledUpBack->Reset();
+  hPilledUpBack->Merge(list);
+  hPilledUpBack->Scale(1./(Double_t)scalefactor);
 
-  SetHistoStandardSettings(hBack);
+  TString sPath = gDirectory->GetPath();
 
-  c1->cd();
-  hBack->Draw("");
+  if(i == 1){
+    BackFile      = new TFile("BackFile.root", "RECREATE");
+  }
+  else{
+    BackFile      = new TFile("BackFile.root", "UPDATE");
+  }
 
+  hPilledUpBack->Write(Form("hPilledUpBack_Bin%02d", i));
 
-  c1->Update();
-  c1->SaveAs(Form("BackGroundFitting/PiledUpBack.png"));
-  c1->Clear();
+  BackFile->Close();
 
-  delete c1;
+  gDirectory->Cd(sPath.Data());
+
+  PicFormat = "eps";
+  for(int m = k; m >= j; m--){
+    aBackStackup[k-m]= NULL;
+  }
+  delete hPilledUpBack;
+  delete list;
+  delete hBack;
+  std::cout << "" << '\n';
+
 }
 /******************************************************************************/
 
@@ -137,9 +202,10 @@ void BackgroundTestFit(int i, TFile* file, TString PicFormat){
 
   for(int m = k; m >= j; m--){
     if(m != i){
-
+      TLegend* legBkg = new TLegend(0.6, 0.6, 0.9, 0.9);
+      SetLegendSettigns(legBkg);
       hBackStackup = (TH1D*) file->Get(Form("hCorrBack_bin%02i",m));
-
+      legBkg->AddEntry(hBack, "actual bin Bkg");
       // rebinning of the mid histo and the two to the left from rebin 4 to
       // rebin 8
       if(GetNBinningFromHistogram(hBackStackup) < GetNBinningFromHistogram(hBack)){
@@ -163,7 +229,7 @@ void BackgroundTestFit(int i, TFile* file, TString PicFormat){
       fit->SetNumberFitPoints(numberbins);
       fit->SetLineColor(kRed);
       fit->SetLineWidth(3);
-      hBack->Fit("fit", "QM0P","", 0.1, 0.3);
+      hBack->Fit("fit", "QM0P","", 0.1, 0.2);
       hBackStackup->Scale(fit->GetParameter(0));
 
       SetHistoStandardSettings(hBackStackup);
@@ -171,21 +237,25 @@ void BackgroundTestFit(int i, TFile* file, TString PicFormat){
       if(m == i-2){
         hBackStackup->SetLineColor(kRed);
         hBackStackup->SetMarkerColor(kRed);
+        legBkg->AddEntry(hBackStackup, "bin-2 Bkg");
       }
 
       if(m == i-1){
         hBackStackup->SetLineColor(kTeal-7);
         hBackStackup->SetMarkerColor(kTeal-7);
+        legBkg->AddEntry(hBackStackup, "bin-1 Bkg");
       }
 
       if(m == i+1){
         hBackStackup->SetLineColor(kMagenta+2);
         hBackStackup->SetMarkerColor(kMagenta+2);
+        legBkg->AddEntry(hBackStackup, "bin+1 Bkg");
       }
 
       if(m == i+2){
         hBackStackup->SetLineColor(kBlue+2);
         hBackStackup->SetMarkerColor(kBlue+2);
+        legBkg->AddEntry(hBackStackup, "bin+2 Bkg");
       }
 
       if(m == k){
@@ -193,11 +263,12 @@ void BackgroundTestFit(int i, TFile* file, TString PicFormat){
         c1->Clear();
         SetHistoStandardSettings(hBack);
         hBack->SetMarkerStyle(1);
+        hBack->SetLineWidth(3);
         hBack->Draw("AXIS");
-        hBack->DrawClone("SAME");
+        // hBack->DrawClone("SAME");
         hBack->DrawClone("SAME HIST");
       }
-      hBackStackup->DrawClone("SAME");
+      // hBackStackup->DrawClone("SAME");
       hBackStackup->DrawClone("SAME HIST");
 
 
@@ -227,9 +298,11 @@ void BackGroundFitting(TString PicFormat = "png"){
   if (IterTemp->IsOpen() ) printf("IterTemp opened successfully\n");
   gDirectory->Cd(sPath.Data());
 
-  BackgroundAdding(1, 2, 9, IterTemp, PicFormat);
-  for (int n = 1; n < numberbins; n++) {
+
+  for (int n = 1; n < numberbins - 2; n++) {
+    std::cout << "n = " << n << '\n';
     BackgroundTestFit(n, IterTemp, PicFormat);
+    BackgroundAdding(n, IterTemp, PicFormat);
   }
 
 

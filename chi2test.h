@@ -5,8 +5,8 @@ Double_t chi2_selfmade(TH1D* h1, TH1D* h2, TH1D* h3, Double_t &ndf, Double_t a,
                        Double_t b){
   Double_t chi2 = 0;
   Double_t temp_error = 0;
-  Int_t lowerfitrange = h3->FindBin(0.085);
-  Int_t upperfitrange = h3->FindBin(0.225);
+  Int_t lowerfitrange = h3->FindBin(lowerparamrange);
+  Int_t upperfitrange = h3->FindBin(upperparamrange);
 
   for (int j = lowerfitrange; j <= upperfitrange; j++) {
 
@@ -27,7 +27,9 @@ Double_t chi2_selfmade(TH1D* h1, TH1D* h2, TH1D* h3, Double_t &ndf, Double_t a,
   }
   //////////////////////////////////////////////////////////////////////////////
   // constraint for parameter b. b should not be too big!
-  chi2 += pow(a-b-0.236159, 2.)/pow(0.262405, 2.);
+  // chi2 += pow(a-b-0.236159, 2.)/pow(0.262405, 2.);
+  chi2 += pow(a-b-0.394873, 2.)/pow(0.259246, 2.);     // for better bkg
+  // chi2 += pow(a-b, 2.)/pow(0.01, 2.);
   if(chi2 == pow(a-b, 2.)/pow(0.1, 2.)){
     return 1000;
   }

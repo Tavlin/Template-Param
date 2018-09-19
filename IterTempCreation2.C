@@ -11,7 +11,7 @@ Double_t mc_full_func2(Double_t *x,  Double_t *par){
 
 ////////////////////////////////////////////////////////////////////////////////
 // Start of the Main
-void IterTempCreation(std::string current_path, int cutmode){
+void IterTempCreation2(std::string current_path, int cutmode){
 
   TString sPath = gDirectory->GetPath();            // retrieve neutral path
 
@@ -21,19 +21,21 @@ void IterTempCreation(std::string current_path, int cutmode){
   TFile* ESDFile_MC    = SafelyOpenRootfile("./../Daten/" + current_path + ".root");
   if (ESDFile_MC->IsOpen() ) printf("ESDFile_MC opened successfully\n");
 
-  TFile* ESDFile_data             = NULL;
-  TFile* BkgFile                  = NULL;
-  TList* lGammaCalo_data          = NULL;
-  TList* lCutNumber_data          = NULL;
-  TList* lESD_data                = NULL;
+  TFile* ESDFile_data             = NULL; // ESD File from the Data
+  TFile* BkgFile                  = NULL; // Self makde lower stat. Bkg File
+  TList* lGammaCalo_data          = NULL; // TLists inside the ESD File
+  TList* lCutNumber_data          = NULL; // TLists inside the ESD File
+  TList* lESD_data                = NULL; // Innerst TList for ESD histos from hInvMass_Data
   TList* lGammaCalo_MC            = NULL;
   TList* lCutNumber_MC            = NULL;
-  TList* lESD_MC                  = NULL;
-  TList* lMC_MC                   = NULL;
-  TList* lTrue_MC                 = NULL;
-  TH1D* hNEvents                  = NULL;
-  TH1D* hMC_Pi0InAcc_Pt           = NULL;
-  TH2D* hTrueDoubleCounting_Pi0   = NULL;
+  TList* lESD_MC                  = NULL; // Innerst TList for ESD histos from MC
+  TList* lMC_MC                   = NULL; // Innerst TList for MC histos from MC
+  TList* lTrue_MC                 = NULL; // Innerst TList for True histos from MC
+  TH1D* hNEvents                  = NULL; // histo containing number of Events
+  TH1D* hMC_Pi0InAcc_Pt           = NULL; // acceptance histo
+  TH2D* hTrueDoubleCounting_Pi0   = NULL; // 2D Histo including Doublecounting
+  TH1D* hTrueDoubleCounting_Pi0_Pro;      // X-Projection of current
+                                          // pT for Double Counting
 
 
   ESDFile_data    = SafelyOpenRootfile("./../Daten/GammaCalo-data_503.root");
@@ -66,7 +68,6 @@ void IterTempCreation(std::string current_path, int cutmode){
 
   //////////////////////////////////////////////////////////////////////////////
   // declaring global variables
-
   TString str;                                      // contains the pT range
   Double_t int_error           = 0;                 // contains the Yiled errors
   Double_t temp_ndf            = 0;                 // temp variable containig
@@ -142,19 +143,9 @@ void IterTempCreation(std::string current_path, int cutmode){
                                                     // for the scaling parameter
                                                     // from the Chi2Map Method
 
-
-  std::vector<Double_t> vChi2_DT_Iter_Selfcalc;      // vector containig Chi/ndf
-                                                    // from the Double Temp Iter
-                                                    // method but self
-                                                    // calculated
-
   std::vector<Double_t> vChi2_Pol1_Iter;            // vector containig Chi/ndf
                                                     // from the Pol1 Iter method
 
-  std::vector<Double_t> vChi2_DT_Iter_Test;          // vector containig Chi/ndf
-                                                    // from Double Temp Iter
-                                                    // via the Chi2Test Function
-  // const int numberbins = 26;
   TFile *IterTemp;                                  // FilePointer where things
                                                     // will be safed to
 
@@ -165,61 +156,40 @@ void IterTempCreation(std::string current_path, int cutmode){
   TH2D* hChi2_2D_sigma[numberbins];                 // Array of TH2D* which
                                                     // contain the 1sigma range
 
-  TH1D* hChi2_dt_iter_selfcalc[numberbins];         // Array of TH1D* which
-                                                    // contain Chi2/ndf for the
-                                                    // double temp IterMethod
-                                                    // but self calculated with
-                                                    // with own chi2 function
 
   TH1D* hChi2_pol1_iter[numberbins];                // Array of TH1D* which
                                                     // contain Chi2/ndf for the
                                                     // Pol1 + temp IterMethod
 
-
   //////////////////////////////////////////////////////////////////////////////
   // Histos conating the uncorrected yields from the different methods
-
   TH1D* hYield_dt_chi2map_uncorr  = new TH1D("hYield_dt_chi2map_uncorr",
                                             "", numberbins, fBinsPi013TeVEMCPt);
 
   TH1D* hYield_pol1_uncorr        = new TH1D("hYield_pol1_uncorr",
                                             "", numberbins, fBinsPi013TeVEMCPt);
-
   //////////////////////////////////////////////////////////////////////////////
   // setting up the 2 Histograms to compare chi2 from the to fit methods as
   // well as peak factor comp. between pol 1 and double temp fit and the ratio
   // of BG. scaling factor and the Peak scaling factor
+
   TH1D* hchi2_pol1                = new TH1D("hchi2_pol1",
                                             "", numberbins, fBinsPi013TeVEMCPt);
+
   TH1D* ha_pol1                   = new TH1D("ha_pol1",
                                             "", numberbins, fBinsPi013TeVEMCPt);
-
-  TH1D* hpeakratio                = new TH1D("hpeakratio",
-                                            "", numberbins, fBinsPi013TeVEMCPt);
-
-  TH1D* hpeakcomp                 = new TH1D("hpeakcomp",
-                                            "", numberbins, fBinsPi013TeVEMCPt);
-
-  TH1D* hPol1;                                      // Final Pol1 + Temp Iter
-                                                    // Method for the pT bins
-
-  TH1D* hTrueDoubleCounting_Pi0_Pro;                // X-Projection of current
-                                                    // pT for Double Counting
+  //////////////////////////////////////////////////////////////////////////////
+  // Final Pol1 Iter
+  TH1D* hPol1;
 
   //////////////////////////////////////////////////////////////////////////////
   // Data Clone Histos which will be Integrated to get the uncorrected Yield
-  TH1D* data_clone_for_int_dt;
   TH1D* data_clone_for_int_dt_chi2map;
   TH1D* data_clone_for_int_pol1;
 
   //////////////////////////////////////////////////////////////////////////////
   // Standard Settings for all The TH1 histos
-  SetHistoStandardSettings(hChi2_DT_Iter);
   SetHistoStandardSettings(hchi2_pol1);
-  SetHistoStandardSettings(hpeakratio);
-  SetHistoStandardSettings(hpeakcomp);
-  SetHistoStandardSettings(ha_DT);
-  SetHistoStandardSettings(hb_DT);
   SetHistoStandardSettings(ha_pol1);
   SetHistoStandardSettings(hYield_dt_chi2map_uncorr);
   SetHistoStandardSettings(hYield_pol1_uncorr);
@@ -232,7 +202,6 @@ void IterTempCreation(std::string current_path, int cutmode){
   hYield_pol1_uncorr->SetMarkerColor(kRed);
 
 
-
   //////////////////////////////////////////////////////////////////////////////
   // open True Yield Path
   TH1D* CorrectedYieldTrueEff;
@@ -240,38 +209,44 @@ void IterTempCreation(std::string current_path, int cutmode){
   if (FData_corrected->IsOpen() ) printf("FData_corrected opened successfully\n");
 
   CorrectedYieldTrueEff = (TH1D*) FData_corrected->Get(Form("CorrectedYieldNormEff"));
+  //////////////////////////////////////////////////////////////////////////////
+  // going over all pt bins despite first one, which is some framework bs.
+  for (int k = 1; k < numberbins; k++) {
+    std::cout << "starte bin " << k << " reading and wrinting!" << std::endl << std::endl;
+    TFile* MCFile = NULL;
+    TFile* DataFile = NULL;
+
+    ////////////////////////////////////////////////////////////////////////////
+    // open MC histo path
+    MCFile = SafelyOpenRootfile("./00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_MC_GammaConvV1WithoutCorrection_00010113_1111112067032220000_01631031000000d0.root");
+    if (MCFile->IsOpen() ) printf("MCFile opened successfully\n");
 
 
-    //////////////////////////////////////////////////////////////////////////////
-    // going over all pt bins despite first one, which is some framework bs.
-    for (int k = 1; k < numberbins; k++) {
-      std::cout << "starte bin " << k << " reading and wrinting!" << std::endl << std::endl;
-      TFile* MCFile = NULL;
-      TFile* DataFile = NULL;
-
-      ////////////////////////////////////////////////////////////////////////////
-      // open MC histo path
-      MCFile = SafelyOpenRootfile("./00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_MC_GammaConvV1WithoutCorrection_00010113_1111112067032220000_01631031000000d0.root");
-      if (MCFile->IsOpen() ) printf("MCFile opened successfully\n");
+    ////////////////////////////////////////////////////////////////////////////
+    // retrieve MC histograms
+    hInvMass_MC = (TH1D*) MCFile->Get(Form("fHistoMappingSignalInvMass_in_Pt_Bin%02d",k)); //fHistoMappingSignalInvMass_in_Pt_Bin
+    hPeak_MC = (TH1D*) MCFile->Get(Form("Mapping_TrueMeson_InvMass_in_Pt_Bin%02d",k));
 
 
-      ////////////////////////////////////////////////////////////////////////////
-      // retrieve MC histograms
-      hInvMass_MC = (TH1D*) MCFile->Get(Form("fHistoMappingSignalInvMass_in_Pt_Bin%02d",k)); //fHistoMappingSignalInvMass_in_Pt_Bin
-      hPeak_MC = (TH1D*) MCFile->Get(Form("Mapping_TrueMeson_InvMass_in_Pt_Bin%02d",k));
+    DataFile = SafelyOpenRootfile("./00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_data_GammaConvV1WithoutCorrection_00010113_1111112067032220000_01631031000000d0.root");
+    if (DataFile->IsOpen() ) printf("DataFile opened successfully\n");
+    hInvMass_Data = (TH1D*) DataFile->Get(Form("fHistoMappingSignalInvMass_in_Pt_Bin%02d",k));
 
-      DataFile = SafelyOpenRootfile("./00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_data_GammaConvV1WithoutCorrection_00010113_1111112067032220000_01631031000000d0.root");
-      if (DataFile->IsOpen() ) printf("DataFile opened successfully\n");
-      hInvMass_Data = (TH1D*) DataFile->Get(Form("fHistoMappingSignalInvMass_in_Pt_Bin%02d",k));
+    ////////////////////////////////////////////////////////////////////////////
+    // Getting the purposed corr Background
 
-      BkgFile = SafelyOpenRootfile("./BackFile.root");
-      if (BkgFile->IsOpen() ) printf("BkgFile opened successfully\n");
-      hCorrBkg = (TH1D*) BkgFile->Get(Form("hPilledUpBack_Bin%02d",k));
+    BkgFile = SafelyOpenRootfile("./BackFile.root");
+    if (BkgFile->IsOpen() ) printf("BkgFile opened successfully\n");
+    hCorrBkg = (TH1D*) BkgFile->Get(Form("hPilledUpBack_Bin%02d",k));
+
+    // hCorrBkg = (TH1D*) hInvMass_MC->Clone("hCorrBkg");
+    // hCorrBkg->Add(hPeak_MC,-1);
 
 
     hPeak_MC->GetXaxis()->SetRangeUser(0.,0.4);
     hInvMass_Data->GetXaxis()->SetRangeUser(0.,0.4);
     hCorrBkg->GetXaxis()->SetRangeUser(0.,0.4);
+
 
     hTrueDoubleCounting_Pi0_Pro = hTrueDoubleCounting_Pi0->ProjectionX(Form("hTrueDoubleCounting_Pi0_Pro_bin%02d",k),hMC_Pi0InAcc_Pt->FindBin(fBinsPi013TeVEMCPt[k]),
     hMC_Pi0InAcc_Pt->FindBin(fBinsPi013TeVEMCPt[k+1]));
@@ -287,14 +262,7 @@ void IterTempCreation(std::string current_path, int cutmode){
                                                      hMC_Pi0InAcc_Pt->FindBin(fBinsPi013TeVEMCPt[k]),
                                                      hMC_Pi0InAcc_Pt->FindBin(fBinsPi013TeVEMCPt[k+1])-1);
 
-    std::cout << "InIntRangePercent = " << InIntRangePercent << '\n';
-    std::cout << "InIntRangeDoubleCounting = " << InIntRangeDoubleCounting << '\n';
     vInIntRangePercent.push_back(InIntRangePercent);
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Getting the purposed corr Background
-    // hCorrBkg = (TH1D*) hInvMass_MC->Clone("hCorrBkg");
-    // hCorrBkg->Add(hPeak_MC,-1);
 
     ////////////////////////////////////////////////////////////////////////////
     // Function for ndf
@@ -352,27 +320,18 @@ void IterTempCreation(std::string current_path, int cutmode){
     TH1D* data_clone2 = (TH1D*) hInvMass_Data->Clone("data_clone2");
     TH1D* data_clone3 = (TH1D*) hInvMass_Data->Clone("data_clone3");
 
+
     // clearing the vectors
-    vChi2_Pol1_Iter.clear();;
+    vChi2_Pol1_Iter.clear();
     vChi2_Pol1_Iter.resize(0);
-    vChi2_DT_Iter_Test.clear();
-    vChi2_DT_Iter_Test.resize(0);
-    vChi2_DT_Iter_Selfcalc.clear();
-    vChi2_DT_Iter_Selfcalc.resize(0);
     iterMethodBool = 1;
 
     // resetting # of IterSteps to 0
     nIterStep = 0;
 
-
+    ////////////////////////////////////////////////////////////////////////////
+    // while block where the Iter Method is done
     while(iterMethodBool){
-
-      //////////////////////////////////////////////////////////////////////////
-      //clone for 2 temp fit
-      mc_full_clone1  = (TH1D*) hPeak_MC->Clone("mc_full_clone1");
-      mc_full_clone42 = (TH1D*) hPeak_MC->Clone("mc_full_clone42");
-      korrBG_clone1   = (TH1D*) hCorrBkg->Clone("korrBG_clone1");
-      korrBG_clone42  = (TH1D*) hCorrBkg->Clone("korrBG_clone42");
 
       //////////////////////////////////////////////////////////////////////////
       //clone for pol 1 fit
@@ -398,54 +357,51 @@ void IterTempCreation(std::string current_path, int cutmode){
       mc_full_clone2->Scale(r_pol1_temp1->Parameter(0));
 
       //////////////////////////////////////////////////////////////////////////
-      // test chi2 for monitoring
-      gDirectory->Cd(sPath.Data());
-
-      //////////////////////////////////////////////////////////////////////////
       // reset data_clone histos and then calculate their new errors
-
       gDirectory->Cd(sPath.Data());
+      data_clone2 = (TH1D*) hInvMass_Data->Clone("data_clone2");
+      for(int j = 13; j < 63; j++){
+        data_clone2->SetBinError(j,sqrt(pow(data_clone2->GetBinError(j),2.)
+        + pow((r_pol1_temp1->Parameter(0)*hPeak_MC->GetBinError(j)),2.)));
+      }
 
       IterTemp->Close();
+      if(nIterStep >=1){
+        if(fabs(vChi2_Pol1_Iter[nIterStep-1]-vChi2_Pol1_Iter[nIterStep] <= epsilon)){
+
+          //////////////////////////////////////////////////////////////////////
+          // for the last iteration step don't reset the clones, instead calc
+          // errors for the hInvMass_Data histos that will be used in the final Fit
+          // afterwards
+
+          for(int j = 0; j < 75; j++){
+          data_clone3->SetBinError(j,sqrt(data_clone3->GetBinError(j) *
+          data_clone3->GetBinError(j) + mc_full_clone2->GetBinError(j) *
+          mc_full_clone2->GetBinError(j)));
+
+          iterMethodBool = 0;
+        }
+      }
+    }
       nIterStep++;
     }
 
     ////////////////////////////////////////////////////////////////////////////
     // making the CHi2 monitoring histos!
-    hChi2_dt_iter_selfcalc[k-1] = new TH1D(Form("hChi2_dt_iter_selfcalc_bin%02d",k-1),"",
-                                      nIterStep-2, 1.5, (Double_t) nIterStep-0.5);
-    SetHistoStandardSettings(hChi2_dt_iter_selfcalc[k-1]);
-
     hChi2_pol1_iter[k-1]        = new TH1D(Form("1hChi2_pol1_iter_bin%02d",k-1),"",
                                       nIterStep-1, 0.5, (Double_t) nIterStep-0.5);
     SetHistoStandardSettings(hChi2_pol1_iter[k-1]);
 
 
-
     for(int i = 1; i < nIterStep; i++){
-      hChi2_dt_iter_selfcalc[k-1]->SetBinContent(i, vChi2_DT_Iter_Selfcalc[i-1]);
       hChi2_pol1_iter[k-1]->SetBinContent(i, vChi2_Pol1_Iter[i-1]);
-
-      hChi2_dt_iter_selfcalc[k-1]->SetYTitle("#chi^{2}/ndf");
-      hChi2_dt_iter_selfcalc[k-1]->SetXTitle("Iterationstep");
-      hChi2_dt_iter_selfcalc[k-1]->SetLineColor(kViolet+3);
-      hChi2_dt_iter_selfcalc[k-1]->SetMarkerColor(kViolet+3);
-
       hChi2_pol1_iter[k-1]->SetYTitle("#chi^{2}/ndf");
       hChi2_pol1_iter[k-1]->SetXTitle("Iterationstep");
       hChi2_pol1_iter[k-1]->SetLineColor(kRed);
       hChi2_pol1_iter[k-1]->SetMarkerColor(kRed);
-
     }
 
     gDirectory->Cd(sPath.Data());
-
-
-    ////////////////////////////////////////////////////////////////////////////
-
-    for(int i = 0; i <= 100; i++){
-      korrBG_clone3->SetBinError(i,corrbackerror[i]);
-    }
 
     ///////////////////////////////////////////////////////////////////////////
     // final pol 1 + temp fit
@@ -463,7 +419,7 @@ void IterTempCreation(std::string current_path, int cutmode){
     fpol1->SetLineWidth(3);
 
     ////////////////////////////////////////////////////////////////////////////
-    //  making full histogram of the DoubleTemplate Param.
+    //  making full histogram of the Pol 1 Param.
     hPol1 = (TH1D*) mc_full_clone4->Clone("hPol1");
     hPol1->Add(fpol1);
     hPol1->SetMarkerStyle(20);
@@ -471,24 +427,12 @@ void IterTempCreation(std::string current_path, int cutmode){
     hPol1->SetMarkerColor(kRed+1);
     hPol1->SetLineColor(kRed+1);
 
-
-    ///////////////////////////////////////////////////////////////////////////
-    // Picture of double template fit with chi2 and factors as well as ratio of
-    // the factors for the template.
-    data_clone4->SetLineWidth(3);
-    data_clone3->SetLineWidth(3);
-    data_clone3->SetLineColor(kGray+2);
-    data_clone3->SetMarkerColor(kGray+2);
-    data_clone4->SetTitle("");
-    fpol1->SetLineColor(kRed);
-
-
     ////////////////////////////////////////////////////////////////////////////
-    // testitesti
+    // Double Template with Chi2 Map Part
     ////////////////////////////////////////////////////////////////////////////
     hChi2_2D[k-1] = chi2test(hInvMass_Data, hPeak_MC, hCorrBkg, temp_chi2_dt, signalAreaScaling, corrbackAreaScaling, x_min, y_min, ndf);
 
-    hChi2_2D_sigma[k-1] = getErrorHist(Form("hChi2_2D_sigma_bin%02",k), hChi2_2D[k-1],temp_chi2_dt+1);
+    hChi2_2D_sigma[k-1] = getErrorHist(Form("hChi2_2D_sigma_bin%02d",k), hChi2_2D[k-1],temp_chi2_dt+1);
     vChi2_DT_Chi2Map.push_back(temp_chi2_dt);
     vNDF_DT_Chi2Map.push_back(ndf);
     vSignalAreaScaling.push_back(signalAreaScaling);
@@ -496,38 +440,18 @@ void IterTempCreation(std::string current_path, int cutmode){
     v_x_min.push_back(x_min);
     v_y_min.push_back(y_min);
     vsigma_dt.push_back(getErrors(hChi2_2D_sigma[k-1], x_min, y_min));
-
     f_ChiOverNdf->SetParameter(0,temp_chi2_dt/ndf);
 
-    for (int j = 0; j < 75; j++) {
-        Double_t temp_error = sqrt(pow(x_min*hPeak_MC->GetBinError(j), 2.)
-        +pow(y_min*hCorrBkg->GetBinError(j), 2.));
-
-        Double_t chi2 = ((Double_t)x_min*hPeak_MC->GetBinContent(j) + (Double_t)y_min*hCorrBkg->GetBinContent(j)
-        -hInvMass_Data->GetBinContent(j))
-        /sqrt((pow(temp_error,2.)+pow(hInvMass_Data->GetBinError(j),2.)));
-      ->SetBinContent(j, chi2/(Double_t)ndf);
-      }
-
-
     temp_chi2_dt = 0;
-
-
-
-
 
     hInvMass_Data->SetTitle(str);
     IterTemp = new TFile("IterTempBetterBkg.root","UPDATE");
     gDirectory = IterTemp;
     hInvMass_Data->Write(Form("data_bin%02d",k));
     data_clone3->Write(Form("data_addedErrosPol1_bin%02d",k));
-    data_clone4->Write(Form("data_addedErrosDT_bin%02d",k));
     mc_full_clone4->Write(Form("mc_peak_pol1_bin%02d",k));
-    mc_full_clone3->Write(Form("mc_full_DT_bin%02d", k));
-    korrBG_clone3->Write(Form("korrBG_bin%02d", k));
     fpol1->Write(Form("fpol1_bin%02d",k));
     hPol1->Write(Form("hPol1_bin%02d",k));
-    hChi2_dt_iter_selfcalc[k-1]->Write(Form("hChi2_dt_iter_selfcalc_bin%02d",k));
     hChi2_pol1_iter[k-1]->Write(Form("hChi2_pol1_iter_bin%02d",k));
     hChi2_2D[k-1]->Write(Form("hChi2_2Dbin%02d",k));
     hChi2_2D_sigma[k-1]->Write(Form("hChi2_2D_sigma_bin%02d",k));
@@ -536,12 +460,11 @@ void IterTempCreation(std::string current_path, int cutmode){
     f_ChiOverNdf->Write(Form("f_ChiOverNdf%02d",k));
 
     gDirectory->Cd(sPath.Data());
+
     ////////////////////////////////////////////////////////////////////////////
     // getting the chi2 of the current pT bin
     hchi2_pol1->SetBinContent(k+1,r_pol1_temp->Chi2()/temp_ndf);
     hchi2_pol1->SetBinError(k+1, sqrt(2./(temp_ndf+3)));
-    hChi2_DT_Iter->SetBinError(k+1, sqrt(2./(temp_ndf+3)));
-
 
     data_clone_for_int_dt_chi2map = (TH1D*) hInvMass_Data->Clone("data_clone_for_int_dt_chi2map");
     hCorrBkg->Scale(y_min*corrbackAreaScaling);
@@ -559,50 +482,24 @@ void IterTempCreation(std::string current_path, int cutmode){
 
     ////////////////////////////////////////////////////////////////////////////
     // getting the peakratio of the current pT bin
-    Double_t peakratio, peakratioerr, peakscale, bgscale, peakerr, bgerr;
-    Double_t peakscale_pol1, peakerr_pol1, peakratio_to_pol1, peakratioerr_to_pol1;
-
+    Double_t peakscale_pol1, peakerr_pol1;
 
     peakscale_pol1 = r_pol1_temp->Parameter(0);
     peakerr_pol1 = r_pol1_temp->Error(0);
 
-    peakratio = bgscale/peakscale;
-    peakratio_to_pol1 = peakscale/peakscale_pol1;
-
-    peakratioerr = sqrt(pow(bgerr/peakscale, 2.)+pow(bgscale*peakerr/pow(peakscale, 2.), 2.));
-    peakratioerr_to_pol1 = sqrt(pow(peakerr/peakscale_pol1,2.0)+pow(peakscale*peakerr_pol1/pow(peakscale_pol1,2.0),2.0));
-
-    hpeakratio->SetBinContent(k+1, peakratio);
-    hpeakratio->SetBinError(k+1, peakratioerr);
-
-    hpeakcomp->SetBinContent(k+1, peakratio_to_pol1);
-    hpeakcomp->SetBinError(k+1, peakratioerr_to_pol1);
-
-    ha_DT->SetBinContent(k+1, peakscale);
-    ha_DT->SetBinError(k+1, peakerr);
-    hb_DT->SetBinContent(k+1, bgscale);
-    hb_DT->SetBinError(k+1, bgerr);
     ha_pol1->SetBinContent(k+1, peakscale_pol1);
     ha_pol1->SetBinError(k+1, peakerr_pol1);
 
-
-
     ////////////////////////////////////////////////////////////////////////////
     // garbage collection part 1
-    delete mc_full_clone1;
     delete mc_full_clone2;
-    delete mc_full_clone3;
     delete mc_full_clone4;
-    delete korrBG_clone1;
-    delete korrBG_clone3;
     delete data_clone2;
     delete data_clone3;
-    delete data_clone4;
     delete hPeak_MC;
     delete hCorrBkg;
     delete hInvMass_Data;
     delete fpol1;
-    delete fit_eq_double_temp;
     delete f_ChiOverNdf;
     delete fit_eq_1;
 
@@ -616,7 +513,10 @@ void IterTempCreation(std::string current_path, int cutmode){
     delete hChi2_pol1_iter[k-1];
     delete hChi2_2D[k-1];
   }
-
+  //////////////////////////////////////////////////////////////////////////////
+  // end of the for loop over all 1 <= k < nbins
+  //////////////////////////////////////////////////////////////////////////////
+  // Chi2Map Histos
   TH1D* hChi2_DT_Chi2map = new TH1D("hChi2_DT_Chi2map", "", numberbins, fBinsPi013TeVEMCPt);
   hChi2_DT_Chi2map->SetYTitle("#chi^{2}/ndf");
   hChi2_DT_Chi2map->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -673,109 +573,50 @@ void IterTempCreation(std::string current_path, int cutmode){
     max(hErrYhigh->GetBinContent(k+1) - h_y_min->GetBinContent(k+1),
     h_y_min->GetBinContent(k+1) - hErrYlow->GetBinContent(k+1)));
   }
-
   //////////////////////////////////////////////////////////////////////////////
-  // Getting Gaussian distributed scaling factor difference
-  // COMMENT IT OUT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  TH1D* a_minus_b = (TH1D*) h_y_min->Clone("scaling_gauss");
-  a_minus_b->Add(h_x_min, -1);
-  TH1D* scaling_gauss = new TH1D("scaling_gauss", "", 10, 0., 0.9);
-
-  for(int k = 1; k < numberbins; k++){
-    scaling_gauss->Fill(a_minus_b->GetBinContent(k+1));
-  }
-  scaling_gauss->Sumw2();
-  TF1* fscaling_gauss = new TF1("fscaling_gauss", "expo(0)", 0., 1.);
-  scaling_gauss->Fit("fscaling_gauss", "QM0PS");
-
-
-
-  /////////////////////////////////////////////////////////////////////////////
   // Writing of Chi2(pT)
   IterTemp = new TFile("IterTempBetterBkg.root","UPDATE");
 
   hchi2_pol1->SetLineColor(kRed);
   hchi2_pol1->SetLineWidth(3);
-  hChi2_DT_Iter->SetLineWidth(3);
-  hpeakratio->SetLineWidth(3);
-  hpeakcomp->SetLineWidth(3);
   hchi2_pol1->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-  hChi2_DT_Iter->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
   hchi2_pol1->GetYaxis()->SetTitle("#chi^{2}/ndf");
-  hChi2_DT_Iter->GetYaxis()->SetTitle("#chi^{2}/ndf");
-  hpeakratio->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-  hpeakratio->GetYaxis()->SetTitle("b_{double}/a_{double}");
-  hpeakcomp->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-  hpeakcomp->GetYaxis()->SetTitle("a_{pol1}/ a_{double}");
-  hChi2_DT_Iter->GetYaxis()->SetRangeUser(0.0,5.0);
 
+
+  hchi2_pol1->Write(Form("hchi2_pol1"));
+  ha_pol1->Write("Pol1PeakFactor");
 
   ////////////////////////////////////////////////////////////////////////////
-  // open MC histo path
+  // open MC histo path for the correction histos
   TFile* CorrectionFile = NULL;
-  if(cutmode != 1){
-    CorrectionFile = SafelyOpenRootfile("./00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_MC_GammaConv_OnlyCorrectionFactor_00010113_1111112067032220000_01631031000000d0.root");
-    if (CorrectionFile->IsOpen() ) printf("CorrectionFile opened successfully\n");
-  }
-
-  else{
-    CorrectionFile = SafelyOpenRootfile("./80010113_1111141057032230000_01631031000000d0/13TeV/Pi0_MC_GammaConv_OnlyCorrectionFactor_80010113_1111141057032230000_01631031000000d0.root");
-    if (CorrectionFile->IsOpen() ) printf("CorrectionFile opened successfully\n");
-  }
+  CorrectionFile = SafelyOpenRootfile("./00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_MC_GammaConv_OnlyCorrectionFactor_00010113_1111112067032220000_01631031000000d0.root");
+  if (CorrectionFile->IsOpen() ) printf("CorrectionFile opened successfully\n");
 
   TH1D* hAcc    = (TH1D*) CorrectionFile->Get(Form("fMCMesonAccepPt"));
   TH1D* hEffi   = (TH1D*) CorrectionFile->Get(Form("TrueMesonEffiPt"));
 
-
-  //
-  // //////////////////////////////////////////////////////////////////////////////
-  // // sclaing/ correcting the efficienc
-  // for (int i = 0; i < numberbins; i++) {
-  //   hEffi->SetBinContent(i+2, hEffi->GetBinContent(i+2)*vInIntRangePercent[i]);
-  //   hEffi->SetBinError(i+2, hEffi->GetBinError(i+2)*vInIntRangePercent[i]);
-  // }
-
-  hChi2_DT_Iter->Write(Form("hChi2_DT_Iter"));
-  hchi2_pol1->Write(Form("hchi2_pol1"));
-  hpeakratio->Write("hpeakratio");
-  hpeakcomp->Write("hpeakcomp");
-  ha_DT->Write("DoubleTemplatePeakFactor");
-  hb_DT->Write("DoubleTemplatecorrBGFactor");
-  ha_pol1->Write("Pol1PeakFactor");
-  scaling_gauss->Write("scaling_gauss");
-  fscaling_gauss->Write("fscaling_gauss");
-
-
+  // correction for 2pi, BR, NEvents, Y, Binwidth
   hYield_pol1_uncorr->Scale(1./(NEvents*2*M_PI*1.6*0.98798),"width");
-  // hYield_pol1_uncorr->Scale(1, "width");
-  // hYield_pol1_uncorr->Scale(1./0.98798);      //branching ratio scaling
   hYield_pol1_uncorr->SetYTitle(rawyield);
   hYield_pol1_uncorr->SetXTitle(pt_str);
 
   hYield_dt_chi2map_uncorr->Scale(1./(NEvents*2*M_PI*1.6*0.98798),"width");
-  // hYield_dt_chi2map_uncorr->Scale(1, "width");
-  // hYield_dt_chi2map_uncorr->Scale(1./0.98798);      //branching ratio scaling
   hYield_dt_chi2map_uncorr->SetYTitle(rawyield);
   hYield_dt_chi2map_uncorr->SetXTitle(pt_str);
 
+  // open Data File for the Yield coming from the Framework and for the Chi2
+  // from the framework method
   TFile* DataFile = NULL;
-
-  if(cutmode != 1){
   DataFile = SafelyOpenRootfile("./00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_data_GammaConvV1WithoutCorrection_00010113_1111112067032220000_01631031000000d0.root");
-  }
-
-  else{
-  DataFile = SafelyOpenRootfile("./80010113_1111141057032230000_01631031000000d0/13TeV/Pi0_data_GammaConvV1WithoutCorrection_80010113_1111141057032230000_01631031000000d0.root");
-  }
-
   if (DataFile->IsOpen() ) printf("DataFile opened successfully\n");
+
   TH1D* hYield_framework = (TH1D*) DataFile->Get(Form("histoYieldMeson"));
   TH1D* histoChi2_0 = (TH1D*) DataFile->Get(Form("histoChi2_0"));
   SetHistoStandardSettings(histoChi2_0);
-  if(hYield_framework) printf("histoYieldMeson ist da\n");
-  else printf("histoYieldMeson ist nicht da\n");
+
   hYield_framework->Divide(hEffi);
 
+  // correcting with bin center (1/pT)
   for (int i = 2; i <= numberbins; i++) {
     hYield_pol1_uncorr->SetBinContent(i,hYield_pol1_uncorr->GetBinContent(i)/hYield_pol1_uncorr->GetBinCenter(i));
     hYield_dt_chi2map_uncorr->SetBinContent(i,hYield_dt_chi2map_uncorr->GetBinContent(i)/hYield_dt_chi2map_uncorr->GetBinCenter(i));
@@ -795,34 +636,26 @@ void IterTempCreation(std::string current_path, int cutmode){
 
   //////////////////////////////////////////////////////////////////////////////
   // correcting yield for the efficiency
-  TH1D * hYield_dt_corrected         =  (TH1D*) hYield_dt_acceptance_corrected->Clone("hYield_dt_corrected");
-  // hYield_dt_corrected->Divide(hEffi);
-
   TH1D * hYield_pol1_corrected       =  (TH1D*) hYield_pol1_acceptance_corrected->Clone("hYield_pol1_corrected");
-  // hYield_pol1_corrected->Divide(hEffi);
 
   TH1D * hYield_dt_chi2map_corrected =  (TH1D*) hYield_dt_chi2map_acceptance_corrected->Clone("hYield_dt_chi2map_corrected");
-  // hYield_dt_chi2map_corrected->Divide(hEffi);
 
   for (int i = 2; i <= numberbins; i++) {
-    hYield_dt_corrected->SetBinContent(i,hYield_dt_acceptance_corrected->GetBinContent(i)/vInIntRangePercent[i-2]);
     hYield_pol1_corrected->SetBinContent(i,hYield_pol1_acceptance_corrected->GetBinContent(i)/vInIntRangePercent[i-2]);
     hYield_dt_chi2map_corrected->SetBinContent(i,hYield_dt_chi2map_acceptance_corrected->GetBinContent(i)/vInIntRangePercent[i-2]);
-    hYield_dt_corrected->SetBinError(i,hYield_dt_acceptance_corrected->GetBinError(i)/vInIntRangePercent[i-2]);
     hYield_pol1_corrected->SetBinError(i,hYield_pol1_acceptance_corrected->GetBinError(i)/vInIntRangePercent[i-2]);
     hYield_dt_chi2map_corrected->SetBinError(i,hYield_dt_chi2map_acceptance_corrected->GetBinError(i)/vInIntRangePercent[i-2]);
   }
 
-  hYield_dt_corrected->SetYTitle(strCorrectedYield);
   hYield_pol1_corrected->SetYTitle(strCorrectedYield);
   hYield_dt_chi2map_corrected->SetYTitle(strCorrectedYield);
 
+
+
   hYield_pol1_uncorr->Write("hYield_pol1_uncorr");
   hYield_dt_chi2map_uncorr->Write("hYield_dt_chi2map_uncorr");
-  hYield_dt_acceptance_corrected->Write("hYield_dt_acceptance_corrected");
   hYield_pol1_acceptance_corrected->Write("hYield_pol1_acceptance_corrected");
   hYield_dt_chi2map_acceptance_corrected->Write("hYield_dt_chi2map_acceptance_corrected");
-  hYield_dt_corrected->Write("hYield_dt_corrected");
   hYield_pol1_corrected->Write("hYield_pol1_corrected");
   hYield_dt_chi2map_corrected->Write("hYield_dt_chi2map_corrected");
   hYield_framework->Write("hYield_framework");
@@ -838,16 +671,11 @@ void IterTempCreation(std::string current_path, int cutmode){
   hErrYhigh->Write("hErrYhigh");
   histoChi2_0->Write("histoChi2_0");
 
-
   //////////////////////////////////////////////////////////////////////////////
   // Garbage collection part 2
-  delete hpeakratio;
-  delete hpeakcomp;
-  delete hChi2_DT_Iter;
   delete hchi2_pol1;
   delete hYield_dt_chi2map_uncorr;
   delete hYield_pol1_uncorr;
-  delete hYield_dt_acceptance_corrected;
   delete hYield_pol1_acceptance_corrected;
   delete hYield_dt_chi2map_acceptance_corrected;
   delete hPol1;
@@ -874,9 +702,7 @@ void IterTempCreation(std::string current_path, int cutmode){
   v_y_min.clear();
   vsigma_dt.clear();
   vChi2_Pol1_Iter.clear();
-  vChi2_DT_Iter_Test.clear();
   IterTemp->Close();
   DataFile->Close();
   BkgFile->Close();
-
 }
