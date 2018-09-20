@@ -3,15 +3,19 @@
 echo "start Iter Temp Fit"
 
 # rm -r MCTemplatesAnData
-# rm -r MixedBGComp
 # mkdir MCTemplatesAnData
-# mkdir BackGroundFitting
-# mkdir Systematics
+# rm -r MixedBGComp
 # mkdir MixedBGComp
+# rm -r BackGroundFitting
+# mkdir BackGroundFitting
+rm -r Systematics
+mkdir Systematics
 # rm -r DPG
 # mkdir DPG
+# rm -r Variation
 # mkdir Variation
-# mkdir $5
+rm -r $5
+mkdir $5
 
 DIR=${PWD##*/} # the directery where I am currently to make things a bit more
                # felxible in the code
@@ -22,9 +26,14 @@ DIR=${PWD##*/} # the directery where I am currently to make things a bit more
 # $4 mode 1 for p-Pb else for pp
 # $5 Saving in another Diretory, for like testing and stuff.
 
-# time root -l -b -q IterTempCreation2.C++\(\"$DIR\",$4\)
-# time root -l -b -q IterTempPlot.C++\($1,\"$2\",\"$3\",\"$5\"\)
-# time root -l -b -q dpg.C++\($1,\"$2\",\"$3\",\"$5\"\)
-# time root -l -b -q BackGroundFitting.C++\(\"$3\"\)
-time root -l -b -q BkgPlotting.C++\(\"$3\"\)
-# time root -l -b -q Systematics.C++\(\"$3\"\)
+# for i in {2..38..2}
+#   do
+#   time root -l -b -q IterTempCreation2.C++\(\"$DIR\",$4,$i\)
+#   # time root -l -b -q IterTempPlot.C++\($1,\"$2\",\"$3\",\"$5\"\)
+#   # time root -l -b -q dpg.C++\($1,\"$2\",\"$3\",\"$5\"\)
+#   # time root -l -b -q BackGroundFitting.C++\(\"$3\"\)
+#   # time root -l -b -q BkgPlotting.C++\(\"$3\"\)
+#   time root -l -b -q Systematics.C++\(\"$3\",$i\)
+#  done
+
+time root -l -b -q YieldStatUnc.C++\(\"$3\"\)

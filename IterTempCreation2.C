@@ -11,7 +11,7 @@ Double_t mc_full_func2(Double_t *x,  Double_t *par){
 
 ////////////////////////////////////////////////////////////////////////////////
 // Start of the Main
-void IterTempCreation2(std::string current_path, int cutmode){
+void IterTempCreation2(std::string current_path, int cutmode, int numberneighbours){
 
   TString sPath = gDirectory->GetPath();            // retrieve neutral path
 
@@ -235,17 +235,17 @@ void IterTempCreation2(std::string current_path, int cutmode){
     ////////////////////////////////////////////////////////////////////////////
     // Getting the purposed corr Background
 
-    BkgFile = SafelyOpenRootfile("./BackFile.root");
+    BkgFile = SafelyOpenRootfile("./BackFileMore.root");
     if (BkgFile->IsOpen() ) printf("BkgFile opened successfully\n");
-    hCorrBkg = (TH1D*) BkgFile->Get(Form("hPilledUpBack_Bin%02d",k));
+    hCorrBkg = (TH1D*) BkgFile->Get(Form("hPilledUpBack_Bin%02d_with%02d_bins",k, numberneighbours));
 
     // hCorrBkg = (TH1D*) hInvMass_MC->Clone("hCorrBkg");
     // hCorrBkg->Add(hPeak_MC,-1);
 
 
-    hPeak_MC->GetXaxis()->SetRangeUser(0.,0.4);
-    hInvMass_Data->GetXaxis()->SetRangeUser(0.,0.4);
-    hCorrBkg->GetXaxis()->SetRangeUser(0.,0.4);
+    hPeak_MC->GetXaxis()->SetRangeUser(0.,0.3);
+    hInvMass_Data->GetXaxis()->SetRangeUser(0.,0.3);
+    hCorrBkg->GetXaxis()->SetRangeUser(0.,0.3);
 
 
     hTrueDoubleCounting_Pi0_Pro = hTrueDoubleCounting_Pi0->ProjectionX(Form("hTrueDoubleCounting_Pi0_Pro_bin%02d",k),hMC_Pi0InAcc_Pt->FindBin(fBinsPi013TeVEMCPt[k]),

@@ -1,6 +1,6 @@
 #include "CommonHeader.h"
 
-void Systematics(TString PicFormat = "png"){
+void Systematics(TString PicFormat = "png", int numberneighbours = 4){
 
   TH1D* hCorrYield                       = NULL;
   TH1D* hCorrYield_count0d06to0d225      = NULL;
@@ -22,6 +22,7 @@ void Systematics(TString PicFormat = "png"){
   TH1D* hCorrYield_RelativStaterror      = NULL;
   TH1D* hCorrectedYieldTrueEff           = NULL;
   TH1D* hCorrectedYieldTrueEff_StatError = NULL;
+  TFile* FStatUnc                        = NULL;
 
   std::vector<Double_t> vCountSys;
   std::vector<Double_t> vParamSys;
@@ -347,7 +348,7 @@ void Systematics(TString PicFormat = "png"){
 
   //////////////////////////////////////////////////////////////////////////////
   // setting up canvas to draw Yield plus relative Systematic error
-  TCanvas *canInvMass = new TCanvas("canInvMass","",1200,1600);
+  TCanvas *canInvMass = new TCanvas("canInvMass","",1600,1600);
   TPad *pad1InvMass = new TPad("pad1InvMass","",0.0,0.33,1.0,1.0);
   pad1InvMass->SetTopMargin(0.05);
   pad1InvMass->SetLeftMargin(0.15);
@@ -376,8 +377,9 @@ void Systematics(TString PicFormat = "png"){
 
   TLegend* leg_yield = new TLegend(0.2,0.07,0.35,0.3);
   SetLegendSettigns(leg_yield, 0.025*3./2.);
-  leg_yield->AddEntry(hCorrYield, "signal + corr. bkg. temp." , "lp");
-  leg_yield->AddEntry(hCorrectedYieldTrueEff, "standard method", "lp");
+  leg_yield->SetHeader("method:");
+  leg_yield->AddEntry(hCorrYield, "templates parametrization" , "lp");
+  leg_yield->AddEntry(hCorrectedYieldTrueEff, "function parametrization", "lp");
   hCorrectedYieldTrueEff->SetMarkerSize(1.5);
 
 
@@ -390,17 +392,27 @@ void Systematics(TString PicFormat = "png"){
   hCorrYield->GetYaxis()->SetLabelSize(0.025*3./2.);
   hCorrYield->SetMarkerColor(kRed+3);
   hCorrYield->SetLineColor(kRed+3);
+  hCorrectedYieldTrueEff->GetYaxis()->SetTitleOffset(1.7);
+  hCorrectedYieldTrueEff->GetYaxis()->SetRangeUser(1.e-7-5.e-8,1.e-1);
+  hCorrectedYieldTrueEff->GetXaxis()->SetRangeUser(1.4, 12.0);
+  hCorrectedYieldTrueEff->GetXaxis()->SetTitleSize(0.025*3./2.);
+  hCorrectedYieldTrueEff->GetYaxis()->SetTitleSize(0.025*3./2.);
+  hCorrectedYieldTrueEff->GetXaxis()->SetLabelSize(0.025*3./2.);
+  hCorrectedYieldTrueEff->GetYaxis()->SetLabelSize(0.025*3./2.);
+  hCorrectedYieldTrueEff->SetMarkerColor(kBlack);
+  hCorrectedYieldTrueEff->SetLineColor(kBlack);
   hCorrYield_syserror->SetMarkerColor(kRed+3);
   hCorrYield_syserror->SetLineColor(kRed+3);
   hCorrYield_syserror->SetFillColor(kGray+2);
   hCorrYield_syserror->SetFillStyle(1001);
 
   hCorrYield->DrawCopy("AXIS");
-  hCorrYield_syserror->DrawCopy("SAME E2");
+  hCorrectedYieldTrueEff->Draw("SAME");
+  // hCorrYield_syserror->DrawCopy("SAME E2");          // sys Error draw
   hCorrYield->DrawCopy("SAME");
   leg_yield->Draw("SAME");
   canInvMass->Update();
-  DrawLabelALICE(0.64, 0.85, 0.035, 0.025*3./2., "");
+  DrawLabelALICE(0.6, 0.85, 0.035, 0.025*3./2., "");
   pad1InvMass->Update();
 
 
@@ -653,14 +665,50 @@ void Systematics(TString PicFormat = "png"){
 
 
   delete leg_yield2;
-  delete leg_stat;
   delete leg_stat_yield;
+  delete leg_stat;
   delete line_ratio1;
 
+  TString sPath = gDirectory->GetPath();
+  if(numberneighbours == 2){
+    FStatUnc      = new TFile("FStatUnc.root", "RECREATE");
+  }
 
+  else{
+    FStatUnc      = new TFile("FStatUnc.root", "UPDATE");
+  }
 
+  hCorrYield_RelativStaterror->Write(Form("hCorrYield_RelativStaterror_with%02d_bins", numberneighbours));
+  gDirectory->Cd(sPath.Data());
+
+  TCanvas* cStatUnc = new TCanvas("cStatUnc", "", 2500,1000);
+  SetCanvasStandardSettings(cStatUnc);
+  cStatUnc->cd();
+
+  TLegend* leg_stat_yield2 = new TLegend(0.20,0.75,0.5,0.9);
+  SetLegendSettigns(leg_stat_yield2, 0.079);
+  leg_stat_yield2->SetTextFont(43);
+  leg_stat_yield2->SetTextSize(42);
+  leg_stat_yield2->SetHeader("method:");
+  leg_stat_yield2->AddEntry(hCorrectedYieldTrueEff_StatError, "function parametrization", "l");
+  leg_stat_yield2->AddEntry(hCorrYield_RelativStaterror, "templates parametrization" , "l");
+
+  hCorrectedYieldTrueEff_StatError->GetXaxis()->SetTitleOffset(1.2);
+  hCorrectedYieldTrueEff_StatError->GetYaxis()->SetTitleOffset(1.2);
+
+  hCorrectedYieldTrueEff_StatError->DrawCopy("AXIS");
+  hCorrYield_RelativStaterror->DrawCopy("SAME HIST");
+  hCorrectedYieldTrueEff_StatError->DrawCopy("SAME HIST");
+  leg_stat_yield2->Draw("");
+
+  cStatUnc->Update();
+  cStatUnc->SaveAs(Form("Systematics/StatUncertainty." + PicFormat));
+  cStatUnc->Clear();
+
+  delete leg_stat_yield2;
 
   delete hCorrYield;
+  delete cStatUnc;
   // delete hCorrYield_count0d06to0d225;
   // delete hCorrYield_count0d1to0d225;
   // delete hCorrYield_count0d02to0d185;
