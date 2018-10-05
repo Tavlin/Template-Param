@@ -29,6 +29,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <time.h>
 
 Double_t fBinsPi013TeVEMCPt[40]                  =   {0.0,  1.4,   1.6,   1.8,   2.0,   2.2,
                                                       2.4,   2.6,   2.8,   3.0,   3.2,
@@ -55,9 +56,9 @@ Double_t fBinsPi013TeVEMCPt[40]                  =   {0.0,  1.4,   1.6,   1.8,  
 
 
 const Int_t kMaxHit             = 2000;
-const Double_t lowerparamrange  = 0.05;         //0.085;
+const Double_t lowerparamrange  = 0.085;         //0.085;
 const Double_t upperparamrange  = 0.225;
-const Double_t lowercountrange  = 0.05;         //0.085;
+const Double_t lowercountrange  = 0.085;         //0.085;
 const Double_t uppercountrange  = 0.225;
 const int numberbins            = 39;
 TH1D* hInvMass_Data             = NULL;         //data histogram
@@ -89,6 +90,22 @@ TH1D* hPeak2         = NULL;        // peak histo, needed to subtract from
 // TH1D* hBack         = NULL;         // main background histo
 /******************************************************************************/
 
+
+Double_t fCalcP(Double_t p1x, Double_t p1y, Double_t p1z){
+  return sqrt(pow(p1x,2.)+pow(p1y,2.)+pow(p1z,2.));
+}
+
+Double_t fCalcTheta(Double_t p1x, Double_t p1y, Double_t p1z, Double_t p2x, Double_t p2y, Double_t p2z){
+  return acos((p1x*p2x+ p1y*p2y + p1z*p2z)/(fCalcP(p1x, p1y, p1z)*fCalcP(p2x, p2y, p2z)));
+}
+
+Double_t fCalcInvMass(Double_t p1, Double_t p2, Double_t theta){
+  return sqrt(2.*p1*p2*(1-cos(theta)));
+}
+
+Double_t fCalcPT(Double_t p1x, Double_t p1y, Double_t p2x, Double_t p2y){
+  return sqrt(pow((p1x+p2x),2.)+pow((p1y+p2y),2.));
+}
 
 void drawchi_and_param42(TLatex* tex,TFitResultPtr r ){
   tex->DrawLatexNDC(0.15,0.85,
@@ -132,14 +149,14 @@ Int_t GetNBinningFromHistogram(TH1D* hist){
   return dArray->GetSize();
 }
 
-void RotateToLabSystem(const float& theta, const float& phi,
-		       const float& p1, const float& p2, const float& p3,
-		       float& p1rot, float& p2rot, float& p3rot) {
+void RotateToLabSystem(const double& theta, const double& phi,
+		       const double& p1, const double& p2, const double& p3,
+		       double& p1rot, double& p2rot, double& p3rot) {
 
-  Float_t st = sin(theta);
-  Float_t ct = cos(theta);
-  Float_t sp = sin(phi);
-  Float_t cp = cos(phi);
+  Double_t st = sin(theta);
+  Double_t ct = cos(theta);
+  Double_t sp = sin(phi);
+  Double_t cp = cos(phi);
 
   p1rot = cp*ct*p1 - p2*sp + cp*p3*st;
   p2rot = cp*p2 + ct*p1*sp + p3*sp*st;

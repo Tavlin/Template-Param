@@ -8,12 +8,18 @@ echo "start Iter Temp Fit"
 # mkdir MixedBGComp
 # rm -r BackGroundFitting
 # mkdir BackGroundFitting
-rm -r Systematics
-mkdir Systematics
+# rm -r Systematics
+# mkdir Systematics
 # rm -r DPG
 # mkdir DPG
 # rm -r Variation
 # mkdir Variation
+rm -r BetterBkgNN
+mkdir BetterBkgNN
+rm -r BetterBkg3to8
+mkdir BetterBkg3to8
+rm -r Normal
+mkdir Normal
 rm -r $5
 mkdir $5
 
@@ -36,4 +42,11 @@ DIR=${PWD##*/} # the directery where I am currently to make things a bit more
 #   time root -l -b -q Systematics.C++\(\"$3\",$i\)
 #  done
 
-time root -l -b -q YieldStatUnc.C++\(\"$3\"\)
+time root -l -b -q IterTempCreation2.C++\(\"$DIR\",$4,6\)
+time root -l -b -q Systematics.C++\(\"$3\",6\)
+time root -l -b -q IterTempPlot.C++\($1,\"$2\",\"$3\",\"$5\"\)
+
+# time root -l -b -q BackGroundFitting.C++\(\"$3\"\)
+# time root -l -b -q BkgPlotting.C++\(\"$3\"\)
+
+# time root -l -b -q YieldStatUnc.C++\(\"$3\"\)
