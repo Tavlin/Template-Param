@@ -206,7 +206,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
           fpol1->Draw("same");
           c1->Update();
           line_y = gPad->GetUymax()*0.995;
-          TLine* fitrange = new TLine(lowerparamrange, line_y, upperparamrange, line_y);
+          TLine* fitrange = new TLine(lowerparamrange[k-1], line_y, upperparamrange, line_y);
 
           fitrange->SetLineColor(kAzure+10);
           fitrange->SetLineWidth(7);
@@ -265,16 +265,24 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
             ////////////////////////////////////////////////////////////////////////
             // Drawing the Plot coming from the chi2map data
             c1->cd();
+            TLegend* lParamResultWithChi2Map = new TLegend(0.6,0.5,0.9,0.63);
+            SetLegendSettigns(lParamResultWithChi2Map, 0.03);
+            lParamResultWithChi2Map->AddEntry(hData, "Data", "l");
             TH1D* hSignal_Clone = NULL;
             TH1D* hCorrBack_Clone = NULL;
             hSignal_Clone = (TH1D*) hSignal->Clone("hSignal_Clone");
             hCorrBack_Clone = (TH1D*) hCorrBack->Clone("hCorrBack_Clone");
             hSignal_Clone->Scale(hSignalAreaScaling->GetBinContent(k)*h_x_min->GetBinContent(k+1));
             hCorrBack_Clone->Scale(hCorrbackAreaScaling->GetBinContent(k)*h_y_min->GetBinContent(k+1));
-            hSignal_Clone->Add(hCorrBack_Clone);
+            // hSignal_Clone->Add(hCorrBack_Clone);
+            lParamResultWithChi2Map->AddEntry(hSignal_Clone, "Signal template", "l");
+            lParamResultWithChi2Map->AddEntry(hCorrBack_Clone, "Bkg. template", "l");
 
             hData->Draw("");
             hSignal_Clone->Draw("same");
+            hCorrBack_Clone->Draw("same HIST");
+            lParamResultWithChi2Map->Draw("same HIST");
+            DrawLabelALICE(0.6, 0.9, 0.02, 0.03, str);
 
             c1->Update();
 
@@ -289,6 +297,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
               c1->SaveAs(Form("Normal/ParamResultWithChi2Map_Bin%02d." + PicFormat,k));
             }
             c1->Clear();
+            delete lParamResultWithChi2Map;
 
           }
       }
@@ -337,7 +346,7 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
               fpol1->Draw("same");
               c1->Update();
               line_y = gPad->GetUymax()*0.995;
-              TLine* fitrange = new TLine(lowerparamrange, line_y, upperparamrange, line_y);
+              TLine* fitrange = new TLine(lowerparamrange[k-1], line_y, upperparamrange, line_y);
 
               fitrange->SetLineColor(kAzure+10);
               fitrange->SetLineWidth(7);
@@ -388,6 +397,9 @@ void IterTempPlot(int binnumber = 3, TString wpsid = "all", TString PicFormat = 
 
 
       hChi2_pol1->SetLineColor(kRed);
+      hChi2_pol1->SetMarkerSize(1);
+      hChi2_pol1->SetMarkerStyle(1);
+      hChi2_pol1->SetMarkerColor(kRed);
       hChi2_DT_Chi2map->SetLineColor(kMagenta+2);
       histoChi2_0->SetLineWidth(3);
 

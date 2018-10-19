@@ -35,11 +35,11 @@ void ToyMC_Simulation(int PID){
   Int_t loopcount = 0;
   Int_t count_WO_OAC =0;
   Int_t count_OAC =0;
-  const Int_t maxfillcount = 2.e9;
+  const Int_t maxfillcount = 2.e7;
   //                                                                          //
   //                                                                          //
   // OAC min angle in rad
-  const Double_t OA = 0.017;
+  const Double_t OA = 0.018;
   //                                                                          //
   //                                                                          //
   // Simulation loop where two photons with random momenta are generated
@@ -105,12 +105,18 @@ void ToyMC_Simulation(int PID){
     p2y = p2yrot;
     p2z = p2zrot;
 
+    // momentum/position uncertainty
+    fSmear(p1x, p1y, p1z);
+    fSmear(p2x, p2y, p2z);
+
     Double_t p1  = fCalcP(p1x, p1y, p1z);
     Double_t p2  = fCalcP(p2x, p2y, p2z);
 
     // only accept photons with 0.7 < E (GeV/c) < 20.
     if(fabs(p1) > 0.7 && fabs(p2) > 0.7 && fabs(p1) < 20. && fabs(p2) < 20.){
       Double_t theta = fCalcTheta(p1x, p1y, p1z, p2x, p2y, p2z);
+      m = fCalcInvMass(p1, p2, theta);
+      if(m > 0.0 && m <= 0.3){
         if(bWO_OAC_done == false){
           Double_t pT    = fCalcPT(p1x, p1y, p2x, p2y);
           hMinv_pT_wo_OAC->Fill(m, pT);
@@ -131,8 +137,7 @@ void ToyMC_Simulation(int PID){
             hMinv_pT_w_OAC->Fill(m, pT);
           }
         }
-
-
+      }
     }
   }
   std::cout << '\n' << "loopcount - fillcount = " << loopcount - fillcount << '\n';

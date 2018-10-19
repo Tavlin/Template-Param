@@ -22,6 +22,7 @@
 #include "TROOT.h"
 #include "TArrayD.h"
 #include "TObjArray.h"
+#include "TVirtualFitter.h"
 #include <TSystem.h>
 #include <iostream>
 #include <fstream>
@@ -56,10 +57,28 @@ Double_t fBinsPi013TeVEMCPt[40]                  =   {0.0,  1.4,   1.6,   1.8,  
 
 
 const Int_t kMaxHit             = 2000;
-const Double_t lowerparamrange  = 0.085;         //0.085;
-const Double_t upperparamrange  = 0.225;
-const Double_t lowercountrange  = 0.085;         //0.085;
-const Double_t uppercountrange  = 0.225;
+// const Double_t lowerparamrange  = 0.06;         //0.085;
+Double_t lowerparamrange[38] = {0.0195, 0.0205, 0.0225, 0.0235, 0.0255,
+                                0.0275, 0.0285, 0.0305, 0.0315, 0.0335,
+                                0.0355, 0.0365, 0.0385, 0.0395, 0.0415,
+                                0.0425, 0.0445, 0.0465, 0.0475, 0.0495,
+                                0.0515, 0.0525, 0.0545, 0.0555, 0.0575,
+                                0.0595, 0.0605, 0.0625, 0.0645, 0.0675,
+                                0.0715, 0.0755, 0.0795, 0.0835, 0.0895,
+                                0.1015, 0.1175, 0.1365};
+const Double_t upperparamrange  = 0.3;
+
+// const Double_t lowercountrange  = 0.06;         //0.085;
+Double_t lowercountrange[38] = {0.0195, 0.0205, 0.0225, 0.0235, 0.0255,
+                                0.0275, 0.0285, 0.0305, 0.0315, 0.0335,
+                                0.0355, 0.0365, 0.0385, 0.0395, 0.0415,
+                                0.0425, 0.0445, 0.0465, 0.0475, 0.0495,
+                                0.0515, 0.0525, 0.0545, 0.0555, 0.0575,
+                                0.0595, 0.0605, 0.0625, 0.0645, 0.0675,
+                                0.0715, 0.0755, 0.0795, 0.0835, 0.0895,
+                                0.1015, 0.1175, 0.1365};
+const Double_t uppercountrange  = 0.3;
+
 const int numberbins            = 39;
 TH1D* hInvMass_Data             = NULL;         //data histogram
 TH1D* hInvMass_MC               = NULL;
@@ -105,6 +124,15 @@ Double_t fCalcInvMass(Double_t p1, Double_t p2, Double_t theta){
 
 Double_t fCalcPT(Double_t p1x, Double_t p1y, Double_t p2x, Double_t p2y){
   return sqrt(pow((p1x+p2x),2.)+pow((p1y+p2y),2.));
+}
+
+void fSmear(Double_t &px, Double_t &py, Double_t &pz){
+  // one cell == 6 cm
+  // distance to EMCal == 400 cm
+  // -> 6/400 = 3sigma -> 1sigma = 1/200
+  gRandom->Gaus(px, px/200.);
+  gRandom->Gaus(py, py/200.);
+  gRandom->Gaus(pz, pz/200.);
 }
 
 void drawchi_and_param42(TLatex* tex,TFitResultPtr r ){

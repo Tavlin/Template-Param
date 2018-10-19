@@ -2,11 +2,12 @@
 
 
 Double_t chi2_selfmade(TH1D* h1, TH1D* h2, TH1D* h3, Double_t &ndf, Double_t a,
-                       Double_t b, int mario){
+                       Double_t b, int mario, int binnumber, Double_t fPulse_eval, Double_t sigma_cons){
   Double_t chi2 = 0;
   Double_t temp_error = 0;
-  Int_t lowerfitrange = h3->FindBin(lowerparamrange);
+  Int_t lowerfitrange = h3->FindBin(lowerparamrange[binnumber-1]);
   Int_t upperfitrange = h3->FindBin(upperparamrange);
+
 
   for (int j = lowerfitrange; j <= upperfitrange; j++) {
 
@@ -30,12 +31,18 @@ Double_t chi2_selfmade(TH1D* h1, TH1D* h2, TH1D* h3, Double_t &ndf, Double_t a,
   // if(mario == 0){
   //   chi2 += pow(a-b-0.525807, 2.)/pow(0.299301, 2.); // NN method
   // }
-  // if(mario == 1){
-  //   chi2 += pow(a-b-0.359246, 2.)/pow(0.177336, 2.); // 3 to 8 method
-  // }
-  // if(mario == 2){
-  //   chi2 += pow(a-b-0.488554, 2.)/pow(0.332957, 2.); // normal method
-  // }
+  if(mario == 3){
+
+    chi2 += pow(b-fPulse_eval, 2.)/pow(sigma_cons, 2.); // 3 to 8 method
+    // chi2 += pow(b-fPulse_eval, 2.)/pow(0.01, 2.);
+
+  }
+  if(mario == 2){
+    // chi2 += pow(a-b-0.488554, 2.)/pow(0.332957, 2.); // normal method
+    // chi2 += pow(a-b, 2.)/pow(0.01, 2.);
+    chi2 += pow(a-2.1202, 2.)/pow(0.01, 2.);
+    chi2 += pow(b-2.1202, 2.)/pow(0.01, 2.);
+  }
   // chi2 += pow(a-b-0.236159, 2.)/pow(0.262405, 2.);
   // chi2 += pow(a-b, 2.)/pow(0.01, 2.);
   if(chi2 == pow(a-b, 2.)/pow(0.1, 2.)){
@@ -49,22 +56,51 @@ Double_t chi2_selfmade(TH1D* h1, TH1D* h2, TH1D* h3, Double_t &ndf, Double_t a,
 
 TH2D* chi2test(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi2_min,
   Double_t &signalAreaScaling, Double_t &corrbackAreaScaling, Double_t &x_min,
-  Double_t &y_min, Double_t &ndf, int mario){
+  Double_t &y_min, Double_t &ndf, int mario, Double_t pT, int binnumber){
   Double_t chi2_min_temp = 10.e10;
   Double_t A_c = 0;                         // Area of hData
   Double_t A_b = 0;                         // Area of corr. back.
-  Double_t A_a = 0;                         // Area of signal
-  const Double_t dx = 0.005;                // Stepsize in x
-  const Double_t dy = 0.01;                // Stepsize in y
+  Double_t A_a = 0;
+  Double_t dx;                         // Stepsize in x
+  Double_t dy;                         // Area of signal
+
+
+  if(mario != 2){
+    if(pT < 6.){
+      dx = 0.001;
+      dy = 0.01;
+    }
+    else{
+      dx = 0.001;
+      dy = 0.003;
+    }
+  }
+  else
+  {
+    dx = 0.001;
+    dy = 0.01;
+  }
   Double_t temp_error = 0;                  // Fehlervariable fuer die Templates
   int binnumber2D = 500;                    // Binzahl ~ Feinheit der Suche
   const int bin0dot3 = 75;                  // Binzahl wo 0.3 GeV/c liegt
 
   TH2D* hChi2map;
 
-  hChi2map = new TH2D("hChi2map", "", binnumber2D, 0.0, 2.5, binnumber2D, 0.0, 5.0);
-  SetHistoStandardSettings2(hChi2map);
+  if(mario != 2){
+    if(pT < 6.){
+      hChi2map = new TH2D("hChi2map", "", binnumber2D, 2.0, 2.5, binnumber2D, 0.0, 5.0);
+      SetHistoStandardSettings2(hChi2map);
+    }
 
+    else{
+      hChi2map = new TH2D("hChi2map", "", binnumber2D, 2.0, 2.5, binnumber2D, 0.0, 1.5);
+      SetHistoStandardSettings2(hChi2map);
+    }
+  }
+  else{
+    hChi2map = new TH2D("hChi2map", "", binnumber2D, 2.0, 2.5, binnumber2D, 0.0, 5.0);
+    SetHistoStandardSettings2(hChi2map);
+  }
   hChi2map->SetXTitle("signal scaling factor");
   hChi2map->SetYTitle("corr. back. scaling factor");
   hChi2map->SetZTitle("#chi^{2}");
@@ -73,7 +109,7 @@ TH2D* chi2test(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi2_min,
   TH1D* hSignal_clone = (TH1D*) hSignal->Clone("hSignal");
   TH1D* hCorrback_clone = (TH1D*) hCorrback->Clone("hCorrback");
 
-  Int_t lowerfitrange = hData_clone->FindBin(lowerparamrange);
+  Int_t lowerfitrange = hData_clone->FindBin(lowerparamrange[binnumber-1]);
   Int_t upperfitrange = hData_clone->FindBin(upperparamrange);
 
   //////////////////////////////////////////////////////////////////////////////
@@ -89,6 +125,7 @@ TH2D* chi2test(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi2_min,
       hCorrback_clone->SetBinError(i,0.);
     }
   }
+
   // A_c = hData_clone->Integral();
   // A_b = hCorrback_clone->Integral();
   // A_a = hSignal_clone->Integral();
@@ -107,16 +144,41 @@ TH2D* chi2test(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi2_min,
   corrbackAreaScaling = 1.;
   signalAreaScaling = 1.;
 
+  Double_t midpoint = (fBinsPi013TeVEMCPt[binnumber]+fBinsPi013TeVEMCPt[binnumber+1])/2.;
+
+  TF1* fPulse = new TF1("fPulse", "[4]+[0]*((1-exp(-(x-[1])/[2])))*exp(-(x-[1])/[3])", 0.0, 20.);
+  fPulse->SetParameter(0, 3.);
+  fPulse->SetParameter(1, 1.2);
+  fPulse->SetParameter(2, 1.);
+  fPulse->SetParameter(3, 1.);
+
+  TFile* file = SafelyOpenRootfile("IterTempBetterBkg3to8.root");
+
+  TH1D* h = (TH1D*) file->Get("h_y_min");
+
+  h->Fit(fPulse, "QM0P", "",  0.14, 12.);
+  ///2. A histogram
+  //Create a histogram to hold the confidence intervals
+
+  Double_t fPulse_eval = fPulse->Eval(midpoint);
+  TH1D *hint = new TH1D("hint",
+    "Fitted gaussian with .95 conf.band", numberbins-1, fBinsPi013TeVEMCPt);
+  (TVirtualFitter::GetFitter())->GetConfidenceIntervals(hint, 0.6827);
+  //Now the "hint" histogram has the fitted function values as the
+  //bin contents and the confidence intervals as bin errors
+  Double_t sigma_cons = hint->GetBinError(hint->FindBin(fPulse_eval));
+
   for (int ix = 0; ix < binnumber2D; ix++) {
     for (int iy = 0; iy < binnumber2D; iy++) {
       ndf = upperfitrange-lowerfitrange-3;
       Double_t chi2 = 0;
       chi2 = chi2_selfmade(hSignal_clone, hCorrback_clone, hData_clone, ndf,
-                           dx*(Double_t)ix, dy*(Double_t)iy, mario);
+                           dx*(Double_t)(ix+2000), dy*(Double_t)iy, mario, binnumber,
+                          fPulse_eval, sigma_cons);
 
       if(chi2 < chi2_min_temp){
         chi2_min_temp = chi2;
-        x_min = (Double_t)ix*dx;
+        x_min = (Double_t)(ix+2000)*dx;
         y_min = (Double_t)(iy)*dy;
       }
       hChi2map->SetBinContent(ix+1, iy+1, chi2);
@@ -126,9 +188,11 @@ TH2D* chi2test(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi2_min,
   std::cout << "chi^2_min = " << chi2_min << std::endl;
   std::cout << "ndf = " << ndf << std::endl;
 
+  delete hint;
+  delete fPulse;
+  file->Close();
 
   return hChi2map;
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -197,8 +261,8 @@ std::vector<double> getErrors(TH2D* h1, double xStart, double yStart)
   double errYlow =  yStart;
   double errYhigh = yStart;
 
-  for (int ix = 10; ix <= h1->GetNbinsX(); ix++) {
-    for (int iy = 10; iy <= h1->GetNbinsY(); iy++) {
+  for (int ix = 1; ix <= h1->GetNbinsX(); ix++) {
+    for (int iy = 1; iy <= h1->GetNbinsY(); iy++) {
       if (h1->GetBinContent(ix,iy)){
 
         errXlow_tmp = h1->GetXaxis()->GetBinCenter(ix);

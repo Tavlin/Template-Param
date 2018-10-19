@@ -31,6 +31,11 @@ void Systematics(TString PicFormat = "png", int numberneighbours = 4){
   fitBylikin13TeV->SetLineWidth(3);
   fitBylikin13TeV->SetLineColor(kBlack);
 
+  TF1* fitBylikin13TeV_3to8 = new TF1("fitBylikin13TeV_3to8", "[0]*exp(-(sqrt(x^(2)+0.135^(2))-0.135)/[1])+[2]/((1+x*x/[3])^([4]))", 1.4, 12.);
+  fitBylikin13TeV_3to8->SetParameters(13, 0.1, 2, 0.7, 2.9);
+  fitBylikin13TeV_3to8->SetLineWidth(3);
+  fitBylikin13TeV_3to8->SetLineColor(kBlue+2);
+
   TF1 *ftsallis13TeV = new TF1("ftsallis13TeV", "[0]/(2*3.1415) * ( ([1]-1) * ([1]-2) )/( [1]*[2] *( [1]*[2] + [3] *([1]-2)) )* pow(( 1 + ( ( pow(([3]*[3]+x*x),0.5) -[3]) /( [1]*[2] ) ) ), -[1])", 1.4, 12.);
   ftsallis13TeV->SetParameter(0, 9.4); // A
   ftsallis13TeV->SetParameter(1, 7.169); // n
@@ -38,6 +43,7 @@ void Systematics(TString PicFormat = "png", int numberneighbours = 4){
   ftsallis13TeV->FixParameter(3, 0.1349766); // M
   ftsallis13TeV->SetLineWidth(3);
   ftsallis13TeV->SetLineColor(kBlack);
+
 
   std::vector<Double_t> vCountSys;
   std::vector<Double_t> vParamSys;
@@ -50,17 +56,28 @@ void Systematics(TString PicFormat = "png", int numberneighbours = 4){
   TFile* IterTempBetterBkgNN    = SafelyOpenRootfile("IterTempBetterBkgNN.root");
   if (IterTempBetterBkgNN->IsOpen() ) printf("IterTempBetterBkgNN opened successfully\n");
 
-  TFile* IterTempBetterBkg3to8  = SafelyOpenRootfile("IterTempBetterBkg3to8.root");
+  TFile* IterTempBetterBkg3to8  = SafelyOpenRootfile("IterTempBetterBkg3to8_WithFit.root");
   if (IterTempBetterBkg3to8->IsOpen() ) printf("IterTempBetterBkg3to8 opened successfully\n");
+
+  TFile* JoshuasFile  = SafelyOpenRootfile("Pi0_data_GammaConvV1Correction_00010113_1111112067032220000_01631031000000d0.root");
+  if (JoshuasFile->IsOpen() ) printf("JoshuasFile opened successfully\n");
 
   hCorrYieldNormal              = (TH1D*) IterTempNormal->Get("hYield_dt_chi2map_corrected");
   hCorrYieldBetterBkgNN         = (TH1D*) IterTempBetterBkgNN->Get("hYield_dt_chi2map_corrected");
   hCorrYieldBetterBkg3to8       = (TH1D*) IterTempBetterBkg3to8->Get("hYield_dt_chi2map_corrected");
 
   hCorrectedYieldNormEff        = (TH1D*) IterTempNormal->Get("hCorrectedYieldNormEff");
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  // hCorrectedYieldNormEff->Rebin(39, "", fBinsPi013TeVEMCPt);
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   hCorrectedYieldNormEff->Fit(fitBylikin13TeV, "QM0P", "", 1.4, 12.);
+  hCorrYieldBetterBkg3to8->Fit(fitBylikin13TeV_3to8, "QM0P", "", 1.4, 12.);
   hCorrectedYieldNormEff->Fit(ftsallis13TeV, "QM0P", "", 1.4, 12.);
+
+  TF1 *fBylikinRatio = new TF1("fBylikinRatio", "fitBylikin13TeV_3to8/fitBylikin13TeV", 1.4, 12.);
+  fBylikinRatio->SetLineWidth(3);
+  fBylikinRatio->SetLineColor(kBlue+2);
 
   hCorrYield_syserror           = (TH1D*) hCorrYieldNormal->Clone("hCorrYield_syserror");
   hCorrYield_countsyserror      = (TH1D*) hCorrYieldNormal->Clone("hCorrYield_countsyserror");
@@ -502,7 +519,7 @@ void Systematics(TString PicFormat = "png", int numberneighbours = 4){
   hYield_dt_chi2map_corrected_ratio->GetYaxis()->SetLabelOffset(0.008);
 
   hYield_dt_chi2map_corrected_ratio->GetXaxis()->SetRangeUser(1.4, 12.0);
-  hYield_dt_chi2map_corrected_ratio->GetYaxis()->SetRangeUser(0.84, 1.15);
+  hYield_dt_chi2map_corrected_ratio->GetYaxis()->SetRangeUser(0.84, 1.17);
   hYield_dt_chi2map_corrected_ratio->GetXaxis()->SetTitleSize(0.025*3./1.);
   hYield_dt_chi2map_corrected_ratio->GetYaxis()->SetTitleSize(0.025*3./1.);
   hYield_dt_chi2map_corrected_ratio->GetXaxis()->SetLabelSize(0.025*3./1.);
@@ -803,7 +820,9 @@ void Systematics(TString PicFormat = "png", int numberneighbours = 4){
 
 
   hCorrYieldNormal->DrawCopy("AXIS");
+  hCorrectedYieldNormEff->DrawCopy("SAME");
   fitBylikin13TeV->Draw("SAME");
+  fitBylikin13TeV_3to8->Draw("SAME");
   hCorrYieldNormal->DrawCopy("SAME");
   hCorrYieldBetterBkg3to8->DrawCopy("SAME");
   hCorrYieldBetterBkgNN->DrawCopy("SAME");
@@ -817,25 +836,45 @@ void Systematics(TString PicFormat = "png", int numberneighbours = 4){
   hYield_ratio_func_to_bylikin->Divide(fitBylikin13TeV);
   hYield_ratio_func_to_bylikin->SetLineColor(kBlack);
   hYield_ratio_func_to_bylikin->SetMarkerColor(kBlack);
+  hYield_ratio_func_to_bylikin->SetMarkerStyle(20);
+  hYield_ratio_func_to_bylikin->SetMarkerSize(1.5);
   hYield_ratio_func_to_bylikin->SetYTitle("Ratio");
 
   TH1D* hYield_ratio_norm_to_bylikin = (TH1D*) hCorrYieldNormal->Clone("hYield_dt_chi2map_corrected_ratio");
-  hYield_ratio_norm_to_bylikin->Divide(fitBylikin13TeV);
+  hYield_ratio_norm_to_bylikin->Divide(hCorrectedYieldNormEff);
   hYield_ratio_norm_to_bylikin->SetLineColor(kRed);
   hYield_ratio_norm_to_bylikin->SetMarkerColor(kRed);
   hYield_ratio_norm_to_bylikin->SetYTitle("Ratio");
 
   TH1D* hYield_ratio_NN_to_bylikin = (TH1D*) hCorrYieldBetterBkgNN->Clone("hYield_dt_chi2map_corrected_ratio");
-  hYield_ratio_NN_to_bylikin->Divide(fitBylikin13TeV);
+  hYield_ratio_NN_to_bylikin->Divide(hCorrectedYieldNormEff);
   hYield_ratio_NN_to_bylikin->SetLineColor(kGreen+3);
   hYield_ratio_NN_to_bylikin->SetMarkerColor(kGreen+3);
   hYield_ratio_NN_to_bylikin->SetYTitle("Ratio");
 
   TH1D* hYield_ratio_3to8_to_bylikin = (TH1D*) hCorrYieldBetterBkg3to8->Clone("hYield_dt_chi2map_corrected_ratio");
-  hYield_ratio_3to8_to_bylikin->Divide(fitBylikin13TeV);
+  hYield_ratio_3to8_to_bylikin->Divide(hCorrectedYieldNormEff);
   hYield_ratio_3to8_to_bylikin->SetLineColor(kBlue+2);
   hYield_ratio_3to8_to_bylikin->SetMarkerColor(kBlue+2);
   hYield_ratio_3to8_to_bylikin->SetYTitle("Ratio");
+
+  Int_t nb = 36;
+  Int_t inside = 0;
+  for(int y = 1; y <= 36; y++){
+    Double_t bc = hYield_ratio_3to8_to_bylikin->GetBinContent(y);
+    if(bc < 1.0){
+      if(bc + hYield_ratio_3to8_to_bylikin->GetBinError(y) >= 1.0){
+        inside++;
+      }
+    }
+    else{
+      if(bc - hYield_ratio_3to8_to_bylikin->GetBinError(y) <= 1.0){
+        inside++;
+      }
+    }
+  }
+std::cout << "percantage of Bins inside of 1sigma range: " << (Double_t)inside/(Double_t)nb << '\n';
+std::cout << "number of Bins inside of 1sigma range: " << inside << '\n';
 
   hYield_ratio_norm_to_bylikin->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   hYield_ratio_norm_to_bylikin->GetXaxis()->SetTitleOffset(1.0);
@@ -843,8 +882,9 @@ void Systematics(TString PicFormat = "png", int numberneighbours = 4){
   hYield_ratio_norm_to_bylikin->GetYaxis()->SetTitleOffset(0.8);
   hYield_ratio_norm_to_bylikin->GetYaxis()->SetLabelOffset(0.008);
 
+  //changed
   hYield_ratio_norm_to_bylikin->GetXaxis()->SetRangeUser(1.4, 12.0);
-  hYield_ratio_norm_to_bylikin->GetYaxis()->SetRangeUser(0.84, 1.15);
+  hYield_ratio_norm_to_bylikin->GetYaxis()->SetRangeUser(0.84, 1.17); //(0.84, 1.17)
   hYield_ratio_norm_to_bylikin->GetXaxis()->SetTitleSize(0.025*3./1.);
   hYield_ratio_norm_to_bylikin->GetYaxis()->SetTitleSize(0.025*3./1.);
   hYield_ratio_norm_to_bylikin->GetXaxis()->SetLabelSize(0.025*3./1.);
@@ -859,10 +899,11 @@ void Systematics(TString PicFormat = "png", int numberneighbours = 4){
 
   hYield_ratio_norm_to_bylikin->DrawCopy("AXIS");
   line_ratio1->Draw("SAME");
-  hYield_ratio_norm_to_bylikin->DrawCopy("SAME P");
+  // fBylikinRatio->Draw("SAME");
+  // hYield_ratio_norm_to_bylikin->DrawCopy("SAME P");
   hYield_ratio_NN_to_bylikin->DrawCopy("SAME P");
   hYield_ratio_3to8_to_bylikin->DrawCopy("SAME P");
-  hYield_ratio_func_to_bylikin->DrawCopy("SAME P");
+  // hYield_ratio_func_to_bylikin->DrawCopy("SAME P");
   pad2InvMass->Update();
 
   pad2InvMass->SetTickx();
@@ -900,7 +941,6 @@ void Systematics(TString PicFormat = "png", int numberneighbours = 4){
   hCorrYieldNormal->DrawCopy("AXIS");
   ftsallis13TeV->Draw("SAME");
   hCorrYieldNormal->DrawCopy("SAME");
-  hCorrYieldBetterBkg3to8->DrawCopy("SAME");
   hCorrYieldBetterBkgNN->DrawCopy("SAME");
   leg_yield_tsallis->Draw("SAME");
   canInvMass->Update();
@@ -915,19 +955,19 @@ void Systematics(TString PicFormat = "png", int numberneighbours = 4){
   hYield_ratio_func_to_tsallis->SetYTitle("Ratio");
 
   TH1D* hYield_ratio_norm_to_tsallis = (TH1D*) hCorrYieldNormal->Clone("hYield_dt_chi2map_corrected_ratio");
-  hYield_ratio_norm_to_tsallis->Divide(ftsallis13TeV);
+  hYield_ratio_norm_to_tsallis->Divide(hCorrectedYieldNormEff);
   hYield_ratio_norm_to_tsallis->SetLineColor(kRed);
   hYield_ratio_norm_to_tsallis->SetMarkerColor(kRed);
   hYield_ratio_norm_to_tsallis->SetYTitle("Ratio");
 
   TH1D* hYield_ratio_NN_to_tsallis = (TH1D*) hCorrYieldBetterBkgNN->Clone("hYield_dt_chi2map_corrected_ratio");
-  hYield_ratio_NN_to_tsallis->Divide(ftsallis13TeV);
+  hYield_ratio_NN_to_tsallis->Divide(hCorrectedYieldNormEff);
   hYield_ratio_NN_to_tsallis->SetLineColor(kGreen+3);
   hYield_ratio_NN_to_tsallis->SetMarkerColor(kGreen+3);
   hYield_ratio_NN_to_tsallis->SetYTitle("Ratio");
 
   TH1D* hYield_ratio_3to8_to_tsallis = (TH1D*) hCorrYieldBetterBkg3to8->Clone("hYield_dt_chi2map_corrected_ratio");
-  hYield_ratio_3to8_to_tsallis->Divide(ftsallis13TeV);
+  hYield_ratio_3to8_to_tsallis->Divide(hCorrectedYieldNormEff);
   hYield_ratio_3to8_to_tsallis->SetLineColor(kBlue+2);
   hYield_ratio_3to8_to_tsallis->SetMarkerColor(kBlue+2);
   hYield_ratio_3to8_to_tsallis->SetYTitle("Ratio");
@@ -940,7 +980,8 @@ void Systematics(TString PicFormat = "png", int numberneighbours = 4){
   hYield_ratio_norm_to_tsallis->GetYaxis()->SetLabelOffset(0.008);
 
   hYield_ratio_norm_to_tsallis->GetXaxis()->SetRangeUser(1.4, 12.0);
-  hYield_ratio_norm_to_tsallis->GetYaxis()->SetRangeUser(0.84, 1.15);
+  //changed
+  hYield_ratio_norm_to_tsallis->GetYaxis()->SetRangeUser(0.84, 1.15); //(0.84, 1.15)
   hYield_ratio_norm_to_tsallis->GetXaxis()->SetTitleSize(0.025*3./1.);
   hYield_ratio_norm_to_tsallis->GetYaxis()->SetTitleSize(0.025*3./1.);
   hYield_ratio_norm_to_tsallis->GetXaxis()->SetLabelSize(0.025*3./1.);
@@ -955,10 +996,10 @@ void Systematics(TString PicFormat = "png", int numberneighbours = 4){
 
   hYield_ratio_norm_to_tsallis->DrawCopy("AXIS");
   line_ratio1->Draw("SAME");
-  hYield_ratio_norm_to_tsallis->DrawCopy("SAME P");
+  // hYield_ratio_norm_to_tsallis->DrawCopy("SAME P");
   hYield_ratio_NN_to_tsallis->DrawCopy("SAME P");
   hYield_ratio_3to8_to_tsallis->DrawCopy("SAME P");
-  hYield_ratio_func_to_tsallis->DrawCopy("SAME P");
+  // hYield_ratio_func_to_tsallis->DrawCopy("SAME P");
   pad2InvMass->Update();
 
   pad2InvMass->SetTickx();

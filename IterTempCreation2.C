@@ -460,7 +460,7 @@ void IterTempCreation2(std::string current_path, int cutmode, int numberneighbou
       ////////////////////////////////////////////////////////////////////////////
       // Double Template with Chi2 Map Part
       ////////////////////////////////////////////////////////////////////////////
-      hChi2_2D[k-1] = chi2test(hInvMass_Data, hPeak_MC, hCorrBkg, temp_chi2_dt, signalAreaScaling, corrbackAreaScaling, x_min, y_min, ndf, mario);
+      hChi2_2D[k-1] = chi2test(hInvMass_Data, hPeak_MC, hCorrBkg, temp_chi2_dt, signalAreaScaling, corrbackAreaScaling, x_min, y_min, ndf, mario, fBinsPi013TeVEMCPt[k]);
 
       hChi2_2D_sigma[k-1] = getErrorHist(Form("hChi2_2D_sigma_bin%02d",k), hChi2_2D[k-1],temp_chi2_dt+1);
       vChi2_DT_Chi2Map.push_back(temp_chi2_dt);
@@ -501,6 +501,7 @@ void IterTempCreation2(std::string current_path, int cutmode, int numberneighbou
 
       ////////////////////////////////////////////////////////////////////////////
       // getting the chi2 of the current pT bin
+      temp_ndf = ndf;
       hchi2_pol1->SetBinContent(k+1,r_pol1_temp->Chi2()/temp_ndf);
       hchi2_pol1->SetBinError(k+1, sqrt(2./(temp_ndf+3)));
 
