@@ -237,7 +237,7 @@ void IterTempCreation2(std::string current_path, int cutmode, int numberneighbou
       // Getting the purposed corr Background
 
       // Bkg made up with 6 NN Bins
-      if(mario == 0){
+      if(mario == 2){
         BkgFile = SafelyOpenRootfile("./BackFile.root");
         if (BkgFile->IsOpen() ) printf("BkgFile opened successfully\n");
         hCorrBkg = (TH1D*) BkgFile->Get(Form("hPilledUpBack_Bin%02d_with%02d_bins",k, numberneighbours));
@@ -251,7 +251,7 @@ void IterTempCreation2(std::string current_path, int cutmode, int numberneighbou
       }
 
       // normal Bkg
-      if(mario == 2){
+      if(mario == 0){
         hCorrBkg = (TH1D*) hInvMass_MC->Clone("hCorrBkg");
         hCorrBkg->Add(hPeak_MC,-1);
       }
@@ -264,13 +264,13 @@ void IterTempCreation2(std::string current_path, int cutmode, int numberneighbou
 
       hTrueDoubleCounting_Pi0_Pro = hTrueDoubleCounting_Pi0->ProjectionX(Form("hTrueDoubleCounting_Pi0_Pro_bin%02d",k),hMC_Pi0InAcc_Pt->FindBin(fBinsPi013TeVEMCPt[k]),
       hMC_Pi0InAcc_Pt->FindBin(fBinsPi013TeVEMCPt[k+1]));
-      Double_t InIntRangeDoubleCounting = (Double_t)hTrueDoubleCounting_Pi0_Pro->Integral(hTrueDoubleCounting_Pi0_Pro->FindBin(lowercountrange),
+      Double_t InIntRangeDoubleCounting = (Double_t)hTrueDoubleCounting_Pi0_Pro->Integral(hTrueDoubleCounting_Pi0_Pro->FindBin(lowercountrange[k]),
                                                      hTrueDoubleCounting_Pi0_Pro->FindBin(uppercountrange))/
                                                      (Double_t)hPeak_MC->Integral(
-                                                      hPeak_MC->FindBin(lowercountrange),
+                                                      hPeak_MC->FindBin(lowercountrange[k]),
                                                       hPeak_MC->FindBin(uppercountrange));
 
-      Double_t InIntRangePercent = (Double_t)hPeak_MC->Integral(hPeak_MC->FindBin(lowercountrange),
+      Double_t InIntRangePercent = (Double_t)hPeak_MC->Integral(hPeak_MC->FindBin(lowercountrange[k]),
                                                      hPeak_MC->FindBin(uppercountrange))/
                                                      (Double_t)hMC_Pi0InAcc_Pt->Integral(
                                                        hMC_Pi0InAcc_Pt->FindBin(fBinsPi013TeVEMCPt[k]),
@@ -355,31 +355,31 @@ void IterTempCreation2(std::string current_path, int cutmode, int numberneighbou
         // creating the new root file to safe all the related histograms and fits
         // in it.
         if(k == 1 && nIterStep == 0){
-          if(mario == 0){
+          if(mario == 2){
             IterTemp      = new TFile("IterTempBetterBkgNN.root", "RECREATE");
           }
           if(mario == 1){
             IterTemp      = new TFile("IterTempBetterBkg3to8.root", "RECREATE");
           }
-          if(mario == 2){
+          if(mario == 0){
             IterTemp      = new TFile("IterTemp.root", "RECREATE");
           }
         }
 
         else{
-          if(mario == 0){
+          if(mario == 2){
             IterTemp      = new TFile("IterTempBetterBkgNN.root", "UPDATE");
           }
           if(mario == 1){
             IterTemp      = new TFile("IterTempBetterBkg3to8.root", "UPDATE");
           }
-          if(mario == 2){
+          if(mario == 0){
             IterTemp      = new TFile("IterTemp.root", "UPDATE");
           }
         }
         //////////////////////////////////////////////////////////////////////////
         //fit pol 1 + temp
-        TFitResultPtr r_pol1_temp1 = data_clone2->Fit("fit_eq_1", "QM0PS","", lowerparamrange, upperparamrange);
+        TFitResultPtr r_pol1_temp1 = data_clone2->Fit("fit_eq_1", "QM0PS","", lowerparamrange[k], upperparamrange);
         vChi2_Pol1_Iter.push_back(r_pol1_temp1->Chi2() / r_pol1_temp1->Ndf());
 
         //////////////////////////////////////////////////////////////////////////
@@ -436,7 +436,7 @@ void IterTempCreation2(std::string current_path, int cutmode, int numberneighbou
       ///////////////////////////////////////////////////////////////////////////
       // final pol 1 + temp fit
       mc_full_clone2 = (TH1D*) hPeak_MC->Clone("mc_full_clone2");
-      TFitResultPtr r_pol1_temp = data_clone3->Fit("fit_eq_1", "M0S","", lowerparamrange, upperparamrange);
+      TFitResultPtr r_pol1_temp = data_clone3->Fit("fit_eq_1", "M0S","", lowerparamrange[k], upperparamrange);
       TH1D* mc_full_clone4 = (TH1D*) hPeak_MC->Clone("mc_full_clone4");
       mc_full_clone4->Scale(r_pol1_temp->Parameter(0));
       mc_full_clone4->SetLineColor(kRed);
@@ -460,7 +460,9 @@ void IterTempCreation2(std::string current_path, int cutmode, int numberneighbou
       ////////////////////////////////////////////////////////////////////////////
       // Double Template with Chi2 Map Part
       ////////////////////////////////////////////////////////////////////////////
-      hChi2_2D[k-1] = chi2test(hInvMass_Data, hPeak_MC, hCorrBkg, temp_chi2_dt, signalAreaScaling, corrbackAreaScaling, x_min, y_min, ndf, mario, fBinsPi013TeVEMCPt[k]);
+      hChi2_2D[k-1] = chi2test(hInvMass_Data, hPeak_MC, hCorrBkg, temp_chi2_dt,
+        signalAreaScaling, corrbackAreaScaling, x_min, y_min, ndf, mario,
+        fBinsPi013TeVEMCPt[k], k);
 
       hChi2_2D_sigma[k-1] = getErrorHist(Form("hChi2_2D_sigma_bin%02d",k), hChi2_2D[k-1],temp_chi2_dt+1);
       vChi2_DT_Chi2Map.push_back(temp_chi2_dt);
@@ -475,13 +477,13 @@ void IterTempCreation2(std::string current_path, int cutmode, int numberneighbou
       temp_chi2_dt = 0;
 
       hInvMass_Data->SetTitle(str);
-      if(mario == 0){
+      if(mario == 2){
         IterTemp      = new TFile("IterTempBetterBkgNN.root", "UPDATE");
       }
       if(mario == 1){
         IterTemp      = new TFile("IterTempBetterBkg3to8.root", "UPDATE");
       }
-      if(mario == 2){
+      if(mario == 0){
         IterTemp      = new TFile("IterTemp.root", "UPDATE");
       }
       gDirectory = IterTemp;
@@ -508,14 +510,14 @@ void IterTempCreation2(std::string current_path, int cutmode, int numberneighbou
       data_clone_for_int_dt_chi2map = (TH1D*) hInvMass_Data->Clone("data_clone_for_int_dt_chi2map");
       hCorrBkg->Scale(y_min*corrbackAreaScaling);
       data_clone_for_int_dt_chi2map->Add(hCorrBkg, -1);
-      int_value = data_clone_for_int_dt_chi2map->IntegralAndError(data_clone_for_int_dt_chi2map->GetXaxis()->FindBin(lowercountrange), data_clone_for_int_dt_chi2map->GetXaxis()->FindBin(uppercountrange), int_error);
+      int_value = data_clone_for_int_dt_chi2map->IntegralAndError(data_clone_for_int_dt_chi2map->GetXaxis()->FindBin(lowercountrange[k]), data_clone_for_int_dt_chi2map->GetXaxis()->FindBin(uppercountrange), int_error);
       hYield_dt_chi2map_uncorr->SetBinContent(k+1, int_value);
       hYield_dt_chi2map_uncorr->SetBinError(k+1, int_error);
 
 
       data_clone_for_int_pol1 = (TH1D*) hInvMass_Data->Clone("hYield_pol1_uncorr");
       data_clone_for_int_pol1->Add(fpol1, -1);
-      int_value = data_clone_for_int_pol1->IntegralAndError(data_clone_for_int_pol1->GetXaxis()->FindBin(lowercountrange), data_clone_for_int_pol1->GetXaxis()->FindBin(uppercountrange), int_error);
+      int_value = data_clone_for_int_pol1->IntegralAndError(data_clone_for_int_pol1->GetXaxis()->FindBin(lowercountrange[k]), data_clone_for_int_pol1->GetXaxis()->FindBin(uppercountrange), int_error);
       hYield_pol1_uncorr->SetBinContent(k+1, int_value);
       hYield_pol1_uncorr->SetBinError(k+1, int_error);
 
@@ -614,13 +616,13 @@ void IterTempCreation2(std::string current_path, int cutmode, int numberneighbou
     }
     //////////////////////////////////////////////////////////////////////////////
     // Writing of Chi2(pT)
-    if(mario == 0){
+    if(mario == 2){
       IterTemp      = new TFile("IterTempBetterBkgNN.root", "UPDATE");
     }
     if(mario == 1){
       IterTemp      = new TFile("IterTempBetterBkg3to8.root", "UPDATE");
     }
-    if(mario == 2){
+    if(mario == 0){
       IterTemp      = new TFile("IterTemp.root", "UPDATE");
     }
 
