@@ -900,7 +900,7 @@ std::cout << "number of Bins inside of 1sigma range: " << inside << '\n';
   hYield_ratio_norm_to_bylikin->DrawCopy("AXIS");
   line_ratio1->Draw("SAME");
   // fBylikinRatio->Draw("SAME");
-  // hYield_ratio_norm_to_bylikin->DrawCopy("SAME P");
+  hYield_ratio_norm_to_bylikin->DrawCopy("SAME P");
   hYield_ratio_NN_to_bylikin->DrawCopy("SAME P");
   hYield_ratio_3to8_to_bylikin->DrawCopy("SAME P");
   // hYield_ratio_func_to_bylikin->DrawCopy("SAME P");
@@ -996,7 +996,7 @@ std::cout << "number of Bins inside of 1sigma range: " << inside << '\n';
 
   hYield_ratio_norm_to_tsallis->DrawCopy("AXIS");
   line_ratio1->Draw("SAME");
-  // hYield_ratio_norm_to_tsallis->DrawCopy("SAME P");
+  hYield_ratio_norm_to_tsallis->DrawCopy("SAME P");
   hYield_ratio_NN_to_tsallis->DrawCopy("SAME P");
   hYield_ratio_3to8_to_tsallis->DrawCopy("SAME P");
   // hYield_ratio_func_to_tsallis->DrawCopy("SAME P");
