@@ -259,7 +259,7 @@ void Template_CAP(std::string current_path, int templatemethod){
     if(templatemethod == 2){
       BkgFile = SafelyOpenRootfile("./BackFile.root");
       if (BkgFile->IsOpen() ) printf("BkgFile opened successfully\n");
-      hCorrBkg = (TH1D*) BkgFile->Get(Form("hPilledUpBack_Bin%02d_with%02d_bins",k, numberneighbours));
+      hCorrBkg = (TH1D*) BkgFile->Get(Form("hPilledUpBack_Bin%02d_with06_bins",k));
     }
 
     /**
