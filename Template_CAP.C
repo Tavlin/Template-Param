@@ -1,4 +1,5 @@
 #include "CommonHeader.h"
+#include "chi2test.h"
 
 /**
  * [the main function]
