@@ -91,8 +91,9 @@ TH2D* Chi2MapFunction(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi
   Double_t dx;                              // Stepsize in x
   Double_t dy;                              // Area of signal
 
-
-  if(templatemethod != 2){
+  // Maybe x-bin-Range in der Karte ist total fürn Arsch aktuell!!!!!!!!!!!
+  // Testing needed!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  if(templatemethod == 1){
     if(pT < 6.){
       dx = 0.001;
       dy = 0.01;
