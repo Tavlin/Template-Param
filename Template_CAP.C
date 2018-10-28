@@ -420,7 +420,7 @@ void Template_CAP(std::string current_path, int templatemethod){
     DataFile->Close();
     BkgFile->Close();
 
-    std::cout << "bin number" << k << "reading and writing... DONE!" << "\n\n";
+    std::cout << "bin number " << k << " reading and writing... DONE!" << "\n\n";
   }
   /**
    * end of the for loop over all 1 <= k < nbins
