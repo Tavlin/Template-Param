@@ -199,7 +199,7 @@ void Template_CAP(std::string current_path, int templatemethod){
    * excluded since it only contains 0 <= pT (GeV/c) < 1.4 where no data should
    * be present, since we have an energy cut at 0.7 GeV per Cluster.
    */
-  for (int k = 1; k < numberbins; k++) {
+  for (int k = 1; k < numberbins-20; ++k) {
 
     std::cout << "Start bin  " << k << " reading and wrinting!" << "\n\n";
 
