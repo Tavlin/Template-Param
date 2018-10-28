@@ -199,7 +199,7 @@ void Template_CAP(std::string current_path, int templatemethod){
    * excluded since it only contains 0 <= pT (GeV/c) < 1.4 where no data should
    * be present, since we have an energy cut at 0.7 GeV per Cluster.
    */
-  for (int k = 1; k < numberbins-20; ++k) {
+  for (int k = 1; k < numberbins; ++k) {
 
     std::cout << "Start bin  " << k << " reading and wrinting!" << "\n\n";
 
@@ -478,7 +478,7 @@ void Template_CAP(std::string current_path, int templatemethod){
   hErrYhigh->SetXTitle("#it{p}_{T} (GeV/#it{c})");
 
 
-  for (int k = 1; k < numberbins; k++) {
+  for (int k = 1; k < numberbins; ++k) {
     hChi2Map_Chi2_pT->SetBinContent(k+1, vChi2_DT_Chi2Map[k-1]/vNDF_DT_Chi2Map[k-1]);
     hChi2Map_Chi2_pT->SetBinError(k+1, sqrt(2./vNDF_DT_Chi2Map[k-1]));
     hSignalAreaScaling->SetBinContent(k, vSignalAreaScaling[k-1]);
