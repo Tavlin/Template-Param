@@ -49,7 +49,7 @@ Double_t Chi2Calc(TH1D* h1, TH1D* h2, TH1D* h3, Double_t &ndf, Double_t a,
   // }
   if(templatemethod == 1){
 
-    chi2 += pow(b-fPulse_eval, 2.)/pow(sigma_cons, 2.); // 3 to 8 method
+    // chi2 += pow(b-fPulse_eval, 2.)/pow(sigma_cons, 2.); // 3 to 8 method
     // chi2 += pow(b-fPulse_eval, 2.)/pow(0.01, 2.);
 
   }
