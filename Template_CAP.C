@@ -93,14 +93,14 @@ void Template_CAP(std::string current_path, int templatemethod){
                                                     // from the Chi2Map Method
 
   // matter of change
-  TFile *IterTemp;                                  // FilePointer where things
+  TFile *OutputFile;                                // FilePointer where things
                                                     // will be safed to
 
-  TH2D* hChi2_2D[numberbins];                       // Array of pointers to 2D
+  TH2D* hChi2Map[numberbins];                       // Array of pointers to 2D
                                                     // histos, which contain the
                                                     // Chi2 map
 
-  TH2D* hChi2_2D_sigma[numberbins];                 // Array of TH2D* which
+  TH2D* hChi2Map_sigma[numberbins];                 // Array of TH2D* which
                                                     // contain the 1sigma range
 
 
@@ -285,31 +285,6 @@ void Template_CAP(std::string current_path, int templatemethod){
     hInvMass_Data->SetTitle(str);
 
     /**
-     * creating the new root file(s) to safe all the related histograms and fits
-     * in it.
-     */
-    if(k == 1){
-      if(templatemethod == 2){
-        IterTemp      = new TFile("IterTempBetterBkgNN.root", "RECREATE");
-      }
-      if(templatemethod == 1){
-        IterTemp      = new TFile("IterTempBetterBkg3to8.root", "RECREATE");
-      }
-    }
-
-    else{
-      if(templatemethod == 2){
-        IterTemp      = new TFile("IterTempBetterBkgNN.root", "UPDATE");
-      }
-      if(templatemethod == 1){
-        IterTemp      = new TFile("IterTempBetterBkg3to8.root", "UPDATE");
-      }
-    }
-
-    gDirectory->Cd(safePath.Data()); // reset path so no nwe generated pointer is
-                                  // connected to the Files above.
-
-    /**
      * Self written function which creates the so called Chi2Map.
      * @param hInvMass_Data       data histogram containing same event - scaled
      * mixed event
@@ -326,7 +301,7 @@ void Template_CAP(std::string current_path, int templatemethod){
      * @param fBinsPi013TeVEMCPt  pT binning
      * @param k                   current PT bin
      */
-    hChi2_2D[k-1] = chi2test(hInvMass_Data, hPeak_MC, hCorrBkg, temp_chi2_dt,
+    hChi2Map[k-1] = Chi2MapFunction(hInvMass_Data, hPeak_MC, hCorrBkg, temp_chi2_dt,
       signalAreaScaling, corrbackAreaScaling, x_min, y_min, ndf, templatemethod,
       fBinsPi013TeVEMCPt[k], k);
 
@@ -334,11 +309,11 @@ void Template_CAP(std::string current_path, int templatemethod){
      * Function from Sebastian to calculate the 1 sigma region around the min
      * Chi^2. The return value is again a TH2D!
      * @param k                 current PT bin
-     * @param hChi2_2D[k-1]     Chi2Map from above
+     * @param hChi2Map[k-1]     Chi2Map from above
      * @param temp_chi2_dt+1    temp. variable containig min. Chi^2
      */
-    hChi2_2D_sigma[k-1] = getErrorHist(Form("hChi2_2D_sigma_bin%02d",k),
-    hChi2_2D[k-1] ,temp_chi2_dt+1);
+    hChi2Map_sigma[k-1] = getErrorHist(Form("hChi2_2D_sigma_bin%02d",k),
+    hChi2Map[k-1] ,temp_chi2_dt+1);
 
     /**
      * Adding all the information we want to monitor in the corresponding
@@ -350,25 +325,47 @@ void Template_CAP(std::string current_path, int templatemethod){
     vCorrbackAreaScaling.push_back(corrbackAreaScaling);
     v_x_min.push_back(x_min);
     v_y_min.push_back(y_min);
-    vsigma_dt.push_back(getErrors(hChi2_2D_sigma[k-1], x_min, y_min));
-
-    f_ChiOverNdf->SetParameter(0,temp_chi2_dt/ndf);
+    vsigma_dt.push_back(getErrors(hChi2Map_sigma[k-1], x_min, y_min));
 
     temp_chi2_dt = 0;           // resetting the temp. variable for min. Chi^2
 
-    gDirectory = IterTemp;      // changing directory to the output file
+    /**
+     * creating the new root file(s) to safe all the related histograms and fits
+     * in it.
+     */
+    if(k == 1){
+      if(templatemethod == 2){
+        OutputFile      = new TFile("OutputFileBetterBkgNN.root", "RECREATE");
+      }
+      if(templatemethod == 1){
+        OutputFile      = new TFile("OutputFileBetterBkg3to8.root", "RECREATE");
+      }
+    }
+
+    else{
+      if(templatemethod == 2){
+        OutputFile      = new TFile("OutputFileBetterBkgNN.root", "UPDATE");
+      }
+      if(templatemethod == 1){
+        OutputFile      = new TFile("OutputFileBetterBkg3to8.root", "UPDATE");
+      }
+    }
+
+    gDirectory->Cd(safePath.Data());  // reset path so no nwe generated pointer is
+                                      // connected to the Files above.
+
+    gDirectory = OutputFile;          // changing directory to the output file
 
     /**
      * wrinting all the wanted histograms for plotting purposes in the output
      * file. part 1
      */
     hInvMass_Data->       Write(Form("data_bin%02d",k));
-    hChi2_2D[k-1]->       Write(Form("hChi2_2Dbin%02d",k));
-    hChi2_2D_sigma[k-1]-> Write(Form("hChi2_2D_sigma_bin%02d",k));
+    hChi2Map[k-1]->       Write(Form("hChi2_2Dbin%02d",k));
+    hChi2Map_sigma[k-1]-> Write(Form("hChi2_2D_sigma_bin%02d",k));
     hPeak_MC->            Write(Form("hSignal_bin%02d",k));
     hCorrBkg->            Write(Form("hCorrBack_bin%02d",k));
-    f_ChiOverNdf->        Write(Form("f_ChiOverNdf%02d",k));
-    IterTemp->Close();
+    OutputFile->Close();
 
     gDirectory->Cd(safePath.Data()); // resetting directory again.
 
@@ -404,11 +401,10 @@ void Template_CAP(std::string current_path, int templatemethod){
     /**
      * Garbage collection part 1.
      */
-    delete hPeak_MC;
-    delete hCorrBkg;
-    delete hInvMass_Data;
-    delete f_ChiOverNdf;
-    delete hChi2_2D[k-1];
+    hPeak_MC      = NULL;
+    hCorrBkg      = NULL;
+    hInvMass_Data = NULL;
+    hChi2Map[k-1] = NULL;
 
     MCFile->Close();
     DataFile->Close();
@@ -422,20 +418,20 @@ void Template_CAP(std::string current_path, int templatemethod){
 
   /**
    * Creating all the monitoring histograms:
-   * @hChi2_DT_Chi2map        Chi^2
-   * @hSignalAreaScaling      Signal area scaling
-   * @hCorrbackAreaScaling    Corr. bkg. area scaling
-   * @h_x_min                 signal scaling factor
-   * @h_y_min                 corr. bkg. scaling dactor
-   * @hErrXlow                lower signal scaling factor uncertainty
-   * @hErrXhigh               upper signal scaling factor uncertainty
-   * @hErrYlow                lower corr. bkg. scaling factor uncertainty
-   * @hErrYhigh               upper corr. bkg. scaling factor uncertainty
+   * @hChi2Map_Chi2_pT        Chi^2(pT)
+   * @hSignalAreaScaling      Signal area scaling (pT)
+   * @hCorrbackAreaScaling    Corr. bkg. area scaling (pT)
+   * @h_x_min                 signal scaling factor (pT)
+   * @h_y_min                 corr. bkg. scaling dactor(pT)
+   * @hErrXlow                lower signal scaling factor uncertainty (pT)
+   * @hErrXhigh               upper signal scaling factor uncertainty (pT)
+   * @hErrYlow                lower corr. bkg. scaling factor uncertainty (pT)
+   * @hErrYhigh               upper corr. bkg. scaling factor uncertainty (pT)
    */
-  TH1D* hChi2_DT_Chi2map = new TH1D("hChi2_DT_Chi2map", "", numberbins, fBinsPi013TeVEMCPt);
-  hChi2_DT_Chi2map->SetYTitle("#chi^{2}/ndf");
-  hChi2_DT_Chi2map->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-  hChi2_DT_Chi2map->SetLineWidth(3);
+  TH1D* hChi2Map_Chi2_pT = new TH1D("hChi2Map_Chi2_pT", "", numberbins, fBinsPi013TeVEMCPt);
+  hChi2Map_Chi2_pT->SetYTitle("#chi^{2}/ndf");
+  hChi2Map_Chi2_pT->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+  hChi2Map_Chi2_pT->SetLineWidth(3);
 
   TH1D* hSignalAreaScaling = new TH1D("hSignalAreaScaling", "", numberbins, fBinsPi013TeVEMCPt);
   hSignalAreaScaling->SetYTitle("signal areascaling factor");
@@ -472,8 +468,8 @@ void Template_CAP(std::string current_path, int templatemethod){
 
 
   for (int k = 1; k < numberbins; k++) {
-    hChi2_DT_Chi2map->SetBinContent(k+1, vChi2_DT_Chi2Map[k-1]/vNDF_DT_Chi2Map[k-1]);
-    hChi2_DT_Chi2map->SetBinError(k+1, sqrt(2./vNDF_DT_Chi2Map[k-1]));
+    hChi2Map_Chi2_pT->SetBinContent(k+1, vChi2_DT_Chi2Map[k-1]/vNDF_DT_Chi2Map[k-1]);
+    hChi2Map_Chi2_pT->SetBinError(k+1, sqrt(2./vNDF_DT_Chi2Map[k-1]));
     hSignalAreaScaling->SetBinContent(k, vSignalAreaScaling[k-1]);
     hCorrbackAreaScaling->SetBinContent(k, vCorrbackAreaScaling[k-1]);
     h_x_min->SetBinContent(k+1, v_x_min[k-1]);
@@ -494,10 +490,10 @@ void Template_CAP(std::string current_path, int templatemethod){
    * reopening the new root file(s) to safe all the related histograms in it.
    */
   if(templatemethod == 2){
-    IterTemp      = new TFile("IterTempBetterBkgNN.root", "UPDATE");
+    OutputFile      = new TFile("OutputFileBetterBkgNN.root", "UPDATE");
   }
   if(templatemethod == 1){
-    IterTemp      = new TFile("IterTempBetterBkg3to8.root", "UPDATE");
+    OutputFile      = new TFile("OutputFileBetterBkg3to8.root", "UPDATE");
   }
 
   /**
@@ -584,7 +580,7 @@ void Template_CAP(std::string current_path, int templatemethod){
   hYield_dt_chi2map_corrected->           Write("hYield_dt_chi2map_corrected");
   hYield_framework->                      Write("hYield_framework");
   CorrectedYieldNormEff->                 Write("hCorrectedYieldNormEff");
-  hChi2_DT_Chi2map->                      Write("hChi2_DT_Chi2map");
+  hChi2Map_Chi2_pT->                      Write("hChi2Map_Chi2_pT");
   hSignalAreaScaling->                    Write("hSignalAreaScaling");
   hCorrbackAreaScaling->                  Write("hCorrbackAreaScaling");
   h_x_min->                               Write("h_x_min");
@@ -600,7 +596,7 @@ void Template_CAP(std::string current_path, int templatemethod){
    */
   delete hYield_dt_chi2map_uncorr;
   delete hYield_dt_chi2map_acceptance_corrected;
-  delete hChi2_DT_Chi2map;
+  delete hChi2Map_Chi2_pT;
   delete hSignalAreaScaling;
   delete hCorrbackAreaScaling;
   delete h_x_min;
@@ -629,7 +625,7 @@ void Template_CAP(std::string current_path, int templatemethod){
    * Closing all the files which were opend for the Yields.
    */
   CorrectionFile->Close();
-  IterTemp->Close();
+  OutputFile->Close();
   DataFile->Close();
   BkgFile->Close();
 

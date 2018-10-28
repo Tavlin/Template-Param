@@ -1,7 +1,7 @@
 #include "CommonHeader.h"
 
 /**
- * Function called by chi2test to actually calculated Chi^2 and Ndf
+ * Function called by Chi2MapFunction to actually calculated Chi^2 and Ndf
  * @param  h1             data histogram containing same event - scaled
  * @param  h2             MC histogram containing MC truth Pi0 Peak
  * @param  h3             correlated background histogram
@@ -17,7 +17,7 @@
  * function which is used as 1 sigma uncertainty as a constraint
  * @return                Chi^2
  */
-Double_t chi2_selfmade(TH1D* h1, TH1D* h2, TH1D* h3, Double_t &ndf, Double_t a,
+Double_t Chi2Calc(TH1D* h1, TH1D* h2, TH1D* h3, Double_t &ndf, Double_t a,
                        Double_t b, int templatemethod, int binnumber, Double_t fPulse_eval, Double_t sigma_cons){
   Double_t chi2 = 0;
   Double_t temp_error = 0;
@@ -81,7 +81,7 @@ Double_t chi2_selfmade(TH1D* h1, TH1D* h2, TH1D* h3, Double_t &ndf, Double_t a,
  * @param fBinsPi013TeVEMCPt  pT binning
  * @param k                   current PT bin
  */
-TH2D* chi2test(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi2_min,
+TH2D* Chi2MapFunction(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi2_min,
   Double_t &signalAreaScaling, Double_t &corrbackAreaScaling, Double_t &x_min,
   Double_t &y_min, Double_t &ndf, int templatemethod, Double_t pT, int binnumber){
   Double_t chi2_min_temp = 10.e10;
@@ -201,7 +201,7 @@ TH2D* chi2test(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi2_min,
     for (int iy = 0; iy < binnumber2D; iy++) {
       ndf = upperfitrange-lowerfitrange-3;
       Double_t chi2 = 0;
-      chi2 = chi2_selfmade(hSignal_clone, hCorrback_clone, hData_clone, ndf,
+      chi2 = Chi2Calc(hSignal_clone, hCorrback_clone, hData_clone, ndf,
                            dx*(Double_t)(ix+2000.), dy*(Double_t)iy, templatemethod, binnumber,
                           fPulse_eval, sigma_cons);
 
