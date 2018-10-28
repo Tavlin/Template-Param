@@ -70,7 +70,7 @@ Double_t lowercountrange[38] = {0.0195, 0.0205, 0.0225, 0.0235, 0.0255,
                                 0.1015, 0.1175, 0.1365};
 const Double_t uppercountrange  = 0.3;
 
-
+const Int_t kMaxHit             = 2000;
 const int numberbins            = 39;           // number of actual used pT Bins
 TH1D* hInvMass_Data             = NULL;         // data histogram
 TH1D* hInvMass_MC               = NULL;
