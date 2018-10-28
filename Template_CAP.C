@@ -305,29 +305,41 @@ void Template_CAP(std::string current_path, int templatemethod){
     gDirectory->Cd(sPath.Data()); // reset path so no nwe generated pointer is
                                   // connected to the Files above.
 
-    ////////////////////////////////////////////////////////////////////////////
-    // Double Template with Chi2 Map Part
-    ////////////////////////////////////////////////////////////////////////////
     /**
      * Self written function which creates the so called Chi2Map.
-     * @param hInvMass_Data       [description]
-     * @param hPeak_MC            [description]
-     * @param hCorrBkg            [description]
-     * @param temp_chi2_dt        [description]
-     * @param signalAreaScaling   [description]
-     * @param corrbackAreaScaling [description]
-     * @param x_min               [description]
-     * @param y_min               [description]
-     * @param ndf                 [description]
-     * @param mario               [description]
-     * @param fBinsPi013TeVEMCPt  [description]
-     * @param k                   [description]
+     * @param hInvMass_Data       data histogram containing same event - scaled
+     * mixed event
+     * @param hPeak_MC            MC histogram containing MC truth Pi0 Peak
+     * @param hCorrBkg            correlated background histogram
+     * @param temp_chi2_dt        temp. variable to obtain min. Chi^2
+     * @param signalAreaScaling   temp. variable for the signalAreaScaling
+     * @param corrbackAreaScaling temp. variable for the corrbackAreaScaling
+     * @param x_min               temp. variable for the signal scaling
+     * @param y_min               temp. variable for the corr. bkg scaling
+     * @param ndf                 temp. variable to obtain ndf
+     * @param templatemethod      telling the function which method is currently
+     * used
+     * @param fBinsPi013TeVEMCPt  pT binning
+     * @param k                   current PT bin
      */
     hChi2_2D[k-1] = chi2test(hInvMass_Data, hPeak_MC, hCorrBkg, temp_chi2_dt,
-      signalAreaScaling, corrbackAreaScaling, x_min, y_min, ndf, mario,
+      signalAreaScaling, corrbackAreaScaling, x_min, y_min, ndf, templatemethod,
       fBinsPi013TeVEMCPt[k], k);
 
-    hChi2_2D_sigma[k-1] = getErrorHist(Form("hChi2_2D_sigma_bin%02d",k), hChi2_2D[k-1],temp_chi2_dt+1);
+    /**
+     * Function from Sebastian to calculate the 1 sigma region around the min
+     * Chi^2. The return value is again a TH2D!
+     * @param k                 current PT bin
+     * @param hChi2_2D[k-1]     Chi2Map from above
+     * @param temp_chi2_dt+1    temp. variable containig min. Chi^2
+     */
+    hChi2_2D_sigma[k-1] = getErrorHist(Form("hChi2_2D_sigma_bin%02d",k),
+    hChi2_2D[k-1] ,temp_chi2_dt+1);
+
+    /**
+     * Adding all the information we want to monitor in the corresponding
+     * vectors
+     */
     vChi2_DT_Chi2Map.push_back(temp_chi2_dt);
     vNDF_DT_Chi2Map.push_back(ndf);
     vSignalAreaScaling.push_back(signalAreaScaling);
@@ -335,93 +347,273 @@ void Template_CAP(std::string current_path, int templatemethod){
     v_x_min.push_back(x_min);
     v_y_min.push_back(y_min);
     vsigma_dt.push_back(getErrors(hChi2_2D_sigma[k-1], x_min, y_min));
+
     f_ChiOverNdf->SetParameter(0,temp_chi2_dt/ndf);
 
-    temp_chi2_dt = 0;
+    temp_chi2_dt = 0;           // resetting the temp. variable for min. Chi^2
 
-    hInvMass_Data->SetTitle(str);
-    if(templatemethod == 2){
-      IterTemp      = new TFile("IterTempBetterBkgNN.root", "UPDATE");
-    }
-    if(templatemethod == 1){
-      IterTemp      = new TFile("IterTempBetterBkg3to8.root", "UPDATE");
-    }
-    if(mario == 0){
-      IterTemp      = new TFile("IterTemp.root", "UPDATE");
-    }
-    gDirectory = IterTemp;
-    hInvMass_Data->Write(Form("data_bin%02d",k));
-    data_clone3->Write(Form("data_addedErrosPol1_bin%02d",k));
-    mc_full_clone4->Write(Form("mc_peak_pol1_bin%02d",k));
-    fpol1->Write(Form("fpol1_bin%02d",k));
-    hPol1->Write(Form("hPol1_bin%02d",k));
-    hChi2_pol1_iter[k-1]->Write(Form("hChi2_pol1_iter_bin%02d",k));
-    hChi2_2D[k-1]->Write(Form("hChi2_2Dbin%02d",k));
-    hChi2_2D_sigma[k-1]->Write(Form("hChi2_2D_sigma_bin%02d",k));
-    hPeak_MC->Write(Form("hSignal_bin%02d",k));
-    hCorrBkg->Write(Form("hCorrBack_bin%02d",k));
-    f_ChiOverNdf->Write(Form("f_ChiOverNdf%02d",k));
+    gDirectory = IterTemp;      // changing directory to the output file
 
-    gDirectory->Cd(sPath.Data());
+    /**
+     * wrinting all the wanted histograms for plotting purposes in the output
+     * file.
+     */
+    hInvMass_Data->       Write(Form("data_bin%02d",k));
+    hChi2_2D[k-1]->       Write(Form("hChi2_2Dbin%02d",k));
+    hChi2_2D_sigma[k-1]-> Write(Form("hChi2_2D_sigma_bin%02d",k));
+    hPeak_MC->            Write(Form("hSignal_bin%02d",k));
+    hCorrBkg->            Write(Form("hCorrBack_bin%02d",k));
+    f_ChiOverNdf->        Write(Form("f_ChiOverNdf%02d",k));
+    IterTemp->Close();
 
-    ////////////////////////////////////////////////////////////////////////////
-    // getting the chi2 of the current pT bin
-    temp_ndf = ndf;
-    hchi2_pol1->SetBinContent(k+1,r_pol1_temp->Chi2()/temp_ndf);
-    hchi2_pol1->SetBinError(k+1, sqrt(2./(temp_ndf+3)));
+    gDirectory->Cd(safePath.Data()); // resetting directory again.
 
+    /**
+     * Data histogram clone which will be integrated to get the uncorrected Yield
+     * for the Chi2Map
+     */
     data_clone_for_int_dt_chi2map = (TH1D*) hInvMass_Data->Clone("data_clone_for_int_dt_chi2map");
-    hCorrBkg->Scale(y_min*corrbackAreaScaling);
+
+    hCorrBkg->Scale(y_min*corrbackAreaScaling);       //sclaing of the corr. bkg.
+
+    /**
+     * Subtracting the scaled corr. bkg. from the same - scaled mixed event data
+     * histogram (clone).
+     * @param hCorrBkg (now scaled) corr. bkg histogram
+     */
     data_clone_for_int_dt_chi2map->Add(hCorrBkg, -1);
+
+    /**
+     * Obtaining the integral value and error for the uncorrected yield in the
+     * current pT bin.
+     * Then giving theses values into the uncorrected Yield histogram.
+     */
     int_value = data_clone_for_int_dt_chi2map->
     IntegralAndError(data_clone_for_int_dt_chi2map->GetXaxis()->
     FindBin(lowercountrange[k]),
     data_clone_for_int_dt_chi2map->GetXaxis()->FindBin(uppercountrange),
     int_error);
+
     hYield_dt_chi2map_uncorr->SetBinContent(k+1, int_value);
     hYield_dt_chi2map_uncorr->SetBinError(k+1, int_error);
 
-
-    data_clone_for_int_pol1 = (TH1D*) hInvMass_Data->Clone("hYield_pol1_uncorr");
-    data_clone_for_int_pol1->Add(fpol1, -1);
-    int_value = data_clone_for_int_pol1->IntegralAndError(data_clone_for_int_pol1->GetXaxis()->FindBin(lowercountrange[k]), data_clone_for_int_pol1->GetXaxis()->FindBin(uppercountrange), int_error);
-    hYield_pol1_uncorr->SetBinContent(k+1, int_value);
-    hYield_pol1_uncorr->SetBinError(k+1, int_error);
-
-    ////////////////////////////////////////////////////////////////////////////
-    // getting the peakratio of the current pT bin
-    Double_t peakscale_pol1, peakerr_pol1;
-
-    peakscale_pol1 = r_pol1_temp->Parameter(0);
-    peakerr_pol1 = r_pol1_temp->Error(0);
-
-    ha_pol1->SetBinContent(k+1, peakscale_pol1);
-    ha_pol1->SetBinError(k+1, peakerr_pol1);
-
-    ////////////////////////////////////////////////////////////////////////////
-    // garbage collection part 1
-    delete mc_full_clone2;
-    delete mc_full_clone4;
-    delete data_clone2;
-    delete data_clone3;
+    /**
+     * Garbage collection part 1.
+     */
     delete hPeak_MC;
     delete hCorrBkg;
     delete hInvMass_Data;
-    delete fpol1;
     delete f_ChiOverNdf;
-    delete fit_eq_1;
-
-    if(k < numberbins-1){
-      // IterTemp->Close();
-      MCFile->Close();
-      DataFile->Close();
-    }
-    IterTemp->Close();
-    std::cout << "bin number" << k << "Ende" << std::endl << std::endl;
-    delete hChi2_pol1_iter[k-1];
     delete hChi2_2D[k-1];
+
+    MCFile->Close();
+    DataFile->Close();
+
+    std::cout << "bin number" << k << "reading and writing... DONE!" << "\n\n";
   }
 
+  //////////////////////////////////////////////////////////////////////////////
+  // end of the for loop over all 1 <= k < nbins
+  //////////////////////////////////////////////////////////////////////////////
+  // Chi2Map Histos
+  TH1D* hChi2_DT_Chi2map = new TH1D("hChi2_DT_Chi2map", "", numberbins, fBinsPi013TeVEMCPt);
+  hChi2_DT_Chi2map->SetYTitle("#chi^{2}/ndf");
+  hChi2_DT_Chi2map->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+  hChi2_DT_Chi2map->SetLineWidth(3);
 
+  TH1D* hSignalAreaScaling = new TH1D("hSignalAreaScaling", "", numberbins, fBinsPi013TeVEMCPt);
+  hSignalAreaScaling->SetYTitle("signal areascaling factor");
+  hSignalAreaScaling->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+
+  TH1D* hCorrbackAreaScaling = new TH1D("hCorrbackAreaScaling", "", numberbins, fBinsPi013TeVEMCPt);
+  hCorrbackAreaScaling->SetYTitle("corr. bkg. areascaling factor");
+  hCorrbackAreaScaling->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+
+  TH1D* h_x_min = new TH1D("h_x_min", "", numberbins, fBinsPi013TeVEMCPt);
+  h_x_min->SetYTitle("signal scaling factor");
+  h_x_min->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+  TH1D* h_y_min = new TH1D("h_y_min", "", numberbins, fBinsPi013TeVEMCPt);
+  h_y_min->SetYTitle("corr. back. scaling factor");
+  h_y_min->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+
+
+  TH1D* hErrXlow = new TH1D("hErrXlow", "", numberbins, fBinsPi013TeVEMCPt);
+  hErrXlow->SetYTitle("lower signal scaling factor uncertainty");
+  hErrXlow->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+
+  TH1D* hErrXhigh = new TH1D("hErrXhigh", "", numberbins, fBinsPi013TeVEMCPt);
+  hErrXhigh->SetYTitle("upper signal scaling factor uncertainty");
+  hErrXhigh->SetXTitle("#it{p}_{T} (GeV/#it{c})");;
+
+  TH1D* hErrYlow = new TH1D("hErrYlow", "", numberbins, fBinsPi013TeVEMCPt);
+  hErrYlow->SetYTitle("lower corr. back. scaling factor uncertainty");
+  hErrYlow->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+
+  TH1D* hErrYhigh = new TH1D("hErrYhigh", "", numberbins, fBinsPi013TeVEMCPt);
+  hErrYhigh->SetYTitle("upper corr. back. scaling factor uncertainty");
+  hErrYhigh->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+
+
+  for (int k = 1; k < numberbins; k++) {
+    hChi2_DT_Chi2map->SetBinContent(k+1, vChi2_DT_Chi2Map[k-1]/vNDF_DT_Chi2Map[k-1]);
+    hChi2_DT_Chi2map->SetBinError(k+1, sqrt(2./vNDF_DT_Chi2Map[k-1]));
+    hSignalAreaScaling->SetBinContent(k, vSignalAreaScaling[k-1]);
+    hCorrbackAreaScaling->SetBinContent(k, vCorrbackAreaScaling[k-1]);
+    h_x_min->SetBinContent(k+1, v_x_min[k-1]);
+    h_y_min->SetBinContent(k+1, v_y_min[k-1]);
+    hErrXlow->SetBinContent(k+1, vsigma_dt[k-1][0]);
+    hErrXhigh->SetBinContent(k+1, vsigma_dt[k-1][1]);
+    hErrYlow->SetBinContent(k+1, vsigma_dt[k-1][2]);
+    hErrYhigh->SetBinContent(k+1, vsigma_dt[k-1][3]);
+    h_x_min->SetBinError(k+1,
+    max(hErrXhigh->GetBinContent(k+1)-h_x_min->GetBinContent(k+1),
+    h_x_min->GetBinContent(k+1) - hErrXlow->GetBinContent(k+1)));
+    h_y_min->SetBinError(k+1,
+    max(hErrYhigh->GetBinContent(k+1) - h_y_min->GetBinContent(k+1),
+    h_y_min->GetBinContent(k+1) - hErrYlow->GetBinContent(k+1)));
+  }
+  //////////////////////////////////////////////////////////////////////////////
+  // Writing of Chi2(pT)
+  if(mario == 2){
+    IterTemp      = new TFile("IterTempBetterBkgNN.root", "UPDATE");
+  }
+  if(mario == 1){
+    IterTemp      = new TFile("IterTempBetterBkg3to8.root", "UPDATE");
+  }
+  if(mario == 0){
+    IterTemp      = new TFile("IterTemp.root", "UPDATE");
+  }
+
+  hchi2_pol1->SetLineColor(kRed);
+  hchi2_pol1->SetLineWidth(3);
+  hchi2_pol1->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+  hchi2_pol1->GetYaxis()->SetTitle("#chi^{2}/ndf");
+
+
+  hchi2_pol1->Write(Form("hchi2_pol1"));
+  ha_pol1->Write("Pol1PeakFactor");
+
+  ////////////////////////////////////////////////////////////////////////////
+  // open MC histo path for the correction histos
+  TFile* CorrectionFile = NULL;
+  CorrectionFile = SafelyOpenRootfile("./00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_MC_GammaConv_OnlyCorrectionFactor_00010113_1111112067032220000_01631031000000d0.root");
+  if (CorrectionFile->IsOpen() ) printf("CorrectionFile opened successfully\n");
+
+  TH1D* hAcc    = (TH1D*) CorrectionFile->Get(Form("fMCMesonAccepPt"));
+  TH1D* hEffi   = (TH1D*) CorrectionFile->Get(Form("TrueMesonEffiPt"));
+
+  // correction for 2pi, BR, NEvents, Y, Binwidth
+  hYield_pol1_uncorr->Scale(1./(NEvents*2*M_PI*1.6*0.98798),"width");
+  hYield_pol1_uncorr->SetYTitle(rawyield);
+  hYield_pol1_uncorr->SetXTitle(pt_str);
+
+  hYield_dt_chi2map_uncorr->Scale(1./(NEvents*2*M_PI*1.6*0.98798),"width");
+  hYield_dt_chi2map_uncorr->SetYTitle(rawyield);
+  hYield_dt_chi2map_uncorr->SetXTitle(pt_str);
+
+  // open Data File for the Yield coming from the Framework and for the Chi2
+  // from the framework method
+  TFile* DataFile = NULL;
+  DataFile = SafelyOpenRootfile("./00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_data_GammaConvV1WithoutCorrection_00010113_1111112067032220000_01631031000000d0.root");
+  if (DataFile->IsOpen() ) printf("DataFile opened successfully\n");
+
+  TH1D* hYield_framework = (TH1D*) DataFile->Get(Form("histoYieldMeson"));
+  TH1D* histoChi2_0 = (TH1D*) DataFile->Get(Form("histoChi2_0"));
+  SetHistoStandardSettings(histoChi2_0);
+
+  hYield_framework->Divide(hEffi);
+
+  // correcting with bin center (1/pT)
+  for (int i = 2; i <= numberbins; i++) {
+    hYield_pol1_uncorr->SetBinContent(i,hYield_pol1_uncorr->GetBinContent(i)/hYield_pol1_uncorr->GetBinCenter(i));
+    hYield_dt_chi2map_uncorr->SetBinContent(i,hYield_dt_chi2map_uncorr->GetBinContent(i)/hYield_dt_chi2map_uncorr->GetBinCenter(i));
+    hYield_pol1_uncorr->SetBinError(i,hYield_pol1_uncorr->GetBinError(i)/hYield_pol1_uncorr->GetBinCenter(i));
+    hYield_dt_chi2map_uncorr->SetBinError(i,hYield_dt_chi2map_uncorr->GetBinError(i)/hYield_dt_chi2map_uncorr->GetBinCenter(i));
+    hYield_framework->SetBinContent(i,hYield_framework->GetBinContent(i)/hYield_framework->GetBinCenter(i));
+    hYield_framework->SetBinError(i,hYield_framework->GetBinError(i)/hYield_framework->GetBinCenter(i));
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+  // correcting yield for the acceptance
+  TH1D * hYield_pol1_acceptance_corrected       =  (TH1D*) hYield_pol1_uncorr->Clone("hYield_pol1_acceptance_corrected");
+  hYield_pol1_acceptance_corrected->Divide(hAcc);
+
+  TH1D * hYield_dt_chi2map_acceptance_corrected =  (TH1D*) hYield_dt_chi2map_uncorr->Clone("hYield_dt_chi2map_acceptance_corrected");
+  hYield_dt_chi2map_acceptance_corrected->Divide(hAcc);
+
+  //////////////////////////////////////////////////////////////////////////////
+  // correcting yield for the efficiency
+  TH1D * hYield_pol1_corrected       =  (TH1D*) hYield_pol1_acceptance_corrected->Clone("hYield_pol1_corrected");
+
+  TH1D * hYield_dt_chi2map_corrected =  (TH1D*) hYield_dt_chi2map_acceptance_corrected->Clone("hYield_dt_chi2map_corrected");
+
+  for (int i = 2; i <= numberbins; i++) {
+    hYield_pol1_corrected->SetBinContent(i,hYield_pol1_acceptance_corrected->GetBinContent(i)/vInIntRangePercent[i-2]);
+    hYield_dt_chi2map_corrected->SetBinContent(i,hYield_dt_chi2map_acceptance_corrected->GetBinContent(i)/vInIntRangePercent[i-2]);
+    hYield_pol1_corrected->SetBinError(i,hYield_pol1_acceptance_corrected->GetBinError(i)/vInIntRangePercent[i-2]);
+    hYield_dt_chi2map_corrected->SetBinError(i,hYield_dt_chi2map_acceptance_corrected->GetBinError(i)/vInIntRangePercent[i-2]);
+  }
+
+  hYield_pol1_corrected->SetYTitle(strCorrectedYield);
+  hYield_dt_chi2map_corrected->SetYTitle(strCorrectedYield);
+
+
+
+  hYield_pol1_uncorr->Write("hYield_pol1_uncorr");
+  hYield_dt_chi2map_uncorr->Write("hYield_dt_chi2map_uncorr");
+  hYield_pol1_acceptance_corrected->Write("hYield_pol1_acceptance_corrected");
+  hYield_dt_chi2map_acceptance_corrected->Write("hYield_dt_chi2map_acceptance_corrected");
+  hYield_pol1_corrected->Write("hYield_pol1_corrected");
+  hYield_dt_chi2map_corrected->Write("hYield_dt_chi2map_corrected");
+  hYield_framework->Write("hYield_framework");
+  CorrectedYieldNormEff->Write("hCorrectedYieldNormEff");
+  hChi2_DT_Chi2map->Write("hChi2_DT_Chi2map");
+  hSignalAreaScaling->Write("hSignalAreaScaling");
+  hCorrbackAreaScaling->Write("hCorrbackAreaScaling");
+  h_x_min->Write("h_x_min");
+  h_y_min->Write("h_y_min");
+  hErrXlow->Write("hErrXlow");
+  hErrXhigh->Write("hErrXhigh");
+  hErrYlow->Write("hErrYlow");
+  hErrYhigh->Write("hErrYhigh");
+  histoChi2_0->Write("histoChi2_0");
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Garbage collection part 2
+  delete hchi2_pol1;
+  delete hYield_dt_chi2map_uncorr;
+  delete hYield_pol1_uncorr;
+  delete hYield_pol1_acceptance_corrected;
+  delete hYield_dt_chi2map_acceptance_corrected;
+  delete hPol1;
+  delete hChi2_DT_Chi2map;
+  delete hSignalAreaScaling;
+  delete hCorrbackAreaScaling;
+  delete h_x_min;
+  delete h_y_min;
+  delete hErrXlow;
+  delete hErrXhigh;
+  delete hErrYlow;
+  delete hErrYhigh;
+  delete hTrueDoubleCounting_Pi0_Pro;
+  delete hTrueDoubleCounting_Pi0;
+  delete hYield_framework;
+  delete histoChi2_0;
+
+  vInIntRangePercent.clear();
+  vChi2_DT_Chi2Map.clear();
+  vNDF_DT_Chi2Map.clear();
+  vSignalAreaScaling.clear();
+  vCorrbackAreaScaling.clear();
+  v_x_min.clear();
+  v_y_min.clear();
+  vsigma_dt.clear();
+  vChi2_Pol1_Iter.clear();
+  IterTemp->Close();
+  DataFile->Close();
+  if(mario == 0 || mario == 1){
+    BkgFile->Close();
+  }
+  }
 
 }
