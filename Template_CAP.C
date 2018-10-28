@@ -623,7 +623,7 @@ void Template_CAP(std::string current_path, int templatemethod){
   v_y_min.clear();
   vsigma_dt.clear();
   vChi2_Pol1_Iter.clear();
-  
+
   /**
    * Closing all the files which were opend for the Yields.
    */

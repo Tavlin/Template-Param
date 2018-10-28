@@ -32,6 +32,10 @@
 #include <algorithm>
 #include <time.h>
 
+/**
+ * pT Binning comming from the framework. If its changed there, you need to
+ * change it here!
+ */
 Double_t fBinsPi013TeVEMCPt[40]                  =   {0.0,  1.4,   1.6,   1.8,   2.0,   2.2,
                                                       2.4,   2.6,   2.8,   3.0,   3.2,
                                                       3.4,   3.6,   3.8,   4.0,   4.2,
@@ -41,23 +45,10 @@ Double_t fBinsPi013TeVEMCPt[40]                  =   {0.0,  1.4,   1.6,   1.8,  
                                                       8.0,   8.5,   9.0,   9.5,  10.0,
                                                      12.0,  14.0,  16.0,  20.0};
 
-// Double_t fBinsPi013TeVEMCPt[37]               = { 0.0, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0, 1.2, 1.4,   1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4,
-//                                                     3.6, 3.8, 4.0, 4.5, 5.0, 5.5, 6.0, 7.0, 8.0, 10.0,  12.0, 16.0, 20.0, 25.0, 30.0, 35.0, 40.0};
 
-
-// Double_t fBinsPi013TeVEMCPt[46]                  =   {0.0,  1.4,   1.6,   1.8,   2.0,   2.2,
-//                                                       2.4,   2.6,   2.8,   3.0,   3.2,
-//                                                       3.4,   3.6,   3.8,   4.0,   4.2,
-//                                                       4.4,   4.6,   4.8,   5.0,   5.2,
-//                                                       5.4,   5.6,   5.8,   6.0,   6.2,
-//                                                       6.4,   6.6,   6.8,   7.0,   7.2,
-//                                                       7.4,   7.6,   7.8,   8.0,   8.4,
-//                                                       8.8,   9.2,   9.6,  10.0,  11.0,
-//                                                      12.0,  13.0,  14.0,  16.0,  20.0};
-
-
-const Int_t kMaxHit             = 2000;
-// const Double_t lowerparamrange  = 0.06;         //0.085;
+/**
+ * parametrisation- and counting intervall boarders.
+ */
 Double_t lowerparamrange[38] = {0.0195, 0.0205, 0.0225, 0.0235, 0.0255,
                                 0.0275, 0.0285, 0.0305, 0.0315, 0.0335,
                                 0.0355, 0.0365, 0.0385, 0.0395, 0.0415,
@@ -68,7 +59,7 @@ Double_t lowerparamrange[38] = {0.0195, 0.0205, 0.0225, 0.0235, 0.0255,
                                 0.1015, 0.1175, 0.1365};
 const Double_t upperparamrange  = 0.3;
 
-// const Double_t lowercountrange  = 0.06;         //0.085;
+
 Double_t lowercountrange[38] = {0.0195, 0.0205, 0.0225, 0.0235, 0.0255,
                                 0.0275, 0.0285, 0.0305, 0.0315, 0.0335,
                                 0.0355, 0.0365, 0.0385, 0.0395, 0.0415,
@@ -79,8 +70,9 @@ Double_t lowercountrange[38] = {0.0195, 0.0205, 0.0225, 0.0235, 0.0255,
                                 0.1015, 0.1175, 0.1365};
 const Double_t uppercountrange  = 0.3;
 
-const int numberbins            = 39;
-TH1D* hInvMass_Data             = NULL;         //data histogram
+
+const int numberbins            = 39;           // number of actual used pT Bins
+TH1D* hInvMass_Data             = NULL;         // data histogram
 TH1D* hInvMass_MC               = NULL;
 TH1D* mc_photon                 = NULL;         // gamma gamma MC histogram
 TH1D* mc_MixedConvPhoton        = NULL;         // gamma gamma_conv MC histogram
@@ -110,6 +102,10 @@ TH1D* hPeak2         = NULL;        // peak histo, needed to subtract from
 /******************************************************************************/
 
 
+/**
+ * functions for the mini toy MC for the opening angle cut.
+
+ */
 Double_t fCalcP(Double_t p1x, Double_t p1y, Double_t p1z){
   return sqrt(pow(p1x,2.)+pow(p1y,2.)+pow(p1z,2.));
 }
@@ -135,6 +131,9 @@ void fSmear(Double_t &px, Double_t &py, Double_t &pz){
   gRandom->Gaus(pz, pz/200.);
 }
 
+/**
+ * function to draw Chi^2 and sacling factors within a canvas/pad.
+ */
 void drawchi_and_param42(TLatex* tex,TFitResultPtr r ){
   tex->DrawLatexNDC(0.15,0.85,
   Form("#frac{#chi^{2}}{ndf} = %.2lf ",r->Chi2() / r->Ndf()));
@@ -149,7 +148,11 @@ void drawchi_and_param42(TLatex* tex,TFitResultPtr r ){
   Form("#frac{b}{a} = %.2lf ",r->Parameter(1) / r->Parameter(0)));
 }
 
-
+/**
+ * String collection:
+ * This collection is there, so that you do not need to write all these nasty
+ * long strings when you give some axis a title.
+ */
 TString strData = "data (signal + corr. back.)";
 TString MCInfo = "#splitline{pp, #sqrt{#it{s}} = 13TeV}{MC Monasch 13}";
 TString massaxis = "#it{M}_{#gamma #gamma} (GeV/#it{c}^{2})";
@@ -157,14 +160,19 @@ TString rawyield = "#frac{1}{2#pi N_{evt}} #frac{d#it{N}}{d#it{p}_{T}}";
 TString strCorrectedYield = "#frac{1}{2#pi #it{N}_{evt} #it{p}_{T}} #frac{d^{2}#it{N}}{d#it{y}d#it{p}_{T}}";
 TString DoubleTempStr = "signal + corr. back.";
 TString Pol1Str = "Peak temp. + 1^{st} ord. pol param.";
+TString sigma_minv_str = TString("#it{#sigma} (GeV/#it{c}^{2})^{-1}");
+TString minv_str = TString("#it{m}_{inv} (GeV/#it{c}^{2})");
+TString pt_str = TString("#it{p}_{T} (GeV/#it{c})");
+TString dNdmin_str = TString("#frac{d#it{N}_{#gamma #gamma}}{d#it{m}_{inv}} (GeV/#it{c}^{2})^{-1}");
+TString poweek_str = TString("Powerweek Daten");
+TString pi0togamma_str = TString("#pi^{0} #rightarrow #gamma #gamma");
+
 TLatex* texMCInfo = new TLatex();
 
-// Double_t myFunc(Double_t x){
-//   return (mc_photon->GetBinContent(mc_photon->FindBin(x))
-//   +mc_MixedConvPhoton->GetBinContent(mc_MixedConvPhoton->FindBin(x))
-//   +mc_ConvPhoton->GetBinContent(mc_ConvPhoton->FindBin(x)));
-// }
-
+/**
+ * functions written by Patrick Huhn
+ * used to get the Binning Array or the number of bins of an given TH1D.
+ */
 Double_t* GetBinningFromHistogram(TH1D* hist){
   if(!hist) return 0;
   TArrayD* dArray = (TArrayD*)hist->GetXaxis()->GetXbins();
@@ -177,6 +185,9 @@ Int_t GetNBinningFromHistogram(TH1D* hist){
   return dArray->GetSize();
 }
 
+/**
+ * Toy MC Stuff. System Rotation from CMS to Lab.
+ */
 void RotateToLabSystem(const double& theta, const double& phi,
 		       const double& p1, const double& p2, const double& p3,
 		       double& p1rot, double& p2rot, double& p3rot) {
@@ -193,7 +204,15 @@ void RotateToLabSystem(const double& theta, const double& phi,
 }
 
 // open rootfile safetly from Patrick Reichelt
-TFile* /*LmHelper::*/SafelyOpenRootfile(const std::string filename)
+/**
+ * function to open root files safely which means, without changing the
+ * gDirectory, which influences pointers. So if you create a pointer to a TH1D
+ * after opening a root file normally, and then close the file, the pointer
+ * would be broken. This is not good. We do not want this.
+ * @filename        name of the file whoch you want to open
+ * @return          return TFile Pointer to the file with corresponding filename
+ */
+TFile* SafelyOpenRootfile(const std::string filename)
 {
   /// Opens a rootfile without affecting the active path, which otherwise would point into the file, often causing trouble.
   //save current path before opening rootfile.
@@ -207,8 +226,6 @@ TFile* /*LmHelper::*/SafelyOpenRootfile(const std::string filename)
   if (ffile && ffile->IsOpen()) return ffile;
 
   ffile = TFile::Open(filename.data()); // gives root error and returns 0x0 on fail.
-  //ffile = new TFile(filename.data()); // gives root error on fail.
-  //ffile->OpenFile(filename.data());   // gives no error on fail.
   if (!ffile) printf(Form("SafelyOpenRootfile(): file '%s' not found.", filename.data()));
 
   // change to previous path again, so that it will be possible to close the file later without crash.
@@ -221,6 +238,9 @@ TFile* /*LmHelper::*/SafelyOpenRootfile(const std::string filename)
   return ffile;
 }
 
+/**
+ * DataTree Class used for the Toy MC aswell.
+ */
 class DataTree{
   private:
     Float_t pxdata[kMaxHit];
@@ -270,7 +290,15 @@ class DataTree{
 
 
 
+/**
+ * Functions to set Standard settings on the histograms
+ * They probably all need some work done on them.
+ */
 
+/**
+ * Sets the Standard Canvas Settings up.
+ * @param cCanv pointer to the TCanvas you want set up.
+ */
 void SetCanvasStandardSettings(TCanvas *cCanv){
   gStyle->SetOptStat(kFALSE); // <- das hier macht dies box rechts oben weg
   cCanv->SetTopMargin(0.025);
@@ -283,7 +311,13 @@ void SetCanvasStandardSettings(TCanvas *cCanv){
   cCanv->SetLogx(0);
 }
 
-
+/**
+ * Sets the Standard TH1 Settings up.
+ * @param histo    pointer to TH1
+ * @param XOffset  X-Title Offset
+ * @param YOffset  Y-Title Offset
+ * @param textSize Text size
+ */
 void SetHistoStandardSettings(TH1* histo, Double_t XOffset = 1.2, Double_t YOffset = 1., Double_t textSize = 0.03){
   histo->SetStats(0);
   histo->GetXaxis()->SetTitleOffset(XOffset);
@@ -298,10 +332,6 @@ void SetHistoStandardSettings(TH1* histo, Double_t XOffset = 1.2, Double_t YOffs
   histo->GetXaxis()->SetTitleFont(42);
 
   histo->SetTitle("");
-  // histo->SetXTitle("#it{m}_{inv} (GeV/#it{c}^{2})");
-  histo->GetXaxis()->SetTitleOffset(1.4);
-  // histo->SetYTitle("#frac{d#it{N}_{#gamma #gamma}}{d#it{m}_{inv}} (GeV/#it{c}^{2})^{-1}");
-  histo->GetYaxis()->SetTitleOffset(1.4);
   histo->Sumw2();
   histo->SetMarkerStyle(20);
   histo->SetMarkerSize(1.5);
@@ -329,18 +359,7 @@ void SetHistoStandardSettings2(TH2* histo, Double_t XOffset = 1.2, Double_t YOff
   histo->GetZaxis()->SetLabelSize(textSize);
   histo->GetZaxis()->SetLabelFont(42);
   histo->GetZaxis()->SetTitleFont(42);
-  // histo->Sumw2();
-
-
-  // histo->SetTitle("");
-  // histo->SetXTitle("#it{m}_{inv} (GeV/#it{c}^{2})");
-  // histo->GetXaxis()->SetTitleOffset(1.4);
-  // histo->SetYTitle("#it{p}_{T} (GeV/#it{c})");
-  // histo->GetYaxis()->SetTitleOffset(1.4);
-  // histo->SetZTitle("#it{counts}");
-  // histo->GetZaxis()->SetTitleOffset(1.4);
-  // histo->GetZaxis()->SetRangeUser(1.e-10,100.);
-
+  histo->Sumw2();
 }
 
 
@@ -375,7 +394,11 @@ void SetLatexSettings(TLatex* tex, Double_t textSize = 0.03){
 
 
 
-
+/**
+ * function from the Toy MC which prints out the progress in a fancy little way
+ * into your command prompt
+ * made by Adrian
+ */
 void printProgress (Double_t progress)
 {
   int barWidth = 50;
@@ -390,21 +413,14 @@ void printProgress (Double_t progress)
 }
 
 
-TString sigma_minv_str = TString("#it{#sigma} (GeV/#it{c}^{2})^{-1}");
-TString minv_str = TString("#it{m}_{inv} (GeV/#it{c}^{2})");
-TString pt_str = TString("#it{p}_{T} (GeV/#it{c})");
-TString dNdmin_str = TString("#frac{d#it{N}_{#gamma #gamma}}{d#it{m}_{inv}} (GeV/#it{c}^{2})^{-1}");
-TString poweek_str = TString("Powerweek Daten");
-TString pi0togamma_str = TString("#pi^{0} #rightarrow #gamma #gamma");
-
-
-
-
-
-
-
-//// Advanced
-
+/**
+ * Function to draw the ALICE label onto your canvas/pad
+ * @param startTextX X-Startpostion
+ * @param startTextY Y-Startpostion
+ * @param textHeight influences the gap between the lines
+ * @param textSize   Size of the Text Font
+ * @param str        TString containing the pT range
+ */
 void DrawLabelALICE(Double_t startTextX = 0.13, Double_t startTextY = 0.9, Double_t textHeight = 0.04, Double_t textSize = 0.03, TString str = " "){
   TString textAlice       = "ALICE work in progress";
   TString textEvents      = "Data";
