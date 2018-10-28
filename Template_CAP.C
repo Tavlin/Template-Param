@@ -131,18 +131,22 @@ void Template_CAP(std::string current_path, int templatemethod){
   TFile* ESDFile_MC               = NULL; // ESD File from the MC
   TFile* ESDFile_data             = NULL; // ESD File from the Data
   TFile* BkgFile                  = NULL; // Self makde lower stat. Bkg File
-  TList* lGammaCalo_data          = NULL; // TLists inside the ESD File
-  TList* lCutNumber_data          = NULL; // TLists inside the ESD File
+  TFile* MCFile                   = NULL; // File containig the MC outcome
+  TFile* DataFile                 = NULL; // File containig the data outcome
+
+  TList* lGammaCalo_data          = NULL; // TLists inside the ESD File (data)
+  TList* lCutNumber_data          = NULL; // TLists inside the ESD File (data)
   TList* lESD_data                = NULL; // Innerst TList for ESD histos from hInvMass_Data
-  TList* lGammaCalo_MC            = NULL;
-  TList* lCutNumber_MC            = NULL;
+
+  TList* lGammaCalo_MC            = NULL; // TLists inside the ESD File (MC)
+  TList* lCutNumber_MC            = NULL; // TLists inside the ESD File (MC)
   TList* lMC_MC                   = NULL; // Innerst TList for MC histos from MC
   TList* lTrue_MC                 = NULL; // Innerst TList for True histos from MC
+
   TH1D* hNEvents                  = NULL; // histo containing number of Events
   TH1D* hMC_Pi0InAcc_Pt           = NULL; // acceptance histo
   TH2D* hTrueDoubleCounting_Pi0   = NULL; // 2D Histo including Doublecounting
-  TH1D* hTrueDoubleCounting_Pi0_Pro;      // X-Projection of current
-                                          // pT for Double Counting
+  TH1D* CorrectedYieldNormEff;    = NULL; // Corrected Yield from the Framwork
 
   /**
    * Access the ESD File form the MC simulation for two Histograms:
@@ -175,75 +179,89 @@ void Template_CAP(std::string current_path, int templatemethod){
   Double_t NEvents  = hNEvents->GetBinContent(1);   // retrieve NEents MinBias
   ESDFile_data->Close();
 
-  gDirectory->Cd(safePath.Data());                     // for saftey resetting path
+  gDirectory->Cd(safePath.Data());                  // for saftey resetting path
 
-  //////////////////////////////////////////////////////////////////////////////
-  // open True Yield Path
-  TH1D* CorrectedYieldNormEff;
+  /**
+   * Open the file which contains the corrected true norm efficiency Yield from
+   * the framework.
+   */
   TFile* FData_corrected = SafelyOpenRootfile("./00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_data_GammaConvV1Correction_00010113_1111112067032220000_01631031000000d0.root");
   if (FData_corrected->IsOpen() ) printf("FData_corrected opened successfully\n");
 
   CorrectedYieldNormEff = (TH1D*) FData_corrected->Get(Form("CorrectedYieldNormEff"));
-  //////////////////////////////////////////////////////////////////////////////
-  // going over all pt bins despite first one, which is some framework bs.
-  for (int k = 1; k < numberbins; k++) {
-    std::cout << "starte bin " << k << " reading and wrinting!" << std::endl << std::endl;
-    TFile* MCFile = NULL;
-    TFile* DataFile = NULL;
 
-    ////////////////////////////////////////////////////////////////////////////
-    // open MC histo path
+  FData_corrected->Close();
+
+  /**
+   * For loop to loop over all pT bins definded by fBinsPi013TeVEMCPt. Bin 0 is
+   * excluded since it only contains 0 <= pT (GeV/c) < 1.4 where no data should
+   * be present, since we have an energy cut at 0.7 GeV per Cluster.
+   */
+  for (int k = 1; k < numberbins; k++) {
+
+    std::cout << "Start bin  " << k << " reading and wrinting!" << "\n\n";
+
+    /**
+     * resetting the Filepointers just for "saftey" reasons
+     */
+    MCFile = NULL;
+    DataFile = NULL;
+
+    /**
+     * Open the file which contains the MC output of the framework's work so to
+     * say.
+     */
     MCFile = SafelyOpenRootfile("./00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_MC_GammaConvV1WithoutCorrection_00010113_1111112067032220000_01631031000000d0.root");
     if (MCFile->IsOpen() ) printf("MCFile opened successfully\n");
 
 
-    ////////////////////////////////////////////////////////////////////////////
-    // retrieve MC histograms
-    hInvMass_MC = (TH1D*) MCFile->Get(Form("fHistoMappingSignalInvMass_in_Pt_Bin%02d",k)); //fHistoMappingSignalInvMass_in_Pt_Bin
+    /**
+     * Histogram from the MC simulation which was created through the normal
+     * analysis method: same events - scaled mixed events.
+     */
+    hInvMass_MC = (TH1D*) MCFile->Get(Form("fHistoMappingSignalInvMass_in_Pt_Bin%02d",k));
+
+    /**
+     * Histogram from the MC simulation which contains the only the true Pi0s
+     * coming from y y; y_conv y; and double y_conv
+     */
     hPeak_MC = (TH1D*) MCFile->Get(Form("Mapping_TrueMeson_InvMass_in_Pt_Bin%02d",k));
 
-
+    /**
+    * Open the file which contains the data output of the framework's work so to
+    * say.
+     */
     DataFile = SafelyOpenRootfile("./00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_data_GammaConvV1WithoutCorrection_00010113_1111112067032220000_01631031000000d0.root");
     if (DataFile->IsOpen() ) printf("DataFile opened successfully\n");
+
+    /**
+    * Histogram from the data which was created through the normal analysis
+    * method: same events - scaled mixed events.
+     */
     hInvMass_Data = (TH1D*) DataFile->Get(Form("fHistoMappingSignalInvMass_in_Pt_Bin%02d",k));
 
-    ////////////////////////////////////////////////////////////////////////////
-    // Getting the purposed corr Background
-
-    // Bkg made up with 6 NN Bins
-    if(mario == 2){
-      BkgFile = SafelyOpenRootfile("./BackFile.root");
-      if (BkgFile->IsOpen() ) printf("BkgFile opened successfully\n");
-      hCorrBkg = (TH1D*) BkgFile->Get(Form("hPilledUpBack_Bin%02d_with%02d_bins",k, numberneighbours));
-    }
-
-    // Bkg made up with bins 3 to 8
-    if(mario == 1){
+    /**
+     * Obtaining the correlated background histograms for the corresponding
+     * method.
+     */
+    if(templatemethod == 1){
       BkgFile = SafelyOpenRootfile("./BackGround3to8.root");
       if (BkgFile->IsOpen() ) printf("BkgFile opened successfully\n");
       hCorrBkg = (TH1D*) BkgFile->Get(Form("hPilledUpBack_Bin%02d_enhanced",k));
     }
 
-    // normal Bkg
-    if(mario == 0){
-      hCorrBkg = (TH1D*) hInvMass_MC->Clone("hCorrBkg");
-      hCorrBkg->Add(hPeak_MC,-1);
+    if(templatemethod == 2){
+      BkgFile = SafelyOpenRootfile("./BackFile.root");
+      if (BkgFile->IsOpen() ) printf("BkgFile opened successfully\n");
+      hCorrBkg = (TH1D*) BkgFile->Get(Form("hPilledUpBack_Bin%02d_with%02d_bins",k, numberneighbours));
     }
 
-
-    hPeak_MC->GetXaxis()->SetRangeUser(0.,0.3);
-    hInvMass_Data->GetXaxis()->SetRangeUser(0.,0.3);
-    hCorrBkg->GetXaxis()->SetRangeUser(0.,0.3);
-
-
-    hTrueDoubleCounting_Pi0_Pro = hTrueDoubleCounting_Pi0->ProjectionX(Form("hTrueDoubleCounting_Pi0_Pro_bin%02d",k),hMC_Pi0InAcc_Pt->FindBin(fBinsPi013TeVEMCPt[k]),
-    hMC_Pi0InAcc_Pt->FindBin(fBinsPi013TeVEMCPt[k+1]));
-    Double_t InIntRangeDoubleCounting = (Double_t)hTrueDoubleCounting_Pi0_Pro->Integral(hTrueDoubleCounting_Pi0_Pro->FindBin(lowercountrange[k]),
-                                                   hTrueDoubleCounting_Pi0_Pro->FindBin(uppercountrange))/
-                                                   (Double_t)hPeak_MC->Integral(
-                                                    hPeak_MC->FindBin(lowercountrange[k]),
-                                                    hPeak_MC->FindBin(uppercountrange));
-
+    /**
+     * Calculating the % of how many Pi0s are in the True Histo from the MC in
+     * the current pT range, divided by the amount of produced Pi0s which should
+     * hit the Detector (here: EMCal)
+     * This is the value of our efficiency in the corresponding pT interval
+     */
     Double_t InIntRangePercent = (Double_t)hPeak_MC->Integral(hPeak_MC->FindBin(lowercountrange[k]),
                                                    hPeak_MC->FindBin(uppercountrange))/
                                                    (Double_t)hMC_Pi0InAcc_Pt->Integral(
@@ -252,188 +270,59 @@ void Template_CAP(std::string current_path, int templatemethod){
 
     vInIntRangePercent.push_back(InIntRangePercent);
 
-    ////////////////////////////////////////////////////////////////////////////
-    // Function for ndf
-    TF1* f_ChiOverNdf = new TF1("f_ChiOverNdf", "[0]", 0.0 ,100.);
-    f_ChiOverNdf->SetNpx(ndrawpoints);
-    f_ChiOverNdf->SetNumberFitPoints(numberbins);
-    f_ChiOverNdf->SetLineColor(kBlue+2);
-    f_ChiOverNdf->SetLineWidth(4);
-
-    //////////////////////////////////////////////////////////////////////////
-    // Fix! Changes < in TLatex to #leq
+    /**
+     * little fix for the string which contains the pT intervall comming from
+     * the framework.
+     * Like: xy < pT (GeV/c) < yz ---> xy <= pT (GeV/c)
+     */
     str = hInvMass_MC->GetTitle();
     TString str_copy = str.Copy();
     str_copy.ReplaceAll("<","#leq");
     str.Replace(0,20,str_copy,23);
 
-    SetHistoStandardSettings(hInvMass_MC);
-    SetHistoStandardSettings(hPeak_MC);
-    SetHistoStandardSettings(hCorrBkg);
-
     hInvMass_Data->SetTitle(str);
 
-    ////////////////////////////////////////////////////////////////////////////
-    // normal lame pol 1 fit with template
-    TF1* fit_eq_1 = new TF1("fit_eq_1", &mc_full_func2, 0.0, 0.4, 3);
-    fit_eq_1->SetNpx(ndrawpoints);
-    fit_eq_1->SetNumberFitPoints(numberbins);
-    fit_eq_1->SetLineColor(kRed);
-    fit_eq_1->SetLineWidth(4);
-
-    //////////////////////////////////////////////////////////////////////////
-    // making things look good
-    // change y title offset to fit and look nicely
-    hInvMass_Data->GetYaxis()->SetTitleOffset(1.2);
-    hInvMass_Data->GetYaxis()->SetLabelOffset(0.006);
-    hInvMass_Data->SetTitleSize(0.03, "xy");
-    hInvMass_Data->SetLabelSize(0.03, "xy");
-    hInvMass_Data->SetYTitle("d#it{N}/d#it{m}_{inv} ((GeV/#it{c}^{2})^{-1})");
-    hInvMass_Data->SetXTitle("d#it{m}_{inv}");
-    hInvMass_Data->SetMarkerStyle(24);
-    hInvMass_Data->SetMarkerSize(1.5);
-    hInvMass_Data->SetTitle("");
-    hInvMass_Data->SetLineWidth(3);
-    hCorrBkg->SetLineColor(kCyan+3);
-    hCorrBkg->SetMarkerColor(kCyan+3);
-    hCorrBkg->SetMarkerStyle(21);
-    hCorrBkg->SetMarkerSize(1.5);
-    hPeak_MC->SetLineColor(kGreen+3);
-    hPeak_MC->SetMarkerColor(kGreen+3);
-    hPeak_MC->SetMarkerStyle(33);
-    hPeak_MC->SetMarkerSize(2);
-
-    //////////////////////////////////////////////////////////////////////////
-    //clone for pol 1 fit
-    TH1D* data_clone2 = (TH1D*) hInvMass_Data->Clone("data_clone2");
-    TH1D* data_clone3 = (TH1D*) hInvMass_Data->Clone("data_clone3");
-
-
-    // clearing the vectors
-    vChi2_Pol1_Iter.clear();
-    vChi2_Pol1_Iter.resize(0);
-    iterMethodBool = 1;
-
-    // resetting # of IterSteps to 0
-    nIterStep = 0;
-
-    ////////////////////////////////////////////////////////////////////////////
-    // while block where the Iter Method is done
-    while(iterMethodBool){
-
-      //////////////////////////////////////////////////////////////////////////
-      //clone for pol 1 fit
-      mc_full_clone2  = (TH1D*) hPeak_MC->Clone("mc_full_clone2");
-
-      ////////////////////////////////////////////////////////////////////////////
-      // creating the new root file to safe all the related histograms and fits
-      // in it.
-      if(k == 1 && nIterStep == 0){
-        if(mario == 2){
-          IterTemp      = new TFile("IterTempBetterBkgNN.root", "RECREATE");
-        }
-        if(mario == 1){
-          IterTemp      = new TFile("IterTempBetterBkg3to8.root", "RECREATE");
-        }
-        if(mario == 0){
-          IterTemp      = new TFile("IterTemp.root", "RECREATE");
-        }
+    /**
+     * creating the new root file(s) to safe all the related histograms and fits
+     * in it.
+     */
+    if(k == 1){
+      if(templatemethod == 2){
+        IterTemp      = new TFile("IterTempBetterBkgNN.root", "RECREATE");
       }
-
-      else{
-        if(mario == 2){
-          IterTemp      = new TFile("IterTempBetterBkgNN.root", "UPDATE");
-        }
-        if(mario == 1){
-          IterTemp      = new TFile("IterTempBetterBkg3to8.root", "UPDATE");
-        }
-        if(mario == 0){
-          IterTemp      = new TFile("IterTemp.root", "UPDATE");
-        }
-      }
-      //////////////////////////////////////////////////////////////////////////
-      //fit pol 1 + temp
-      TFitResultPtr r_pol1_temp1 = data_clone2->Fit("fit_eq_1", "QM0PS","", lowerparamrange[k], upperparamrange);
-      vChi2_Pol1_Iter.push_back(r_pol1_temp1->Chi2() / r_pol1_temp1->Ndf());
-
-      //////////////////////////////////////////////////////////////////////////
-      // scale for pol 1 + temp
-      mc_full_clone2->Scale(r_pol1_temp1->Parameter(0));
-
-      //////////////////////////////////////////////////////////////////////////
-      // reset data_clone histos and then calculate their new errors
-      gDirectory->Cd(sPath.Data());
-      data_clone2 = (TH1D*) hInvMass_Data->Clone("data_clone2");
-      for(int j = 13; j < 63; j++){
-        data_clone2->SetBinError(j,sqrt(pow(data_clone2->GetBinError(j),2.)
-        + pow((r_pol1_temp1->Parameter(0)*hPeak_MC->GetBinError(j)),2.)));
-      }
-
-      IterTemp->Close();
-      if(nIterStep >=1){
-        if(fabs(vChi2_Pol1_Iter[nIterStep-1]-vChi2_Pol1_Iter[nIterStep] <= epsilon)){
-
-          //////////////////////////////////////////////////////////////////////
-          // for the last iteration step don't reset the clones, instead calc
-          // errors for the hInvMass_Data histos that will be used in the final Fit
-          // afterwards
-
-          for(int j = 0; j < 75; j++){
-          data_clone3->SetBinError(j,sqrt(data_clone3->GetBinError(j) *
-          data_clone3->GetBinError(j) + mc_full_clone2->GetBinError(j) *
-          mc_full_clone2->GetBinError(j)));
-
-          iterMethodBool = 0;
-        }
-      }
-    }
-      nIterStep++;
+      if(templatemethod == 1){
+        IterTemp      = new TFile("IterTempBetterBkg3to8.root", "RECREATE");
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    // making the CHi2 monitoring histos!
-    hChi2_pol1_iter[k-1]        = new TH1D(Form("1hChi2_pol1_iter_bin%02d",k-1),"",
-                                      nIterStep-1, 0.5, (Double_t) nIterStep-0.5);
-    SetHistoStandardSettings(hChi2_pol1_iter[k-1]);
-
-
-    for(int i = 1; i < nIterStep; i++){
-      hChi2_pol1_iter[k-1]->SetBinContent(i, vChi2_Pol1_Iter[i-1]);
-      hChi2_pol1_iter[k-1]->SetYTitle("#chi^{2}/ndf");
-      hChi2_pol1_iter[k-1]->SetXTitle("Iterationstep");
-      hChi2_pol1_iter[k-1]->SetLineColor(kRed);
-      hChi2_pol1_iter[k-1]->SetMarkerColor(kRed);
+    else{
+      if(templatemethod == 2){
+        IterTemp      = new TFile("IterTempBetterBkgNN.root", "UPDATE");
+      }
+      if(templatemethod == 1){
+        IterTemp      = new TFile("IterTempBetterBkg3to8.root", "UPDATE");
     }
 
-    gDirectory->Cd(sPath.Data());
-
-    ///////////////////////////////////////////////////////////////////////////
-    // final pol 1 + temp fit
-    mc_full_clone2 = (TH1D*) hPeak_MC->Clone("mc_full_clone2");
-    TFitResultPtr r_pol1_temp = data_clone3->Fit("fit_eq_1", "M0S","", lowerparamrange[k], upperparamrange);
-    TH1D* mc_full_clone4 = (TH1D*) hPeak_MC->Clone("mc_full_clone4");
-    mc_full_clone4->Scale(r_pol1_temp->Parameter(0));
-    mc_full_clone4->SetLineColor(kRed);
-    mc_full_clone4->SetMarkerColor(kRed);
-
-    TF1* fpol1 = new TF1("fpol1", "[0]+x*[1]", 0.0, 0.4);
-    fpol1->SetParameter(0, fit_eq_1->GetParameter(1));
-    fpol1->SetParameter(1, fit_eq_1->GetParameter(2));
-    fpol1->SetLineColor(kTeal-7);
-    fpol1->SetLineWidth(3);
-
-    ////////////////////////////////////////////////////////////////////////////
-    //  making full histogram of the Pol 1 Param.
-    hPol1 = (TH1D*) mc_full_clone4->Clone("hPol1");
-    hPol1->Add(fpol1);
-    hPol1->SetMarkerStyle(20);
-    hPol1->SetMarkerSize(1.5);
-    hPol1->SetMarkerColor(kRed+1);
-    hPol1->SetLineColor(kRed+1);
+    gDirectory->Cd(sPath.Data()); // reset path so no nwe generated pointer is
+                                  // connected to the Files above.
 
     ////////////////////////////////////////////////////////////////////////////
     // Double Template with Chi2 Map Part
     ////////////////////////////////////////////////////////////////////////////
+    /**
+     * Self written function which creates the so called Chi2Map.
+     * @param hInvMass_Data       [description]
+     * @param hPeak_MC            [description]
+     * @param hCorrBkg            [description]
+     * @param temp_chi2_dt        [description]
+     * @param signalAreaScaling   [description]
+     * @param corrbackAreaScaling [description]
+     * @param x_min               [description]
+     * @param y_min               [description]
+     * @param ndf                 [description]
+     * @param mario               [description]
+     * @param fBinsPi013TeVEMCPt  [description]
+     * @param k                   [description]
+     */
     hChi2_2D[k-1] = chi2test(hInvMass_Data, hPeak_MC, hCorrBkg, temp_chi2_dt,
       signalAreaScaling, corrbackAreaScaling, x_min, y_min, ndf, mario,
       fBinsPi013TeVEMCPt[k], k);
@@ -451,10 +340,10 @@ void Template_CAP(std::string current_path, int templatemethod){
     temp_chi2_dt = 0;
 
     hInvMass_Data->SetTitle(str);
-    if(mario == 2){
+    if(templatemethod == 2){
       IterTemp      = new TFile("IterTempBetterBkgNN.root", "UPDATE");
     }
-    if(mario == 1){
+    if(templatemethod == 1){
       IterTemp      = new TFile("IterTempBetterBkg3to8.root", "UPDATE");
     }
     if(mario == 0){
