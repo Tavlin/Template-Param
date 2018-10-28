@@ -175,35 +175,38 @@ TH2D* Chi2MapFunction(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi
 
   Double_t midpoint = (fBinsPi013TeVEMCPt[binnumber]+fBinsPi013TeVEMCPt[binnumber+1])/2.;
 
-  TF1* fPulse = new TF1("fPulse", "[4]+[0]*((1-exp(-(x-[1])/[2])))*exp(-(x-[1])/[3])", 0.0, 20.);
-  fPulse->SetParameter(0, 3.);
-  fPulse->SetParameter(1, 1.2);
-  fPulse->SetParameter(2, 1.);
-  fPulse->SetParameter(3, 1.);
+  // TF1* fPulse = new TF1("fPulse", "[4]+[0]*((1-exp(-(x-[1])/[2])))*exp(-(x-[1])/[3])", 0.0, 20.);
+  // fPulse->SetParameter(0, 3.);
+  // fPulse->SetParameter(1, 1.2);
+  // fPulse->SetParameter(2, 1.);
+  // fPulse->SetParameter(3, 1.);
+  //
+  // TFile* file = SafelyOpenRootfile("IterTempBetterBkg3to8.root");
+  //
+  // TH1D* h = (TH1D*) file->Get("h_y_min");
+  //
+  // h->Fit(fPulse, "QM0P", "",  0.14, 12.);
+  // ///2. A histogram
+  // //Create a histogram to hold the confidence intervals
+  //
+  // Double_t fPulse_eval = fPulse->Eval(midpoint);
+  // TH1D *hint = new TH1D("hint",
+  //   "Fitted gaussian with .95 conf.band", numberbins-1, fBinsPi013TeVEMCPt);
+  // (TVirtualFitter::GetFitter())->GetConfidenceIntervals(hint, 0.6827);
+  // //Now the "hint" histogram has the fitted function values as the
+  // //bin contents and the confidence intervals as bin errors
+  // Double_t sigma_cons = hint->GetBinError(hint->FindBin(fPulse_eval));
 
-  TFile* file = SafelyOpenRootfile("IterTempBetterBkg3to8.root");
-
-  TH1D* h = (TH1D*) file->Get("h_y_min");
-
-  h->Fit(fPulse, "QM0P", "",  0.14, 12.);
-  ///2. A histogram
-  //Create a histogram to hold the confidence intervals
-
-  Double_t fPulse_eval = fPulse->Eval(midpoint);
-  TH1D *hint = new TH1D("hint",
-    "Fitted gaussian with .95 conf.band", numberbins-1, fBinsPi013TeVEMCPt);
-  (TVirtualFitter::GetFitter())->GetConfidenceIntervals(hint, 0.6827);
-  //Now the "hint" histogram has the fitted function values as the
-  //bin contents and the confidence intervals as bin errors
-  Double_t sigma_cons = hint->GetBinError(hint->FindBin(fPulse_eval));
+  Double_t fPulse_eval  = 0;
+  Double_t sigma_cons   = 0;
 
   for (int ix = 0; ix < binnumber2D; ix++) {
     for (int iy = 0; iy < binnumber2D; iy++) {
       ndf = upperfitrange-lowerfitrange-3;
       Double_t chi2 = 0;
       chi2 = Chi2Calc(hSignal_clone, hCorrback_clone, hData_clone, ndf,
-                           dx*(Double_t)(ix+2000.), dy*(Double_t)iy, templatemethod, binnumber,
-                          fPulse_eval, sigma_cons);
+        dx* ((Double_t)ix + 2000.), dy*(Double_t)iy, templatemethod, binnumber,
+        fPulse_eval, sigma_cons);
 
       if(chi2 < chi2_min_temp){
         chi2_min_temp = chi2;
@@ -217,9 +220,9 @@ TH2D* Chi2MapFunction(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi
   std::cout << "chi^2_min = " << chi2_min << std::endl;
   std::cout << "ndf = " << ndf << std::endl;
 
-  delete hint;
-  delete fPulse;
-  file->Close();
+  // delete hint;
+  // delete fPulse;
+  // file->Close();
 
   return hChi2map;
 }
