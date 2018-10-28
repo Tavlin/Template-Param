@@ -344,6 +344,9 @@ void Template_CAP(std::string current_path, int templatemethod){
       if(templatemethod == 1){
         OutputFile      = new TFile("OutputFileBetterBkg3to8.root", "RECREATE");
       }
+      else{
+        exit();
+      }
     }
 
     else{
@@ -352,6 +355,9 @@ void Template_CAP(std::string current_path, int templatemethod){
       }
       if(templatemethod == 1){
         OutputFile      = new TFile("OutputFileBetterBkg3to8.root", "UPDATE");
+      }
+      else{
+        exit();
       }
     }
 
