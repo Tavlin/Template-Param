@@ -148,7 +148,7 @@ void Template_CAP(std::string current_path, int templatemethod){
   TH1D* hNEvents                  = NULL; // histo containing number of Events
   TH1D* hMC_Pi0InAcc_Pt           = NULL; // acceptance histo
   TH2D* hTrueDoubleCounting_Pi0   = NULL; // 2D Histo including Doublecounting
-  TH1D* CorrectedYieldNormEff;    = NULL; // Corrected Yield from the Framwork
+  TH1D* CorrectedYieldNormEff     = NULL; // Corrected Yield from the Framwork
 
   /**
    * Access the ESD File form the MC simulation for two Histograms:
