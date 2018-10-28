@@ -412,6 +412,7 @@ void Template_CAP(std::string current_path, int templatemethod){
 
     MCFile->Close();
     DataFile->Close();
+    BkgFile->Close();
 
     std::cout << "bin number" << k << "reading and writing... DONE!" << "\n\n";
   }
@@ -631,6 +632,5 @@ void Template_CAP(std::string current_path, int templatemethod){
   CorrectionFile->Close();
   OutputFile->Close();
   DataFile->Close();
-  BkgFile->Close();
 
 }
