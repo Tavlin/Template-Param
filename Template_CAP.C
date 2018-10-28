@@ -204,10 +204,14 @@ void Template_CAP(std::string current_path, int templatemethod){
     std::cout << "Start bin  " << k << " reading and wrinting!" << "\n\n";
 
     /**
-     * resetting the Filepointers just for "saftey" reasons
+     * resetting the Filepointers and TH1 pointers just for "saftey" reasons
      */
-    MCFile = NULL;
-    DataFile = NULL;
+    MCFile        = NULL;
+    DataFile      = NULL;
+    hInvMass_MC   = NULL;
+    hPeak_MC      = NULL;
+    hInvMass_Data = NULL;
+    hCorrBkg      = NULL;
 
     /**
      * Open the file which contains the MC output of the framework's work so to
