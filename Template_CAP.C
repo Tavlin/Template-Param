@@ -544,6 +544,7 @@ void Template_CAP(std::string current_path, int templatemethod){
    * correcting the yields with division by pT (bincenter)
    * then correcting Yields with the acceptance
    * then with the efficiency.
+   * i starts at 2 since 1 would be 0 <= pT (GeV/c) < 1.4!!!
    */
   for (int i = 2; i <= numberbins; i++) {
     hYield_dt_chi2map_uncorr->SetBinContent(i,hYield_dt_chi2map_uncorr->GetBinContent(i)/hYield_dt_chi2map_uncorr->GetBinCenter(i));

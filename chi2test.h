@@ -1,8 +1,24 @@
 #include "CommonHeader.h"
 
-
+/**
+ * Function called by chi2test to actually calculated Chi^2 and Ndf
+ * @param  h1             data histogram containing same event - scaled
+ * @param  h2             MC histogram containing MC truth Pi0 Peak
+ * @param  h3             correlated background histogram
+ * @param  ndf            temp. variable to obtain ndf
+ * @param  a              variable for the signal scaling
+ * @param  b              variable for the corr. bkg scaling
+ * @param  templatemethod telling the function which method is currently
+ * used
+ * @param  binnumber      current PT bin
+ * @param  fPulse_eval    evaluation value of the pulse fit function for the
+ * corr. bkg. scaling factor from the 3 to 8 method after one iteration.
+ * @param  sigma_cons     value from the confidence intervall od the fPulse
+ * function which is used as 1 sigma uncertainty as a constraint
+ * @return                Chi^2
+ */
 Double_t chi2_selfmade(TH1D* h1, TH1D* h2, TH1D* h3, Double_t &ndf, Double_t a,
-                       Double_t b, int mario, int binnumber, Double_t fPulse_eval, Double_t sigma_cons){
+                       Double_t b, int templatemethod, int binnumber, Double_t fPulse_eval, Double_t sigma_cons){
   Double_t chi2 = 0;
   Double_t temp_error = 0;
   Int_t lowerfitrange = h3->FindBin(lowerparamrange[binnumber-1]);
@@ -28,23 +44,18 @@ Double_t chi2_selfmade(TH1D* h1, TH1D* h2, TH1D* h3, Double_t &ndf, Double_t a,
   }
   //////////////////////////////////////////////////////////////////////////////
   // constraint for parameter b. b should not be too big!
-  // if(mario == 0){
+  // if(templatemethod == 0){
   //   chi2 += pow(a-b-0.525807, 2.)/pow(0.299301, 2.); // NN method
   // }
-  if(mario == 3){
+  if(templatemethod == 1){
 
     chi2 += pow(b-fPulse_eval, 2.)/pow(sigma_cons, 2.); // 3 to 8 method
     // chi2 += pow(b-fPulse_eval, 2.)/pow(0.01, 2.);
 
   }
-  if(mario == 2){
-    // chi2 += pow(a-b-0.488554, 2.)/pow(0.332957, 2.); // normal method
-    // chi2 += pow(a-b, 2.)/pow(0.01, 2.);
-    chi2 += pow(a-2.1202, 2.)/pow(0.01, 2.);
-    chi2 += pow(b-2.1202, 2.)/pow(0.01, 2.);
+  if(templatemethod == 2){
+    chi2 += pow(a-b, 2.)/pow(0.01, 2.);
   }
-  // chi2 += pow(a-b-0.236159, 2.)/pow(0.262405, 2.);
-  // chi2 += pow(a-b, 2.)/pow(0.01, 2.);
   if(chi2 == pow(a-b, 2.)/pow(0.1, 2.)){
     return 1000;
   }
@@ -53,19 +64,35 @@ Double_t chi2_selfmade(TH1D* h1, TH1D* h2, TH1D* h3, Double_t &ndf, Double_t a,
   }
 }
 
-
+/**
+ * Self written function which creates the so called Chi2Map.
+ * @param hInvMass_Data       data histogram containing same event - scaled
+ * mixed event
+ * @param hPeak_MC            MC histogram containing MC truth Pi0 Peak
+ * @param hCorrBkg            correlated background histogram
+ * @param temp_chi2_dt        temp. variable to obtain min. Chi^2
+ * @param signalAreaScaling   temp. variable for the signalAreaScaling
+ * @param corrbackAreaScaling temp. variable for the corrbackAreaScaling
+ * @param x_min               temp. variable for the signal scaling
+ * @param y_min               temp. variable for the corr. bkg scaling
+ * @param ndf                 temp. variable to obtain ndf
+ * @param templatemethod      telling the function which method is currently
+ * used
+ * @param fBinsPi013TeVEMCPt  pT binning
+ * @param k                   current PT bin
+ */
 TH2D* chi2test(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi2_min,
   Double_t &signalAreaScaling, Double_t &corrbackAreaScaling, Double_t &x_min,
-  Double_t &y_min, Double_t &ndf, int mario, Double_t pT, int binnumber){
+  Double_t &y_min, Double_t &ndf, int templatemethod, Double_t pT, int binnumber){
   Double_t chi2_min_temp = 10.e10;
-  Double_t A_c = 0;                         // Area of hData
-  Double_t A_b = 0;                         // Area of corr. back.
-  Double_t A_a = 0;
-  Double_t dx;                         // Stepsize in x
-  Double_t dy;                         // Area of signal
+  Double_t A_c = 0;                         // Area of the same - scaled mixed event
+  Double_t A_b = 0;                         // Area of corr. back. template
+  Double_t A_a = 0;                         // Area of the signal template
+  Double_t dx;                              // Stepsize in x
+  Double_t dy;                              // Area of signal
 
 
-  if(mario != 2){
+  if(templatemethod != 2){
     if(pT < 6.){
       dx = 0.001;
       dy = 0.01;
@@ -81,12 +108,10 @@ TH2D* chi2test(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi2_min,
     dy = 0.01;
   }
   Double_t temp_error = 0;                  // Fehlervariable fuer die Templates
-  int binnumber2D = 500;                    // Binzahl ~ Feinheit der Suche
-  const int bin0dot3 = 75;                  // Binzahl wo 0.3 GeV/c liegt
+  int binnumber2D     = 500;                // Binzahl ~ Feinheit der Suche
+  TH2D* hChi2map      = NULL;
 
-  TH2D* hChi2map;
-
-  if(mario != 2){
+  if(templatemethod != 2){
     if(pT < 6.){
       hChi2map = new TH2D("hChi2map", "", binnumber2D, 2.0, 2.5, binnumber2D, 0.0, 5.0);
       SetHistoStandardSettings2(hChi2map);
@@ -115,7 +140,11 @@ TH2D* chi2test(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi2_min,
   //////////////////////////////////////////////////////////////////////////////
   // Setting all the bins with pT > 0.3 GeV/c to 0
   //////////////////////////////////////////////////////////////////////////////
-  for (int i = 0; i < 200; i++) {
+  /**
+   * Setting all the bins with pT > 0.3 GeV/c to 0
+   * @param i loop variable indicating
+   */
+  for (int i = 1; i < hData_clone->FindBin(0.3); i++) {
     if(i < lowerfitrange || i > upperfitrange){
       hData_clone->SetBinContent(i,0.);
       hData_clone->SetBinError(i,0.);
@@ -173,12 +202,12 @@ TH2D* chi2test(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi2_min,
       ndf = upperfitrange-lowerfitrange-3;
       Double_t chi2 = 0;
       chi2 = chi2_selfmade(hSignal_clone, hCorrback_clone, hData_clone, ndf,
-                           dx*(Double_t)(ix+2000), dy*(Double_t)iy, mario, binnumber,
+                           dx*(Double_t)(ix+2000.), dy*(Double_t)iy, templatemethod, binnumber,
                           fPulse_eval, sigma_cons);
 
       if(chi2 < chi2_min_temp){
         chi2_min_temp = chi2;
-        x_min = (Double_t)(ix+2000)*dx;
+        x_min = (Double_t)(ix+2000.)*dx;
         y_min = (Double_t)(iy)*dy;
       }
       hChi2map->SetBinContent(ix+1, iy+1, chi2);
