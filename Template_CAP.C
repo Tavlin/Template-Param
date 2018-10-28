@@ -577,11 +577,8 @@ void Template_CAP(std::string current_path, int templatemethod){
    * wrinting all the wanted histograms for plotting purposes in the output
    * file. part 2
    */
-  hYield_pol1_uncorr->                    Write("hYield_pol1_uncorr");
   hYield_dt_chi2map_uncorr->              Write("hYield_dt_chi2map_uncorr");
-  hYield_pol1_acceptance_corrected->      Write("hYield_pol1_acceptance_corrected");
   hYield_dt_chi2map_acceptance_corrected->Write("hYield_dt_chi2map_acceptance_corrected");
-  hYield_pol1_corrected->                 Write("hYield_pol1_corrected");
   hYield_dt_chi2map_corrected->           Write("hYield_dt_chi2map_corrected");
   hYield_framework->                      Write("hYield_framework");
   CorrectedYieldNormEff->                 Write("hCorrectedYieldNormEff");
@@ -624,7 +621,6 @@ void Template_CAP(std::string current_path, int templatemethod){
   v_x_min.clear();
   v_y_min.clear();
   vsigma_dt.clear();
-  vChi2_Pol1_Iter.clear();
 
   /**
    * Closing all the files which were opend for the Yields.
