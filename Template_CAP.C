@@ -133,6 +133,8 @@ void Template_CAP(std::string current_path, int templatemethod){
   TFile* BkgFile                  = NULL; // Self makde lower stat. Bkg File
   TFile* MCFile                   = NULL; // File containig the MC outcome
   TFile* DataFile                 = NULL; // File containig the data outcome
+  TFile* CorrectionFile           = NULL; // File which contains the correction-
+                                          // histograms for effi and acceptance
 
   TList* lGammaCalo_data          = NULL; // TLists inside the ESD File (data)
   TList* lCutNumber_data          = NULL; // TLists inside the ESD File (data)
@@ -292,6 +294,7 @@ void Template_CAP(std::string current_path, int templatemethod){
       }
       if(templatemethod == 1){
         IterTemp      = new TFile("IterTempBetterBkg3to8.root", "RECREATE");
+      }
     }
 
     else{
@@ -300,9 +303,10 @@ void Template_CAP(std::string current_path, int templatemethod){
       }
       if(templatemethod == 1){
         IterTemp      = new TFile("IterTempBetterBkg3to8.root", "UPDATE");
+      }
     }
 
-    gDirectory->Cd(sPath.Data()); // reset path so no nwe generated pointer is
+    gDirectory->Cd(safePath.Data()); // reset path so no nwe generated pointer is
                                   // connected to the Files above.
 
     /**
@@ -356,7 +360,7 @@ void Template_CAP(std::string current_path, int templatemethod){
 
     /**
      * wrinting all the wanted histograms for plotting purposes in the output
-     * file.
+     * file. part 1
      */
     hInvMass_Data->       Write(Form("data_bin%02d",k));
     hChi2_2D[k-1]->       Write(Form("hChi2_2Dbin%02d",k));
@@ -411,11 +415,23 @@ void Template_CAP(std::string current_path, int templatemethod){
 
     std::cout << "bin number" << k << "reading and writing... DONE!" << "\n\n";
   }
+  /**
+   * end of the for loop over all 1 <= k < nbins
+   */
 
-  //////////////////////////////////////////////////////////////////////////////
-  // end of the for loop over all 1 <= k < nbins
-  //////////////////////////////////////////////////////////////////////////////
-  // Chi2Map Histos
+
+  /**
+   * Creating all the monitoring histograms:
+   * @hChi2_DT_Chi2map        Chi^2
+   * @hSignalAreaScaling      Signal area scaling
+   * @hCorrbackAreaScaling    Corr. bkg. area scaling
+   * @h_x_min                 signal scaling factor
+   * @h_y_min                 corr. bkg. scaling dactor
+   * @hErrXlow                lower signal scaling factor uncertainty
+   * @hErrXhigh               upper signal scaling factor uncertainty
+   * @hErrYlow                lower corr. bkg. scaling factor uncertainty
+   * @hErrYhigh               upper corr. bkg. scaling factor uncertainty
+   */
   TH1D* hChi2_DT_Chi2map = new TH1D("hChi2_DT_Chi2map", "", numberbins, fBinsPi013TeVEMCPt);
   hChi2_DT_Chi2map->SetYTitle("#chi^{2}/ndf");
   hChi2_DT_Chi2map->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -432,6 +448,7 @@ void Template_CAP(std::string current_path, int templatemethod){
   TH1D* h_x_min = new TH1D("h_x_min", "", numberbins, fBinsPi013TeVEMCPt);
   h_x_min->SetYTitle("signal scaling factor");
   h_x_min->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+
   TH1D* h_y_min = new TH1D("h_y_min", "", numberbins, fBinsPi013TeVEMCPt);
   h_y_min->SetYTitle("corr. back. scaling factor");
   h_y_min->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -472,30 +489,21 @@ void Template_CAP(std::string current_path, int templatemethod){
     max(hErrYhigh->GetBinContent(k+1) - h_y_min->GetBinContent(k+1),
     h_y_min->GetBinContent(k+1) - hErrYlow->GetBinContent(k+1)));
   }
-  //////////////////////////////////////////////////////////////////////////////
-  // Writing of Chi2(pT)
-  if(mario == 2){
+
+  /**
+   * reopening the new root file(s) to safe all the related histograms in it.
+   */
+  if(templatemethod == 2){
     IterTemp      = new TFile("IterTempBetterBkgNN.root", "UPDATE");
   }
-  if(mario == 1){
+  if(templatemethod == 1){
     IterTemp      = new TFile("IterTempBetterBkg3to8.root", "UPDATE");
   }
-  if(mario == 0){
-    IterTemp      = new TFile("IterTemp.root", "UPDATE");
-  }
 
-  hchi2_pol1->SetLineColor(kRed);
-  hchi2_pol1->SetLineWidth(3);
-  hchi2_pol1->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-  hchi2_pol1->GetYaxis()->SetTitle("#chi^{2}/ndf");
-
-
-  hchi2_pol1->Write(Form("hchi2_pol1"));
-  ha_pol1->Write("Pol1PeakFactor");
-
-  ////////////////////////////////////////////////////////////////////////////
-  // open MC histo path for the correction histos
-  TFile* CorrectionFile = NULL;
+  /**
+  * Open the MC file which contains the correction histograms for efficiency and
+  * acceptance. Obtaining those two directly afterwards.
+   */
   CorrectionFile = SafelyOpenRootfile("./00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_MC_GammaConv_OnlyCorrectionFactor_00010113_1111112067032220000_01631031000000d0.root");
   if (CorrectionFile->IsOpen() ) printf("CorrectionFile opened successfully\n");
 
@@ -503,17 +511,23 @@ void Template_CAP(std::string current_path, int templatemethod){
   TH1D* hEffi   = (TH1D*) CorrectionFile->Get(Form("TrueMesonEffiPt"));
 
   // correction for 2pi, BR, NEvents, Y, Binwidth
-  hYield_pol1_uncorr->Scale(1./(NEvents*2*M_PI*1.6*0.98798),"width");
-  hYield_pol1_uncorr->SetYTitle(rawyield);
-  hYield_pol1_uncorr->SetXTitle(pt_str);
-
+  /**
+   * Correction for the number of Events
+   * 2*Pi
+   * the rapidity
+   * the branching ratio for pi0 to decay into two photons
+   * the bin width
+   */
   hYield_dt_chi2map_uncorr->Scale(1./(NEvents*2*M_PI*1.6*0.98798),"width");
   hYield_dt_chi2map_uncorr->SetYTitle(rawyield);
   hYield_dt_chi2map_uncorr->SetXTitle(pt_str);
 
-  // open Data File for the Yield coming from the Framework and for the Chi2
-  // from the framework method
-  TFile* DataFile = NULL;
+
+  /**
+  * Open the data file which contains the uncorrected Yield aswell as the Chi^2
+  * from the function parametrisation method from the framework.
+   */
+  DataFile = NULL;
   DataFile = SafelyOpenRootfile("./00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_data_GammaConvV1WithoutCorrection_00010113_1111112067032220000_01631031000000d0.root");
   if (DataFile->IsOpen() ) printf("DataFile opened successfully\n");
 
@@ -521,71 +535,70 @@ void Template_CAP(std::string current_path, int templatemethod){
   TH1D* histoChi2_0 = (TH1D*) DataFile->Get(Form("histoChi2_0"));
   SetHistoStandardSettings(histoChi2_0);
 
+  /**
+   * correcting the uncorrected framework yield with the efficiency.
+   */
   hYield_framework->Divide(hEffi);
 
-  // correcting with bin center (1/pT)
+  /**
+   * correcting the yields with division by pT (bincenter)
+   * then correcting Yields with the acceptance
+   * then with the efficiency.
+   */
   for (int i = 2; i <= numberbins; i++) {
-    hYield_pol1_uncorr->SetBinContent(i,hYield_pol1_uncorr->GetBinContent(i)/hYield_pol1_uncorr->GetBinCenter(i));
     hYield_dt_chi2map_uncorr->SetBinContent(i,hYield_dt_chi2map_uncorr->GetBinContent(i)/hYield_dt_chi2map_uncorr->GetBinCenter(i));
-    hYield_pol1_uncorr->SetBinError(i,hYield_pol1_uncorr->GetBinError(i)/hYield_pol1_uncorr->GetBinCenter(i));
     hYield_dt_chi2map_uncorr->SetBinError(i,hYield_dt_chi2map_uncorr->GetBinError(i)/hYield_dt_chi2map_uncorr->GetBinCenter(i));
     hYield_framework->SetBinContent(i,hYield_framework->GetBinContent(i)/hYield_framework->GetBinCenter(i));
     hYield_framework->SetBinError(i,hYield_framework->GetBinError(i)/hYield_framework->GetBinCenter(i));
   }
 
-  //////////////////////////////////////////////////////////////////////////////
-  // correcting yield for the acceptance
-  TH1D * hYield_pol1_acceptance_corrected       =  (TH1D*) hYield_pol1_uncorr->Clone("hYield_pol1_acceptance_corrected");
-  hYield_pol1_acceptance_corrected->Divide(hAcc);
-
+  /**
+   * correcting Yields with the acceptance.
+   */
   TH1D * hYield_dt_chi2map_acceptance_corrected =  (TH1D*) hYield_dt_chi2map_uncorr->Clone("hYield_dt_chi2map_acceptance_corrected");
   hYield_dt_chi2map_acceptance_corrected->Divide(hAcc);
 
-  //////////////////////////////////////////////////////////////////////////////
-  // correcting yield for the efficiency
-  TH1D * hYield_pol1_corrected       =  (TH1D*) hYield_pol1_acceptance_corrected->Clone("hYield_pol1_corrected");
-
+  /**
+   * correcting Yields with the efficiency.
+   */
   TH1D * hYield_dt_chi2map_corrected =  (TH1D*) hYield_dt_chi2map_acceptance_corrected->Clone("hYield_dt_chi2map_corrected");
 
   for (int i = 2; i <= numberbins; i++) {
-    hYield_pol1_corrected->SetBinContent(i,hYield_pol1_acceptance_corrected->GetBinContent(i)/vInIntRangePercent[i-2]);
     hYield_dt_chi2map_corrected->SetBinContent(i,hYield_dt_chi2map_acceptance_corrected->GetBinContent(i)/vInIntRangePercent[i-2]);
-    hYield_pol1_corrected->SetBinError(i,hYield_pol1_acceptance_corrected->GetBinError(i)/vInIntRangePercent[i-2]);
     hYield_dt_chi2map_corrected->SetBinError(i,hYield_dt_chi2map_acceptance_corrected->GetBinError(i)/vInIntRangePercent[i-2]);
   }
 
-  hYield_pol1_corrected->SetYTitle(strCorrectedYield);
   hYield_dt_chi2map_corrected->SetYTitle(strCorrectedYield);
 
 
-
-  hYield_pol1_uncorr->Write("hYield_pol1_uncorr");
-  hYield_dt_chi2map_uncorr->Write("hYield_dt_chi2map_uncorr");
-  hYield_pol1_acceptance_corrected->Write("hYield_pol1_acceptance_corrected");
+  /**
+   * wrinting all the wanted histograms for plotting purposes in the output
+   * file. part 2
+   */
+  hYield_pol1_uncorr->                    Write("hYield_pol1_uncorr");
+  hYield_dt_chi2map_uncorr->              Write("hYield_dt_chi2map_uncorr");
+  hYield_pol1_acceptance_corrected->      Write("hYield_pol1_acceptance_corrected");
   hYield_dt_chi2map_acceptance_corrected->Write("hYield_dt_chi2map_acceptance_corrected");
-  hYield_pol1_corrected->Write("hYield_pol1_corrected");
-  hYield_dt_chi2map_corrected->Write("hYield_dt_chi2map_corrected");
-  hYield_framework->Write("hYield_framework");
-  CorrectedYieldNormEff->Write("hCorrectedYieldNormEff");
-  hChi2_DT_Chi2map->Write("hChi2_DT_Chi2map");
-  hSignalAreaScaling->Write("hSignalAreaScaling");
-  hCorrbackAreaScaling->Write("hCorrbackAreaScaling");
-  h_x_min->Write("h_x_min");
-  h_y_min->Write("h_y_min");
-  hErrXlow->Write("hErrXlow");
-  hErrXhigh->Write("hErrXhigh");
-  hErrYlow->Write("hErrYlow");
-  hErrYhigh->Write("hErrYhigh");
-  histoChi2_0->Write("histoChi2_0");
+  hYield_pol1_corrected->                 Write("hYield_pol1_corrected");
+  hYield_dt_chi2map_corrected->           Write("hYield_dt_chi2map_corrected");
+  hYield_framework->                      Write("hYield_framework");
+  CorrectedYieldNormEff->                 Write("hCorrectedYieldNormEff");
+  hChi2_DT_Chi2map->                      Write("hChi2_DT_Chi2map");
+  hSignalAreaScaling->                    Write("hSignalAreaScaling");
+  hCorrbackAreaScaling->                  Write("hCorrbackAreaScaling");
+  h_x_min->                               Write("h_x_min");
+  h_y_min->                               Write("h_y_min");
+  hErrXlow->                              Write("hErrXlow");
+  hErrXhigh->                             Write("hErrXhigh");
+  hErrYlow->                              Write("hErrYlow");
+  hErrYhigh->                             Write("hErrYhigh");
+  histoChi2_0->                           Write("histoChi2_0");
 
-  //////////////////////////////////////////////////////////////////////////////
-  // Garbage collection part 2
-  delete hchi2_pol1;
+  /**
+   * Garbage collection part 2.
+   */
   delete hYield_dt_chi2map_uncorr;
-  delete hYield_pol1_uncorr;
-  delete hYield_pol1_acceptance_corrected;
   delete hYield_dt_chi2map_acceptance_corrected;
-  delete hPol1;
   delete hChi2_DT_Chi2map;
   delete hSignalAreaScaling;
   delete hCorrbackAreaScaling;
@@ -595,11 +608,12 @@ void Template_CAP(std::string current_path, int templatemethod){
   delete hErrXhigh;
   delete hErrYlow;
   delete hErrYhigh;
-  delete hTrueDoubleCounting_Pi0_Pro;
-  delete hTrueDoubleCounting_Pi0;
   delete hYield_framework;
   delete histoChi2_0;
 
+  /**
+   * clearing all the vectors and freeing memory. Maybe not needed. I dunno
+   */
   vInIntRangePercent.clear();
   vChi2_DT_Chi2Map.clear();
   vNDF_DT_Chi2Map.clear();
@@ -609,11 +623,13 @@ void Template_CAP(std::string current_path, int templatemethod){
   v_y_min.clear();
   vsigma_dt.clear();
   vChi2_Pol1_Iter.clear();
+  
+  /**
+   * Closing all the files which were opend for the Yields.
+   */
+  CorrectionFile->Close();
   IterTemp->Close();
   DataFile->Close();
-  if(mario == 0 || mario == 1){
-    BkgFile->Close();
-  }
-  }
+  BkgFile->Close();
 
 }
