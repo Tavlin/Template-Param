@@ -74,9 +74,7 @@ void IterTempCreation2(std::string current_path, int cutmode, int numberneighbou
     Double_t temp_ndf            = 0;                 // temp variable containig
                                                       // ndf for Iter Method
     Double_t int_value           = 0;                 // contains -||- values
-    // const Int_t numberbins    = numberbins;
     const Int_t ndrawpoints      = 1.e5;              // # points for TF drawing
-    // const int n_iter          = 4;
     const int epsilon            = 1.e-6;             // presicion in Iter Method
     int nIterStep                = 0;                 // number of Iterationsteps
     int iterMethodBool           = 1;                 // bool value for IterMethod
