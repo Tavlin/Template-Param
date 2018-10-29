@@ -1,3 +1,7 @@
+// printer.h file
+#ifndef CommonHeader_H
+#define CommonHeader_H
+
 #include "TLatex.h"
 #include "stddef.h"
 #include "TLegend.h"
@@ -32,6 +36,7 @@
 #include <algorithm>
 #include <time.h>
 
+
 /**
  * pT Binning comming from the framework. If its changed there, you need to
  * change it here!
@@ -45,7 +50,10 @@ Double_t fBinsPi013TeVEMCPt[40]                  =   {0.0,  1.4,   1.6,   1.8,  
                                                       8.0,   8.5,   9.0,   9.5,  10.0,
                                                      12.0,  14.0,  16.0,  20.0};
 
-
+Int_t fBinsPi013TeVEMCPtRebin[39]               =   {4, 4, 4, 4, 4,    4, 4, 4, 4, 4,
+                                                     4, 4, 4, 4, 4,    4, 4, 4, 4, 4,
+                                                     4, 4, 4, 4, 4,    4, 4, 4, 4, 4,
+                                                     8, 8, 8, 8, 8,   10,10,10,10};
 /**
  * parametrisation- and counting intervall boarders.
  */
@@ -518,3 +526,4 @@ void DrawLabelALICE(Double_t startTextX = 0.13, Double_t startTextY = 0.9, Doubl
   delete pt;
 
 }
+#endif

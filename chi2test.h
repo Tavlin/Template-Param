@@ -1,3 +1,5 @@
+#ifndef CHI2TEST
+#define CHI2TEST
 #include "CommonHeader.h"
 
 /**
@@ -95,17 +97,17 @@ TH2D* Chi2MapFunction(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi
   // Testing needed!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   if(templatemethod == 1){
     if(pT < 6.){
-      dx = 0.001;
+      dx = 0.01;
       dy = 0.01;
     }
     else{
-      dx = 0.001;
-      dy = 0.003;
+      dx = 0.01; //0.001;
+      dy = 0.01; //0.003;
     }
   }
   else
   {
-    dx = 0.001;
+    dx = 0.01;
     dy = 0.01;
   }
   Double_t temp_error = 0;                  // Fehlervariable fuer die Templates
@@ -114,17 +116,17 @@ TH2D* Chi2MapFunction(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi
 
   if(templatemethod != 2){
     if(pT < 6.){
-      hChi2map = new TH2D("hChi2map", "", binnumber2D, 2.0, 2.5, binnumber2D, 0.0, 5.0);
+      hChi2map = new TH2D("hChi2map", "", binnumber2D, 0.0, 5.0, binnumber2D, 0.0, 5.0);
       SetHistoStandardSettings2(hChi2map);
     }
 
     else{
-      hChi2map = new TH2D("hChi2map", "", binnumber2D, 2.0, 2.5, binnumber2D, 0.0, 1.5);
+      hChi2map = new TH2D("hChi2map", "", binnumber2D, 0.0, 5.0, binnumber2D, 0.0, 5.0);
       SetHistoStandardSettings2(hChi2map);
     }
   }
   else{
-    hChi2map = new TH2D("hChi2map", "", binnumber2D, 2.0, 2.5, binnumber2D, 0.0, 5.0);
+    hChi2map = new TH2D("hChi2map", "", binnumber2D, 0.0, 5.0, binnumber2D, 0.0, 5.0);
     SetHistoStandardSettings2(hChi2map);
   }
   hChi2map->SetXTitle("signal scaling factor");
@@ -206,12 +208,12 @@ TH2D* Chi2MapFunction(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi
       ndf = upperfitrange-lowerfitrange-3;
       Double_t chi2 = 0;
       chi2 = Chi2Calc(hSignal_clone, hCorrback_clone, hData_clone, ndf,
-        dx* ((Double_t)ix + 2000.), dy*(Double_t)iy, templatemethod, binnumber,
+        dx* ((Double_t)ix), dy*(Double_t)iy, templatemethod, binnumber,
         fPulse_eval, sigma_cons);
 
       if(chi2 < chi2_min_temp){
         chi2_min_temp = chi2;
-        x_min = (Double_t)(ix+2000.)*dx;
+        x_min = (Double_t)(ix)*dx;
         y_min = (Double_t)(iy)*dy;
       }
       hChi2map->SetBinContent(ix+1, iy+1, chi2);
@@ -316,3 +318,4 @@ std::vector<double> getErrors(TH2D* h1, double xStart, double yStart)
   vecOut.push_back(errYhigh);
   return vecOut;
 }
+#endif

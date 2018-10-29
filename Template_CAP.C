@@ -1,3 +1,4 @@
+#include "BackGroundFitting.h"
 #include "chi2test.h"
 
 /**
@@ -184,15 +185,11 @@ void Template_CAP(std::string current_path, int templatemethod){
   gDirectory->Cd(safePath.Data());                  // for saftey resetting path
 
   /**
-   * Open the file which contains the corrected true norm efficiency Yield from
-   * the framework.
+   * Calls the CorrBkgCreation function from BackGroundFitting.h This function
+   * should make the needed normal corr. bkg templates for the other two
+   * methods.
    */
-  TFile* FData_corrected = SafelyOpenRootfile("./00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_data_GammaConvV1Correction_00010113_1111112067032220000_01631031000000d0.root");
-  if (FData_corrected->IsOpen() ) printf("FData_corrected opened successfully\n");
-
-  CorrectedYieldNormEff = (TH1D*) FData_corrected->Get(Form("CorrectedYieldNormEff"));
-
-  FData_corrected->Close();
+  CorrBkgCreation();
 
   /**
    * For loop to loop over all pT bins definded by fBinsPi013TeVEMCPt. Bin 0 is
@@ -201,6 +198,10 @@ void Template_CAP(std::string current_path, int templatemethod){
    */
   for (int k = 1; k < numberbins; ++k) {
 
+    if(k >= 39){
+      std::cout << "k ist zu gross!" << '\n';
+      continue;
+    }
     std::cout << "Start bin  " << k << " reading and wrinting!" << "\n\n";
 
     /**
@@ -251,9 +252,8 @@ void Template_CAP(std::string current_path, int templatemethod){
      * method.
      */
     if(templatemethod == 1){
-      BkgFile = SafelyOpenRootfile("./BackGround3to8.root");
-      if (BkgFile->IsOpen() ) printf("BkgFile opened successfully\n");
-      hCorrBkg = (TH1D*) BkgFile->Get(Form("hPilledUpBack_Bin%02d_enhanced",k));
+      hCorrBkg = NULL;
+      hCorrBkg = BackGround3to8(k);
     }
 
     if(templatemethod == 2){
@@ -341,7 +341,7 @@ void Template_CAP(std::string current_path, int templatemethod){
       if(templatemethod == 2){
         OutputFile      = new TFile("OutputFileBetterBkgNN.root", "RECREATE");
       }
-      if(templatemethod == 1){
+      else if(templatemethod == 1){
         OutputFile      = new TFile("OutputFileBetterBkg3to8.root", "RECREATE");
       }
       else{
@@ -353,7 +353,7 @@ void Template_CAP(std::string current_path, int templatemethod){
       if(templatemethod == 2){
         OutputFile      = new TFile("OutputFileBetterBkgNN.root", "UPDATE");
       }
-      if(templatemethod == 1){
+      else if(templatemethod == 1){
         OutputFile      = new TFile("OutputFileBetterBkg3to8.root", "UPDATE");
       }
       else{
@@ -418,7 +418,9 @@ void Template_CAP(std::string current_path, int templatemethod){
 
     MCFile->Close();
     DataFile->Close();
-    BkgFile->Close();
+    if(templatemethod == 2){
+      BkgFile->Close();
+    }
 
     std::cout << "bin number " << k << " reading and writing... DONE!" << "\n\n";
   }
@@ -507,12 +509,25 @@ void Template_CAP(std::string current_path, int templatemethod){
     OutputFile      = new TFile("OutputFileBetterBkg3to8.root", "UPDATE");
   }
 
+
+  /**
+   * Open the file which contains the corrected true norm efficiency Yield from
+   * the framework.
+   */
+  TFile* FData_corrected = SafelyOpenRootfile("./00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_data_GammaConvV1Correction_00010113_1111112067032220000_01631031000000d0.root");
+  if (FData_corrected->IsOpen() ) printf("FData_corrected opened successfully\n");
+
+  CorrectedYieldNormEff = (TH1D*) FData_corrected->Get(Form("CorrectedYieldNormEff"));
+
+
   /**
   * Open the MC file which contains the correction histograms for efficiency and
   * acceptance. Obtaining those two directly afterwards.
    */
   CorrectionFile = SafelyOpenRootfile("./00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_MC_GammaConv_OnlyCorrectionFactor_00010113_1111112067032220000_01631031000000d0.root");
   if (CorrectionFile->IsOpen() ) printf("CorrectionFile opened successfully\n");
+
+
 
   TH1D* hAcc    = (TH1D*) CorrectionFile->Get(Form("fMCMesonAccepPt"));
   TH1D* hEffi   = (TH1D*) CorrectionFile->Get(Form("TrueMesonEffiPt"));
@@ -634,5 +649,6 @@ void Template_CAP(std::string current_path, int templatemethod){
   CorrectionFile->Close();
   OutputFile->Close();
   DataFile->Close();
+  FData_corrected->Close();
 
 }
