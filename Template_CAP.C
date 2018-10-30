@@ -382,7 +382,7 @@ void Template_CAP(std::string current_path, int templatemethod){
      * file. part 1
      */
     hInvMass_Data->       Write(Form("data_bin%02d",k));
-    hChi2Map[k-1]->       Write(Form("hChi2_2Dbin%02d",k));
+    hChi2Map[k-1]->       Write(Form("hChi2MapBin%02d",k));
     hChi2Map_sigma[k-1]-> Write(Form("hChi2_2D_sigma_bin%02d",k));
     hPeak_MC->            Write(Form("hSignal_bin%02d",k));
     hCorrBkg->            Write(Form("hCorrBack_bin%02d",k));

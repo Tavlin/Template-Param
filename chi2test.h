@@ -89,18 +89,18 @@ TH2D* Chi2MapFunction(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi
   // Testing needed!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   if(templatemethod == 1){
     if(pT < 6.){
-      dx = 0.01;
-      dy = 0.01;
+      dx = 0.004;;
+      dy = 0.004;
     }
     else{
-      dx = 0.01; //0.001;
-      dy = 0.01; //0.003;
+      dx = 0.004;; //0.001;
+      dy = 0.002; //0.003;
     }
   }
   else
   {
-    dx = 0.01;
-    dy = 0.01;
+    dx = 0.004;;
+    dy = 0.004;;
   }
   Double_t temp_error = 0;                  // Fehlervariable fuer die Templates
   int binnumber2D     = 500;                // Binzahl ~ Feinheit der Suche
@@ -108,17 +108,17 @@ TH2D* Chi2MapFunction(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi
 
   if(templatemethod != 2){
     if(pT < 6.){
-      hChi2map = new TH2D("hChi2map", "", binnumber2D, 0.0, 5.0, binnumber2D, 0.0, 5.0);
+      hChi2map = new TH2D("hChi2map", "", binnumber2D, 0.0, 2.0, binnumber2D, 0.0, 2.0);
       SetHistoStandardSettings2(hChi2map);
     }
 
     else{
-      hChi2map = new TH2D("hChi2map", "", binnumber2D, 0.0, 5.0, binnumber2D, 0.0, 5.0);
+      hChi2map = new TH2D("hChi2map", "", binnumber2D, 0.0, 2.0, binnumber2D, 0.0, 1.0);
       SetHistoStandardSettings2(hChi2map);
     }
   }
   else{
-    hChi2map = new TH2D("hChi2map", "", binnumber2D, 0.0, 5.0, binnumber2D, 0.0, 5.0);
+    hChi2map = new TH2D("hChi2map", "", binnumber2D, 0.0, 2.0, binnumber2D, 0.0, 2.0);
     SetHistoStandardSettings2(hChi2map);
   }
   hChi2map->SetXTitle("signal scaling factor");

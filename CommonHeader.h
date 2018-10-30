@@ -326,7 +326,7 @@ void SetCanvasStandardSettings(TCanvas *cCanv){
  * @param YOffset  Y-Title Offset
  * @param textSize Text size
  */
-void SetHistoStandardSettings(TH1* histo, Double_t XOffset = 1.2, Double_t YOffset = 1., Double_t textSize = 0.03){
+void SetHistoStandardSettings(TH1* histo, Double_t XOffset = 1.2, Double_t YOffset = 1., Double_t textSize = 35, EColor color = kBlack){
   histo->SetStats(0);
   histo->GetXaxis()->SetTitleOffset(XOffset);
   histo->GetYaxis()->SetTitleOffset(YOffset);
@@ -334,23 +334,23 @@ void SetHistoStandardSettings(TH1* histo, Double_t XOffset = 1.2, Double_t YOffs
   histo->GetYaxis()->SetTitleSize(textSize);
   histo->GetXaxis()->SetLabelSize(textSize);
   histo->GetYaxis()->SetLabelSize(textSize);
-  histo->GetXaxis()->SetLabelFont(42);
-  histo->GetYaxis()->SetLabelFont(42);
-  histo->GetYaxis()->SetTitleFont(42);
-  histo->GetXaxis()->SetTitleFont(42);
+  histo->GetXaxis()->SetLabelFont(43);
+  histo->GetYaxis()->SetLabelFont(43);
+  histo->GetYaxis()->SetTitleFont(43);
+  histo->GetXaxis()->SetTitleFont(43);
 
   histo->SetTitle("");
   histo->Sumw2();
   histo->SetMarkerStyle(20);
   histo->SetMarkerSize(1.5);
-  histo->SetLineWidth(2);
-  histo->SetLineColor(kBlack);
-  histo->SetMarkerColor(kBlack);
+  histo->SetLineWidth(3);
+  histo->SetLineColor(color);
+  histo->SetMarkerColor(color);
 }
 
 
 
-void SetHistoStandardSettings2(TH2* histo, Double_t XOffset = 1.2, Double_t YOffset = 1., Double_t textSize = 0.03){
+void SetHistoStandardSettings2(TH2* histo, Double_t XOffset = 1.2, Double_t YOffset = 1., Double_t textSize = 35){
   histo->SetStats(0);
   histo->GetXaxis()->SetTitleOffset(XOffset);
   histo->GetYaxis()->SetTitleOffset(YOffset);
@@ -358,21 +358,22 @@ void SetHistoStandardSettings2(TH2* histo, Double_t XOffset = 1.2, Double_t YOff
   histo->GetYaxis()->SetTitleSize(textSize);
   histo->GetXaxis()->SetLabelSize(textSize);
   histo->GetYaxis()->SetLabelSize(textSize);
-  histo->GetXaxis()->SetLabelFont(42);
-  histo->GetYaxis()->SetLabelFont(42);
-  histo->GetYaxis()->SetTitleFont(42);
-  histo->GetXaxis()->SetTitleFont(42);
+  histo->GetXaxis()->SetLabelFont(43);
+  histo->GetYaxis()->SetLabelFont(43);
+  histo->GetYaxis()->SetTitleFont(43);
+  histo->GetXaxis()->SetTitleFont(43);
 
   histo->GetZaxis()->SetTitleOffset(YOffset);
   histo->GetZaxis()->SetLabelSize(textSize);
-  histo->GetZaxis()->SetLabelFont(42);
-  histo->GetZaxis()->SetTitleFont(42);
+  histo->GetZaxis()->SetLabelFont(43);
+  histo->GetZaxis()->SetTitleFont(43);
+
   histo->Sumw2();
 }
 
 
-void SetLegendSettigns(TLegend* leg, Double_t textSize = 0.03){
-  leg->SetTextFont(42);
+void SetLegendSettigns(TLegend* leg, Double_t textSize = 35){
+  leg->SetTextFont(43);
   leg->SetTextSize(textSize);
   leg->SetFillColor(0);
   leg->SetFillStyle(0);
@@ -382,9 +383,9 @@ void SetLegendSettigns(TLegend* leg, Double_t textSize = 0.03){
   leg->SetBorderSize(0);
 }
 
-void SetLatexSettings(TLatex* tex, Double_t textSize = 0.03){
+void SetLatexSettings(TLatex* tex, Double_t textSize = 35){
   tex->SetTextSize(textSize);
-  tex->SetTextFont(42);
+  tex->SetTextFont(43);
   }
 
 // gStyle->SetCanvasColor(0);
@@ -429,7 +430,7 @@ void printProgress (Double_t progress)
  * @param textSize   Size of the Text Font
  * @param str        TString containing the pT range
  */
-void DrawLabelALICE(Double_t startTextX = 0.13, Double_t startTextY = 0.9, Double_t textHeight = 0.04, Double_t textSize = 0.03, TString str = " "){
+void DrawLabelALICE(Double_t startTextX = 0.13, Double_t startTextY = 0.9, Double_t textHeight = 0.04, Double_t textSize = 35, TString str = " "){
   TString textAlice       = "ALICE work in progress";
   TString textEvents      = "Data";
   TLatex *alice           = NULL;
@@ -475,45 +476,45 @@ void DrawLabelALICE(Double_t startTextX = 0.13, Double_t startTextY = 0.9, Doubl
 
   alice->SetNDC();
   alice->SetTextColor(1);
-  alice->SetTextFont(42);
+  alice->SetTextFont(43);
   alice->SetTextSize(textSize);
   alice->DrawClone();
 
   energy->SetNDC();
   energy->SetTextColor(1);
   energy->SetTextSize(textSize);
-  energy->SetTextFont(42);
+  energy->SetTextFont(43);
   energy->DrawClone();
 
   Template->SetNDC();
   Template->SetTextColor(1);
   Template->SetTextSize(textSize);
-  Template->SetTextFont(42);
+  Template->SetTextFont(43);
   Template->DrawClone();
 
   Template2->SetNDC();
   Template2->SetTextColor(1);
   Template2->SetTextSize(textSize);
-  Template2->SetTextFont(42);
+  Template2->SetTextFont(43);
   Template2->DrawClone();
 
 
   detprocess->SetNDC();
   detprocess->SetTextColor(1);
   detprocess->SetTextSize(textSize);
-  detprocess->SetTextFont(42);
+  detprocess->SetTextFont(43);
   detprocess->DrawClone();
 
   detprocess2->SetNDC();
   detprocess2->SetTextColor(1);
   detprocess2->SetTextSize(textSize);
-  detprocess2->SetTextFont(42);
+  detprocess2->SetTextFont(43);
   detprocess2->DrawClone();
 
   pt->SetNDC();
   pt->SetTextColor(1);
   pt->SetTextSize(textSize);
-  pt->SetTextFont(42);
+  pt->SetTextFont(43);
   if(!(str == "" || str == " ")){
     pt->DrawClone();
   }
