@@ -44,26 +44,16 @@ Double_t Chi2Calc(TH1D* h1, TH1D* h2, TH1D* h3, Double_t &ndf, Double_t a,
       ndf -= 1;
     }
   }
-  //////////////////////////////////////////////////////////////////////////////
-  // constraint for parameter b. b should not be too big!
-  // if(templatemethod == 0){
-  //   chi2 += pow(a-b-0.525807, 2.)/pow(0.299301, 2.); // NN method
-  // }
-  if(templatemethod == 1){
 
-    // chi2 += pow(b-fPulse_eval, 2.)/pow(sigma_cons, 2.); // 3 to 8 method
-    // chi2 += pow(b-fPulse_eval, 2.)/pow(0.01, 2.);
-
+  if(templatemethod == 3){
+    chi2 += pow(b-fPulse_eval, 2.)/pow(sigma_cons, 2.); // 3 to 8 method
   }
+
   if(templatemethod == 2){
     chi2 += pow(a-b, 2.)/pow(0.01, 2.);
   }
-  if(chi2 == pow(a-b, 2.)/pow(0.1, 2.)){
-    return 1000;
-  }
-  else{
-    return chi2;
-  }
+
+  return chi2;
 }
 
 /**
@@ -87,11 +77,13 @@ TH2D* Chi2MapFunction(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi
   Double_t &signalAreaScaling, Double_t &corrbackAreaScaling, Double_t &x_min,
   Double_t &y_min, Double_t &ndf, int templatemethod, Double_t pT, int binnumber){
   Double_t chi2_min_temp = 10.e10;
+  Double_t chi2 = 0;
   Double_t A_c = 0;                         // Area of the same - scaled mixed event
   Double_t A_b = 0;                         // Area of corr. back. template
   Double_t A_a = 0;                         // Area of the signal template
   Double_t dx;                              // Stepsize in x
   Double_t dy;                              // Area of signal
+  TString safePath = gDirectory->GetPath();            // retrieve neutral path
 
   // Maybe x-bin-Range in der Karte ist total fürn Arsch aktuell!!!!!!!!!!!
   // Testing needed!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -176,37 +168,66 @@ TH2D* Chi2MapFunction(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi
   corrbackAreaScaling = 1.;
   signalAreaScaling = 1.;
 
+  TFile* PulseFile = NULL;
+  if(binnumber == 1 && templatemethod == 3){
+    PulseFile = new TFile("Pulse.root", "RECREATE");
+  }
+  gDirectory->Cd(safePath.Data());
+
   Double_t midpoint = (fBinsPi013TeVEMCPt[binnumber]+fBinsPi013TeVEMCPt[binnumber+1])/2.;
 
-  // TF1* fPulse = new TF1("fPulse", "[4]+[0]*((1-exp(-(x-[1])/[2])))*exp(-(x-[1])/[3])", 0.0, 20.);
-  // fPulse->SetParameter(0, 3.);
-  // fPulse->SetParameter(1, 1.2);
-  // fPulse->SetParameter(2, 1.);
-  // fPulse->SetParameter(3, 1.);
-  //
-  // TFile* file = SafelyOpenRootfile("IterTempBetterBkg3to8.root");
-  //
-  // TH1D* h = (TH1D*) file->Get("h_y_min");
-  //
-  // h->Fit(fPulse, "QM0P", "",  0.14, 12.);
-  // ///2. A histogram
-  // //Create a histogram to hold the confidence intervals
-  //
-  // Double_t fPulse_eval = fPulse->Eval(midpoint);
-  // TH1D *hint = new TH1D("hint",
-  //   "Fitted gaussian with .95 conf.band", numberbins-1, fBinsPi013TeVEMCPt);
-  // (TVirtualFitter::GetFitter())->GetConfidenceIntervals(hint, 0.6827);
-  // //Now the "hint" histogram has the fitted function values as the
-  // //bin contents and the confidence intervals as bin errors
-  // Double_t sigma_cons = hint->GetBinError(hint->FindBin(fPulse_eval));
+  TF1* fPulse = new TF1("fPulse", "[4]+[0]*((1-exp(-(x-[1])/[2])))*exp(-(x-[1])/[3])", 1.4, 20.);
+  fPulse->SetParameter(0, 3.);
+  fPulse->SetParameter(1, 1.2);
+  fPulse->SetParameter(2, 1.);
+  fPulse->SetParameter(3, 1.);
+
+  TFile* file = NULL;
 
   Double_t fPulse_eval  = 0;
   Double_t sigma_cons   = 0;
+  Double_t* pfPulse_eval = &fPulse_eval;
+  Double_t* psigma_cons   = &sigma_cons;
+  if(templatemethod == 3){
+    TFile* file = SafelyOpenRootfile("OutputFileBetterBkg3to8.root");
+    if(!file){
+      std::cerr << "Error: Opening OutputFileBetterBkg3to8.root FAILED!" << '\n';
+      exit(2);
+    }
+
+    TH1D* h = (TH1D*) file->Get("h_y_min");
+
+    h->Fit(fPulse, "QM0P", "",  1.4, 12.);
+    ///2. A histogram
+    //Create a histogram to hold the confidence intervals
+
+    fPulse_eval = fPulse->Eval(midpoint);
+    TH1D *hint = new TH1D("hint",
+      "Fitted gaussian with .95 conf.band", numberbins-1, fBinsPi013TeVEMCPt);
+    (TVirtualFitter::GetFitter())->GetConfidenceIntervals(hint, 0.6827);
+    //Now the "hint" histogram has the fitted function values as the
+    //bin contents and the confidence intervals as bin errors
+
+    if(binnumber == 1){
+      gDirectory = PulseFile;          // changing directory to the output file
+      fPulse->  Write("fPulse");
+      hint->    Write("hConvInter");
+      PulseFile->Close();
+    }
+    gDirectory->Cd(safePath.Data());
+    sigma_cons = hint->GetBinError(hint->FindBin(midpoint));
+    std::cout << "Uncertainty at bin (" << hint->FindBin(midpoint) << ") = " << hint->GetBinError(hint->FindBin(midpoint)) << '\n';
+    std::cout << "sigma_cons = " << sigma_cons << '\n';
+    hint = NULL;
+
+    std::cout << "fPulse_eval = " << fPulse_eval << '\n';
+  }
+
 
   for (int ix = 0; ix < binnumber2D; ix++) {
     for (int iy = 0; iy < binnumber2D; iy++) {
       ndf = upperfitrange-lowerfitrange-3;
-      Double_t chi2 = 0;
+      chi2 = 0;
       chi2 = Chi2Calc(hSignal_clone, hCorrback_clone, hData_clone, ndf,
         dx* ((Double_t)ix), dy*(Double_t)iy, templatemethod, binnumber,
         fPulse_eval, sigma_cons);

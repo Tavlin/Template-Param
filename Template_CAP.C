@@ -6,7 +6,8 @@
  * @param  current_path   [needed for the function to be calleable for variable datat sets]
  * @param  templatemethod [== 1 uses the backgrund templates from the 3 to 8 method,
  *                         == 2 uses the backgrund templates from the Next Neighbours method]
- * @return                [void]
+ *                         == 3 uses the fPulse function on the 3 to 8 Output to refine it.
+ *                         only useable AFTER 3 to 8 root file was created!
  */
 void Template_CAP(std::string current_path, int templatemethod){
 
@@ -251,15 +252,17 @@ void Template_CAP(std::string current_path, int templatemethod){
      * Obtaining the correlated background histograms for the corresponding
      * method.
      */
-    if(templatemethod == 1){
+    if(templatemethod == 1 || templatemethod == 3){
       hCorrBkg = NULL;
       hCorrBkg = BackGround3to8(k);
     }
 
-    if(templatemethod == 2){
-      BkgFile = SafelyOpenRootfile("./BackFile.root");
-      if (BkgFile->IsOpen() ) printf("BkgFile opened successfully\n");
-      hCorrBkg = (TH1D*) BkgFile->Get(Form("hPilledUpBack_Bin%02d_with06_bins",k));
+    else if(templatemethod == 2){
+      hCorrBkg = BackgroundAdding(k);
+    }
+    else{
+      std::cerr << "templatemethod not found!" << '\n';
+      exit(2);
     }
 
     /**
@@ -339,24 +342,32 @@ void Template_CAP(std::string current_path, int templatemethod){
      */
     if(k == 1){
       if(templatemethod == 2){
-        OutputFile      = new TFile("OutputFileBetterBkgNN.root", "RECREATE");
+        OutputFile      = new TFile("OutputFileBetterBkgNNforAdrian.root", "RECREATE");
       }
       else if(templatemethod == 1){
         OutputFile      = new TFile("OutputFileBetterBkg3to8.root", "RECREATE");
       }
+      else if(templatemethod == 3){
+        OutputFile      = new TFile("OutputFileBetterBkgPulse.root", "RECREATE");
+      }
       else{
+        std::cerr << "templatemethod not found!" << '\n';
         exit(1);
       }
     }
 
     else{
       if(templatemethod == 2){
-        OutputFile      = new TFile("OutputFileBetterBkgNN.root", "UPDATE");
+        OutputFile      = new TFile("OutputFileBetterBkgNNforAdrian.root", "UPDATE");
       }
       else if(templatemethod == 1){
         OutputFile      = new TFile("OutputFileBetterBkg3to8.root", "UPDATE");
       }
+      else if(templatemethod == 3){
+        OutputFile      = new TFile("OutputFileBetterBkgPulse.root", "UPDATE");
+      }
       else{
+        std::cerr << "templatemethod not found!" << '\n';
         exit(1);
       }
     }
@@ -418,9 +429,6 @@ void Template_CAP(std::string current_path, int templatemethod){
 
     MCFile->Close();
     DataFile->Close();
-    if(templatemethod == 2){
-      BkgFile->Close();
-    }
 
     std::cout << "bin number " << k << " reading and writing... DONE!" << "\n\n";
   }
@@ -503,10 +511,17 @@ void Template_CAP(std::string current_path, int templatemethod){
    * reopening the new root file(s) to safe all the related histograms in it.
    */
   if(templatemethod == 2){
-    OutputFile      = new TFile("OutputFileBetterBkgNN.root", "UPDATE");
+    OutputFile      = new TFile("OutputFileBetterBkgNNforAdrian.root", "UPDATE");
   }
-  if(templatemethod == 1){
+  else if(templatemethod == 1){
     OutputFile      = new TFile("OutputFileBetterBkg3to8.root", "UPDATE");
+  }
+  else if(templatemethod == 3){
+    OutputFile      = new TFile("OutputFileBetterBkgPulse.root", "UPDATE");
+  }
+  else{
+    std::cerr << "templatemethod not found!" << '\n';
+    exit(2);
   }
 
 

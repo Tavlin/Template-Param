@@ -21,7 +21,7 @@ Double_t templow             =  1.e10;
 /**
  * Function to create the needed corr. bkg. templates for the NN and the 3 to 8
  * method.
- * The templates will be saved ion a File called "CorrBkgFile.root"
+ * The templates will be saved ion a File called "CorrBkgFile3to8.root"
  * Name of the templates: hCorrBkgBin%02d !
  */
 void CorrBkgCreation(void){
@@ -33,7 +33,7 @@ void CorrBkgCreation(void){
   TH1D* hInvMassData    = NULL;
   TH1D* hCorrBkg        = NULL;
 
-  TFile* CorrBkgFile    = new TFile("CorrBkgFile.root", "RECREATE");
+  TFile* CorrBkgFile    = new TFile("CorrBkgFile3to8.root", "RECREATE");
 
   gDirectory->Cd(safePath.Data());                  // for saftey resetting path
 
@@ -109,8 +109,12 @@ OACFile->Close();
  * @param file      File where the normal corr. bkg. histos are.
  * @param PicFormat Formattype of the pictures. (.eps or .png)
  */
-void BackgroundAdding(int i, int b, TFile* file, TString PicFormat){
+TH1D* BackgroundAdding(int i){
+
+  TFile* CorrBkgFile    = SafelyOpenRootfile("./CorrBkgFile3to8.root");
+
   // setting j and k right depending on the binning
+  const int b = 6;
   int j = i-(b/2);
   int k = i+(b/2);
   if(k >= numberbins){
@@ -132,7 +136,7 @@ void BackgroundAdding(int i, int b, TFile* file, TString PicFormat){
   TF1* (fpol0[k-j]);
 
 
-  hBack                 = (TH1D*) file->Get(Form("hCorrBack_bin%02d",i));
+  hBack                 = (TH1D*) CorrBkgFile->Get(Form("hCorrBkgBin%02d",i));
   hBack->Rebin(fBinsPi013TeVEMCPtRebin[i]);
 
   // comment *out* if you want fit without original bin!
@@ -142,7 +146,7 @@ void BackgroundAdding(int i, int b, TFile* file, TString PicFormat){
 
   for(int m = k; m >= j; m--){
     if(m != i){
-      aBackStackup[k-m] = (TH1D*) file->Get(Form("hCorrBack_bin%02d",m));
+      aBackStackup[k-m] = (TH1D*) CorrBkgFile->Get(Form("hCorrBkgBin%02d",m));
       aBackStackup[k-m]->Rebin(fBinsPi013TeVEMCPtRebin[i]);
       hRatio[k-m]       = (TH1D*) hBack->Clone();
       fpol0[k-m]        = new TF1(Form("fpol0%02d",b), "[0]", 0.0, 0.3);
@@ -171,7 +175,6 @@ void BackgroundAdding(int i, int b, TFile* file, TString PicFormat){
       hBack->Fit("fit", "QM0P","", 0.1, 0.2);
       aBackStackup[k-m]->Scale(fit->GetParameter(0));
 
-      SetHistoStandardSettings(aBackStackup[k-m]);
       aBackStackup[k-m]->SetMarkerStyle(1);
       list->Add(aBackStackup[k-m]);
       delete fit;
@@ -211,7 +214,7 @@ void BackgroundAdding(int i, int b, TFile* file, TString PicFormat){
 
   TString sPath = gDirectory->GetPath();
 
-  if(i == 1 && b == 6){
+  if(i == 1){
     BackFile      = new TFile("BackFile.root", "RECREATE");
   }
   else{
@@ -241,12 +244,12 @@ void BackgroundAdding(int i, int b, TFile* file, TString PicFormat){
 
   gDirectory->Cd(sPath.Data());
 
-  PicFormat = "eps";
 
-  delete hPilledUpBack;
   delete list;
-  delete hBack;
+  hBack = NULL;
   std::cout << "" << '\n';
+
+  return hPilledUpBack;
 
 }
 
@@ -261,7 +264,7 @@ TH1D* BackGround3to8(int i){
   TFile* OACFile        = SafelyOpenRootfile("./OAC_ToyMCMerged.root");
   TH2D* hMinv_pT_ratio  = (TH2D*)  OACFile->Get("hMinv_pT_ratio");
 
-  TFile* CorrBkgFile    = SafelyOpenRootfile("./CorrBkgFile.root");
+  TFile* CorrBkgFile    = SafelyOpenRootfile("./CorrBkgFile3to8.root");
 
   // setting j and k right depending on the binning
   int j = 3;
