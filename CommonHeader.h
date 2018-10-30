@@ -97,6 +97,13 @@ TLegend *legiter                = NULL;
 TLatex* chi_and_param42         = NULL;
 TH1D* mc_full_clone42           = NULL;
 TH1D* korrBG_clone42            = NULL;
+const int black   = 1;
+const int teal    = 840;
+const int red     = 632;
+const int pink    = 900;
+const int magenta = 616;
+const int blue    = 600;
+const int gray    = 920;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Backgrund fitting stuff
@@ -326,7 +333,7 @@ void SetCanvasStandardSettings(TCanvas *cCanv){
  * @param YOffset  Y-Title Offset
  * @param textSize Text size
  */
-void SetHistoStandardSettings(TH1* histo, Double_t XOffset = 1.2, Double_t YOffset = 1., Double_t textSize = 35, EColor color = kBlack){
+void SetHistoStandardSettings(TH1* histo, Double_t XOffset = 1.2, Double_t YOffset = 1., Double_t textSize = 35, int color = 1){
   histo->SetStats(0);
   histo->GetXaxis()->SetTitleOffset(XOffset);
   histo->GetYaxis()->SetTitleOffset(YOffset);

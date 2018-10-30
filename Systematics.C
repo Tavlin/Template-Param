@@ -1,30 +1,34 @@
 #include "CommonHeader.h"
 
-void Systematics(TString PicFormat = "png", int numberneighbours = 4){
+void Systematics(TString PicFormat = "png"){
 
-  TH1D* hCorrYieldNormal                 = NULL;
-  TH1D* hCorrYieldBetterBkgNN            = NULL;
-  TH1D* hCorrYieldBetterBkg3to8          = NULL;
-  TH1D* hCorrYield_count0d06to0d225      = NULL;
-  TH1D* hCorrYield_count0d1to0d225       = NULL;
-  TH1D* hCorrYield_count0d02to0d185      = NULL;
-  TH1D* hCorrYield_count0d02to0d285      = NULL;
-  TH1D* hCorrYield_countsyserror         = NULL;
-  TH1D* hCorrYield_param0d06to0d225      = NULL;
-  TH1D* hCorrYield_param0d1to0d225       = NULL;
-  TH1D* hCorrYield_param0d02to0d185      = NULL;
-  TH1D* hCorrYield_param0d02to0d285      = NULL;
-  TH1D* hCorrYield_paramsyserror         = NULL;
-  TH1D* hCorrYield_BGFitRange0d25        = NULL;
-  TH1D* hCorrYield_BGFitRange0d29        = NULL;
-  TH1D* hCorrYield_BGLeft                = NULL;
-  TH1D* hCorrYield_BGFitsyserror         = NULL;
-  TH1D* hCorrYield_syserror              = NULL;
-  TH1D* hCorrYield_RelativSyserror       = NULL;
-  TH1D* hCorrYield_RelativStaterror      = NULL;
-  TH1D* hCorrectedYieldNormEff           = NULL;
-  TH1D* hCorrectedYieldNormEff_StatError = NULL;
-  TFile* FStatUnc                        = NULL;
+  TH1D* hCorrYieldBetterBkg3to8Pulse             = NULL;
+  TH1D* hCorrYieldBetterBkgNN                    = NULL;
+  TH1D* hCorrYieldBetterBkg3to8                  = NULL;
+  // TH1D* hCorrYield_count0d06to0d225      = NULL;
+  // TH1D* hCorrYield_count0d1to0d225       = NULL;
+  // TH1D* hCorrYield_count0d02to0d185      = NULL;
+  // TH1D* hCorrYield_count0d02to0d285      = NULL;
+  // TH1D* hCorrYield_countsyserror         = NULL;
+  // TH1D* hCorrYield_param0d06to0d225      = NULL;
+  // TH1D* hCorrYield_param0d1to0d225       = NULL;
+  // TH1D* hCorrYield_param0d02to0d185      = NULL;
+  // TH1D* hCorrYield_param0d02to0d285      = NULL;
+  // TH1D* hCorrYield_paramsyserror         = NULL;
+  // TH1D* hCorrYield_BGFitRange0d25        = NULL;
+  // TH1D* hCorrYield_BGFitRange0d29        = NULL;
+  // TH1D* hCorrYield_BGLeft                = NULL;
+  // TH1D* hCorrYield_BGFitsyserror         = NULL;
+  // TH1D* hCorrYield_syserror              = NULL;
+  // TH1D* hCorrYield_RelativSyserror       = NULL;
+  TH1D* hCorrYieldBetterBkg3to8Pulse_StatError  = NULL;
+  TH1D* hCorrYieldBetterBkgNN_StatError         = NULL;
+  TH1D* CorrYieldBetterBkg3to8_StatError        = NULL;
+  TH1D* hCorrectedYieldNormEff_StatError        = NULL;
+  // TH1D* hCorrYieldBetterBkg3to8Pulse_StatError             = NULL;
+  TH1D* hCorrectedYieldNormEff                  = NULL;
+  // TH1D* hCorrectedYieldNormEff_StatError        = NULL;
+  // TFile* FStatUnc                        = NULL;
 
   TF1* fitBylikin13TeV = new TF1("fitBylikin13TeV", "[0]*exp(-(sqrt(x^(2)+0.135^(2))-0.135)/[1])+[2]/((1+x*x/[3])^([4]))", 1.4, 12.);
   fitBylikin13TeV->SetParameters(13, 0.1, 2, 0.7, 2.9);
@@ -50,23 +54,16 @@ void Systematics(TString PicFormat = "png", int numberneighbours = 4){
   std::vector<Double_t> vBGFitSys;
   std::vector<Double_t> vFinalSys;
 
-  TFile* IterTempNormal         = SafelyOpenRootfile("IterTemp.root");
-  if (IterTempNormal->IsOpen() ) printf("IterTempNormal opened successfully\n");
+  TFile* OutputFileBetterBkgNN    = SafelyOpenRootfile("OutputFileBetterBkgNNforAdrian.root");
+  TFile* OutputFileBetterBkg3to8  = SafelyOpenRootfile("OutputFileBetterBkg3to8.root");
+  TFile* OutputFileBetterBkgPulse = SafelyOpenRootfile("OutputFileBetterBkgPulse.root");
+  TFile* JoshuasFile              = SafelyOpenRootfile("Pi0_data_GammaConvV1Correction_00010113_1111112067032220000_01631031000000d0.root");
 
-  TFile* IterTempBetterBkgNN    = SafelyOpenRootfile("IterTempBetterBkgNN.root");
-  if (IterTempBetterBkgNN->IsOpen() ) printf("IterTempBetterBkgNN opened successfully\n");
+  hCorrYieldBetterBkg3to8Pulse    = (TH1D*) OutputFileBetterBkgPulse->Get("hYield_dt_chi2map_corrected");
+  hCorrYieldBetterBkgNN           = (TH1D*) OutputFileBetterBkgNN->Get("hYield_dt_chi2map_corrected");
+  hCorrYieldBetterBkg3to8         = (TH1D*) OutputFileBetterBkg3to8->Get("hYield_dt_chi2map_corrected");
 
-  TFile* IterTempBetterBkg3to8  = SafelyOpenRootfile("IterTempBetterBkg3to8_WithFit.root");
-  if (IterTempBetterBkg3to8->IsOpen() ) printf("IterTempBetterBkg3to8 opened successfully\n");
-
-  TFile* JoshuasFile  = SafelyOpenRootfile("Pi0_data_GammaConvV1Correction_00010113_1111112067032220000_01631031000000d0.root");
-  if (JoshuasFile->IsOpen() ) printf("JoshuasFile opened successfully\n");
-
-  hCorrYieldNormal              = (TH1D*) IterTempNormal->Get("hYield_dt_chi2map_corrected");
-  hCorrYieldBetterBkgNN         = (TH1D*) IterTempBetterBkgNN->Get("hYield_dt_chi2map_corrected");
-  hCorrYieldBetterBkg3to8       = (TH1D*) IterTempBetterBkg3to8->Get("hYield_dt_chi2map_corrected");
-
-  hCorrectedYieldNormEff        = (TH1D*) IterTempNormal->Get("hCorrectedYieldNormEff");
+  hCorrectedYieldNormEff          = (TH1D*) OutputFileBetterBkg3to8->Get("hCorrectedYieldNormEff");
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   // hCorrectedYieldNormEff->Rebin(39, "", fBinsPi013TeVEMCPt);
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -79,159 +76,171 @@ void Systematics(TString PicFormat = "png", int numberneighbours = 4){
   fBylikinRatio->SetLineWidth(3);
   fBylikinRatio->SetLineColor(kBlue+2);
 
-  hCorrYield_syserror           = (TH1D*) hCorrYieldNormal->Clone("hCorrYield_syserror");
-  hCorrYield_countsyserror      = (TH1D*) hCorrYieldNormal->Clone("hCorrYield_countsyserror");
-  hCorrYield_paramsyserror      = (TH1D*) hCorrYieldNormal->Clone("hCorrYield_paramsyserror");
-  hCorrYield_BGFitsyserror      = (TH1D*) hCorrYieldNormal->Clone("hCorrYield_BGFitsyserror");
-
-  //////////////////////////////////////////////////////////////////////////////
-  // First the counting range variation:
-  TFile* IterTemp_count0d06to0d225 = SafelyOpenRootfile("IterTemp_count0d06to0d225.root");
-  if (IterTemp_count0d06to0d225->IsOpen() ) printf("IterTemp_count0d06to0d225 opened successfully\n");
-
-  hCorrYield_count0d06to0d225 = (TH1D*) IterTemp_count0d06to0d225->Get("hYield_dt_chi2map_corrected");
-
-  TFile* IterTemp_count0d1to0d225 = SafelyOpenRootfile("IterTemp_count0d1to0d225.root");
-  if (IterTemp_count0d1to0d225->IsOpen() ) printf("IterTemp_count0d1to0d225 opened successfully\n");
-
-  hCorrYield_count0d1to0d225 = (TH1D*) IterTemp_count0d1to0d225->Get("hYield_dt_chi2map_corrected");
-
-  TFile* IterTemp_count0d02to0d185 = SafelyOpenRootfile("IterTemp_count0d02to0d185.root");
-  if (IterTemp_count0d02to0d185->IsOpen() ) printf("IterTemp_count0d02to0d185 opened successfully\n");
-
-  hCorrYield_count0d02to0d185 = (TH1D*) IterTemp_count0d02to0d185->Get("hYield_dt_chi2map_corrected");
-
-  TFile* IterTemp_count0d02to0d285 = SafelyOpenRootfile("IterTemp_count0d02to0d285.root");
-  if (IterTemp_count0d02to0d285->IsOpen() ) printf("IterTemp_count0d02to0d285 opened successfully\n");
-
-  hCorrYield_count0d02to0d285 = (TH1D*) IterTemp_count0d02to0d285->Get("hYield_dt_chi2map_corrected");
-
-
-
-
-  //////////////////////////////////////////////////////////////////////////////
-  // 2nd the param range variation:
-  TFile* IterTemp_param0d06to0d225 = SafelyOpenRootfile("IterTemp_param0d06to0d225.root");
-  if (IterTemp_param0d06to0d225->IsOpen() ) printf("IterTemp_param0d06to0d225 opened successfully\n");
-
-  hCorrYield_param0d06to0d225 = (TH1D*) IterTemp_param0d06to0d225->Get("hYield_dt_chi2map_corrected");
-
-  TFile* IterTemp_param0d1to0d225 = SafelyOpenRootfile("IterTemp_param0d1to0d225.root");
-  if (IterTemp_param0d1to0d225->IsOpen() ) printf("IterTemp_param0d1to0d225 opened successfully\n");
-
-  hCorrYield_param0d1to0d225 = (TH1D*) IterTemp_param0d1to0d225->Get("hYield_dt_chi2map_corrected");
-
-  TFile* IterTemp_param0d02to0d185 = SafelyOpenRootfile("IterTemp_param0d02to0d185.root");
-  if (IterTemp_param0d02to0d185->IsOpen() ) printf("IterTemp_param0d02to0d185 opened successfully\n");
-
-  hCorrYield_param0d02to0d185 = (TH1D*) IterTemp_param0d02to0d185->Get("hYield_dt_chi2map_corrected");
-
-  TFile* IterTemp_param0d02to0d285 = SafelyOpenRootfile("IterTemp_param0d02to0d285.root");
-  if (IterTemp_param0d02to0d285->IsOpen() ) printf("IterTemp_param0d02to0d285 opened successfully\n");
-
-  hCorrYield_param0d02to0d285 = (TH1D*) IterTemp_param0d02to0d285->Get("hYield_dt_chi2map_corrected");
-
-
-
-  //////////////////////////////////////////////////////////////////////////////
-  // 3rd the bg fitting variation
-  TFile* IterTemp_BGFitRange0d25 = SafelyOpenRootfile("IterTemp_BGFitRange0d25.root");
-  if (IterTemp_BGFitRange0d25->IsOpen() ) printf("IterTemp_BGFitRange0d25 opened successfully\n");
-
-  hCorrYield_BGFitRange0d25 = (TH1D*) IterTemp_BGFitRange0d25->Get("hYield_dt_chi2map_corrected");
-
-  TFile* IterTemp_BGLeft = SafelyOpenRootfile("IterTemp_BGLeft.root");
-  if (IterTemp_BGLeft->IsOpen() ) printf("IterTemp_BGLeft opened successfully\n");
-
-  hCorrYield_BGLeft = (TH1D*) IterTemp_BGFitRange0d25->Get("hYield_dt_chi2map_corrected");
-
-  TFile* IterTemp_BGFitRange0d29 = SafelyOpenRootfile("IterTemp_BGFitRange0d29.root");
-  if (IterTemp_BGFitRange0d29->IsOpen() ) printf("IterTemp_BGFitRange0d29 opened successfully\n");
-
-  hCorrYield_BGFitRange0d29 = (TH1D*) IterTemp_BGFitRange0d29->Get("hYield_dt_chi2map_corrected");
-
-
-  Double_t temp = 0;
-  for (int i = 2; i < numberbins; i++) {
-
-    temp = 0;
-    // check for biggest diff. in param vari
-    if(fabs(hCorrYieldNormal->GetBinContent(i)-hCorrYield_param0d02to0d285->GetBinContent(i)) > temp){
-      temp = fabs(hCorrYieldNormal->GetBinContent(i)-hCorrYield_param0d02to0d285->GetBinContent(i));
-    }
-    if(fabs(hCorrYieldNormal->GetBinContent(i)-hCorrYield_param0d06to0d225->GetBinContent(i)) > temp){
-      temp = fabs(hCorrYieldNormal->GetBinContent(i)-hCorrYield_param0d06to0d225->GetBinContent(i));
-    }
-    if(fabs(hCorrYieldNormal->GetBinContent(i)-hCorrYield_param0d1to0d225->GetBinContent(i)) > temp){
-      temp = fabs(hCorrYieldNormal->GetBinContent(i)-hCorrYield_param0d1to0d225->GetBinContent(i));
-    }
-    if(fabs(hCorrYieldNormal->GetBinContent(i)-hCorrYield_param0d02to0d185->GetBinContent(i)) > temp){
-      temp = fabs(hCorrYieldNormal->GetBinContent(i)-hCorrYield_param0d02to0d185->GetBinContent(i));
-    }
-    // pushing biggest difference back
-    vParamSys.push_back(temp);
-
-    // resetting temp
-    temp = 0;
-
-    // chech for biggest diff. in count vari
-    if(fabs(hCorrYieldNormal->GetBinContent(i)-hCorrYield_count0d06to0d225->GetBinContent(i)) > temp){
-      temp = fabs(hCorrYieldNormal->GetBinContent(i)-hCorrYield_count0d06to0d225->GetBinContent(i));
-    }
-    if(fabs(hCorrYieldNormal->GetBinContent(i)-hCorrYield_count0d1to0d225->GetBinContent(i)) > temp){
-      temp = fabs(hCorrYieldNormal->GetBinContent(i)-hCorrYield_count0d1to0d225->GetBinContent(i));
-    }
-    if(fabs(hCorrYieldNormal->GetBinContent(i)-hCorrYield_count0d02to0d185->GetBinContent(i)) > temp){
-      temp = fabs(hCorrYieldNormal->GetBinContent(i)-hCorrYield_count0d02to0d185->GetBinContent(i));
-    }
-    if(fabs(hCorrYieldNormal->GetBinContent(i)-hCorrYield_count0d02to0d285->GetBinContent(i)) > temp){
-      temp = fabs(hCorrYieldNormal->GetBinContent(i)-hCorrYield_count0d02to0d285->GetBinContent(i));
-    }
-    // pushing biggest difference back
-    vCountSys.push_back(temp);
-
-    // chech for biggest diff. in BGGit vari
-
-    if(fabs(hCorrYieldNormal->GetBinContent(i)-hCorrYield_BGFitRange0d25->GetBinContent(i)) > temp){
-      temp = fabs(hCorrYieldNormal->GetBinContent(i)-hCorrYield_BGFitRange0d25->GetBinContent(i));
-    }
-    if(fabs(hCorrYieldNormal->GetBinContent(i)-hCorrYield_BGLeft->GetBinContent(i)) > temp){
-      temp = fabs(hCorrYieldNormal->GetBinContent(i)-hCorrYield_BGLeft->GetBinContent(i));
-    }
-    // if(fabs(hCorrYieldNormal->GetBinContent(i)-hCorrYield_BGFitRange0d29->GetBinContent(i)) > temp){
-    //   temp = fabs(hCorrYieldNormal->GetBinContent(i)-hCorrYield_BGFitRange0d29->GetBinContent(i));
-    // }
-
-    // pushing biggest difference back
-    vBGFitSys.push_back(temp);
-
-    temp = sqrt(pow(vParamSys[i-2], 2.) + pow(vCountSys[i-2], 2.) + pow(vBGFitSys[i-2], 2.));
-    vFinalSys.push_back(temp);
-    hCorrYield_syserror->SetBinError(i, vFinalSys[i-2]);
-    hCorrYield_countsyserror->SetBinError(i, vCountSys[i-2]);
-    hCorrYield_paramsyserror->SetBinError(i, vParamSys[i-2]);
-    hCorrYield_BGFitsyserror->SetBinError(i, vBGFitSys[i-2]);
-    temp = 0;
-  }
-
-  hCorrYield_RelativSyserror = (TH1D*) hCorrYield_syserror->Clone("hCorrYield_RelativSyserror");
-  hCorrYield_RelativStaterror = (TH1D*) hCorrYieldNormal->Clone("hCorrYield_RelativStaterror");
-  hCorrectedYieldNormEff_StatError = (TH1D*) hCorrectedYieldNormEff->Clone("hCorrectedYieldNormEff_StatError");
+  // hCorrYield_syserror           = (TH1D*) hCorrYieldBetterBkg3to8Pulse->Clone("hCorrYield_syserror");
+  // hCorrYield_countsyserror      = (TH1D*) hCorrYieldBetterBkg3to8Pulse->Clone("hCorrYield_countsyserror");
+  // hCorrYield_paramsyserror      = (TH1D*) hCorrYieldBetterBkg3to8Pulse->Clone("hCorrYield_paramsyserror");
+  // hCorrYield_BGFitsyserror      = (TH1D*) hCorrYieldBetterBkg3to8Pulse->Clone("hCorrYield_BGFitsyserror");
+  //
+  // //////////////////////////////////////////////////////////////////////////////
+  // // First the counting range variation:
+  // TFile* IterTemp_count0d06to0d225 = SafelyOpenRootfile("IterTemp_count0d06to0d225.root");
+  // if (IterTemp_count0d06to0d225->IsOpen() ) printf("IterTemp_count0d06to0d225 opened successfully\n");
+  //
+  // hCorrYield_count0d06to0d225 = (TH1D*) IterTemp_count0d06to0d225->Get("hYield_dt_chi2map_corrected");
+  //
+  // TFile* IterTemp_count0d1to0d225 = SafelyOpenRootfile("IterTemp_count0d1to0d225.root");
+  // if (IterTemp_count0d1to0d225->IsOpen() ) printf("IterTemp_count0d1to0d225 opened successfully\n");
+  //
+  // hCorrYield_count0d1to0d225 = (TH1D*) IterTemp_count0d1to0d225->Get("hYield_dt_chi2map_corrected");
+  //
+  // TFile* IterTemp_count0d02to0d185 = SafelyOpenRootfile("IterTemp_count0d02to0d185.root");
+  // if (IterTemp_count0d02to0d185->IsOpen() ) printf("IterTemp_count0d02to0d185 opened successfully\n");
+  //
+  // hCorrYield_count0d02to0d185 = (TH1D*) IterTemp_count0d02to0d185->Get("hYield_dt_chi2map_corrected");
+  //
+  // TFile* IterTemp_count0d02to0d285 = SafelyOpenRootfile("IterTemp_count0d02to0d285.root");
+  // if (IterTemp_count0d02to0d285->IsOpen() ) printf("IterTemp_count0d02to0d285 opened successfully\n");
+  //
+  // hCorrYield_count0d02to0d285 = (TH1D*) IterTemp_count0d02to0d285->Get("hYield_dt_chi2map_corrected");
+  //
+  //
+  //
+  //
+  // //////////////////////////////////////////////////////////////////////////////
+  // // 2nd the param range variation:
+  // TFile* IterTemp_param0d06to0d225 = SafelyOpenRootfile("IterTemp_param0d06to0d225.root");
+  // if (IterTemp_param0d06to0d225->IsOpen() ) printf("IterTemp_param0d06to0d225 opened successfully\n");
+  //
+  // hCorrYield_param0d06to0d225 = (TH1D*) IterTemp_param0d06to0d225->Get("hYield_dt_chi2map_corrected");
+  //
+  // TFile* IterTemp_param0d1to0d225 = SafelyOpenRootfile("IterTemp_param0d1to0d225.root");
+  // if (IterTemp_param0d1to0d225->IsOpen() ) printf("IterTemp_param0d1to0d225 opened successfully\n");
+  //
+  // hCorrYield_param0d1to0d225 = (TH1D*) IterTemp_param0d1to0d225->Get("hYield_dt_chi2map_corrected");
+  //
+  // TFile* IterTemp_param0d02to0d185 = SafelyOpenRootfile("IterTemp_param0d02to0d185.root");
+  // if (IterTemp_param0d02to0d185->IsOpen() ) printf("IterTemp_param0d02to0d185 opened successfully\n");
+  //
+  // hCorrYield_param0d02to0d185 = (TH1D*) IterTemp_param0d02to0d185->Get("hYield_dt_chi2map_corrected");
+  //
+  // TFile* IterTemp_param0d02to0d285 = SafelyOpenRootfile("IterTemp_param0d02to0d285.root");
+  // if (IterTemp_param0d02to0d285->IsOpen() ) printf("IterTemp_param0d02to0d285 opened successfully\n");
+  //
+  // hCorrYield_param0d02to0d285 = (TH1D*) IterTemp_param0d02to0d285->Get("hYield_dt_chi2map_corrected");
+  //
+  //
+  //
+  // //////////////////////////////////////////////////////////////////////////////
+  // // 3rd the bg fitting variation
+  // TFile* IterTemp_BGFitRange0d25 = SafelyOpenRootfile("IterTemp_BGFitRange0d25.root");
+  // if (IterTemp_BGFitRange0d25->IsOpen() ) printf("IterTemp_BGFitRange0d25 opened successfully\n");
+  //
+  // hCorrYield_BGFitRange0d25 = (TH1D*) IterTemp_BGFitRange0d25->Get("hYield_dt_chi2map_corrected");
+  //
+  // TFile* IterTemp_BGLeft = SafelyOpenRootfile("IterTemp_BGLeft.root");
+  // if (IterTemp_BGLeft->IsOpen() ) printf("IterTemp_BGLeft opened successfully\n");
+  //
+  // hCorrYield_BGLeft = (TH1D*) IterTemp_BGFitRange0d25->Get("hYield_dt_chi2map_corrected");
+  //
+  // TFile* IterTemp_BGFitRange0d29 = SafelyOpenRootfile("IterTemp_BGFitRange0d29.root");
+  // if (IterTemp_BGFitRange0d29->IsOpen() ) printf("IterTemp_BGFitRange0d29 opened successfully\n");
+  //
+  // hCorrYield_BGFitRange0d29 = (TH1D*) IterTemp_BGFitRange0d29->Get("hYield_dt_chi2map_corrected");
+  //
+  //
+  // Double_t temp = 0;
+  // for (int i = 2; i < numberbins; i++) {
+  //
+  //   temp = 0;
+  //   // check for biggest diff. in param vari
+  //   if(fabs(hCorrYieldBetterBkg3to8Pulse->GetBinContent(i)-hCorrYield_param0d02to0d285->GetBinContent(i)) > temp){
+  //     temp = fabs(hCorrYieldBetterBkg3to8Pulse->GetBinContent(i)-hCorrYield_param0d02to0d285->GetBinContent(i));
+  //   }
+  //   if(fabs(hCorrYieldBetterBkg3to8Pulse->GetBinContent(i)-hCorrYield_param0d06to0d225->GetBinContent(i)) > temp){
+  //     temp = fabs(hCorrYieldBetterBkg3to8Pulse->GetBinContent(i)-hCorrYield_param0d06to0d225->GetBinContent(i));
+  //   }
+  //   if(fabs(hCorrYieldBetterBkg3to8Pulse->GetBinContent(i)-hCorrYield_param0d1to0d225->GetBinContent(i)) > temp){
+  //     temp = fabs(hCorrYieldBetterBkg3to8Pulse->GetBinContent(i)-hCorrYield_param0d1to0d225->GetBinContent(i));
+  //   }
+  //   if(fabs(hCorrYieldBetterBkg3to8Pulse->GetBinContent(i)-hCorrYield_param0d02to0d185->GetBinContent(i)) > temp){
+  //     temp = fabs(hCorrYieldBetterBkg3to8Pulse->GetBinContent(i)-hCorrYield_param0d02to0d185->GetBinContent(i));
+  //   }
+  //   // pushing biggest difference back
+  //   vParamSys.push_back(temp);
+  //
+  //   // resetting temp
+  //   temp = 0;
+  //
+  //   // chech for biggest diff. in count vari
+  //   if(fabs(hCorrYieldBetterBkg3to8Pulse->GetBinContent(i)-hCorrYield_count0d06to0d225->GetBinContent(i)) > temp){
+  //     temp = fabs(hCorrYieldBetterBkg3to8Pulse->GetBinContent(i)-hCorrYield_count0d06to0d225->GetBinContent(i));
+  //   }
+  //   if(fabs(hCorrYieldBetterBkg3to8Pulse->GetBinContent(i)-hCorrYield_count0d1to0d225->GetBinContent(i)) > temp){
+  //     temp = fabs(hCorrYieldBetterBkg3to8Pulse->GetBinContent(i)-hCorrYield_count0d1to0d225->GetBinContent(i));
+  //   }
+  //   if(fabs(hCorrYieldBetterBkg3to8Pulse->GetBinContent(i)-hCorrYield_count0d02to0d185->GetBinContent(i)) > temp){
+  //     temp = fabs(hCorrYieldBetterBkg3to8Pulse->GetBinContent(i)-hCorrYield_count0d02to0d185->GetBinContent(i));
+  //   }
+  //   if(fabs(hCorrYieldBetterBkg3to8Pulse->GetBinContent(i)-hCorrYield_count0d02to0d285->GetBinContent(i)) > temp){
+  //     temp = fabs(hCorrYieldBetterBkg3to8Pulse->GetBinContent(i)-hCorrYield_count0d02to0d285->GetBinContent(i));
+  //   }
+  //   // pushing biggest difference back
+  //   vCountSys.push_back(temp);
+  //
+  //   // chech for biggest diff. in BGGit vari
+  //
+  //   if(fabs(hCorrYieldBetterBkg3to8Pulse->GetBinContent(i)-hCorrYield_BGFitRange0d25->GetBinContent(i)) > temp){
+  //     temp = fabs(hCorrYieldBetterBkg3to8Pulse->GetBinContent(i)-hCorrYield_BGFitRange0d25->GetBinContent(i));
+  //   }
+  //   if(fabs(hCorrYieldBetterBkg3to8Pulse->GetBinContent(i)-hCorrYield_BGLeft->GetBinContent(i)) > temp){
+  //     temp = fabs(hCorrYieldBetterBkg3to8Pulse->GetBinContent(i)-hCorrYield_BGLeft->GetBinContent(i));
+  //   }
+  //   // if(fabs(hCorrYieldBetterBkg3to8Pulse->GetBinContent(i)-hCorrYield_BGFitRange0d29->GetBinContent(i)) > temp){
+  //   //   temp = fabs(hCorrYieldBetterBkg3to8Pulse->GetBinContent(i)-hCorrYield_BGFitRange0d29->GetBinContent(i));
+  //   // }
+  //
+  //   // pushing biggest difference back
+  //   vBGFitSys.push_back(temp);
+  //
+  //   temp = sqrt(pow(vParamSys[i-2], 2.) + pow(vCountSys[i-2], 2.) + pow(vBGFitSys[i-2], 2.));
+  //   vFinalSys.push_back(temp);
+  //   hCorrYield_syserror->SetBinError(i, vFinalSys[i-2]);
+  //   hCorrYield_countsyserror->SetBinError(i, vCountSys[i-2]);
+  //   hCorrYield_paramsyserror->SetBinError(i, vParamSys[i-2]);
+  //   hCorrYield_BGFitsyserror->SetBinError(i, vBGFitSys[i-2]);
+  //   temp = 0;
+  // }
+  //
+  // hCorrYield_RelativSyserror = (TH1D*) hCorrYield_syserror->Clone("hCorrYield_RelativSyserror");
+  hCorrYieldBetterBkg3to8Pulse_StatError    = (TH1D*) hCorrYieldBetterBkg3to8Pule->Clone("hCorrYieldBetterBkg3to8Pulse_StatError");
+  hCorrYieldBetterBkgNN_StatError           = (TH1D*) hCorrYieldBetterBkgNN->Clone("hCorrYieldBetterBkgNN_StatError");
+  hCorrYieldBetterBkg3to8_StatError         = (TH1D*) hCorrYieldBetterBkg3to8->Clone("hCorrYieldBetterBkg3to8_StatError");
+  hCorrectedYieldNormEff_StatError          = (TH1D*) hCorrectedYieldNormEff->Clone("hCorrectedYieldNormEff_StatError");
 
   for(int k = 2; k < numberbins; k++){
-    hCorrYield_RelativSyserror->SetBinContent(k, hCorrYield_syserror->GetBinError(k)/(Double_t)hCorrYieldNormal->GetBinContent(k)*100.);
-    std::cout << "rel Error = " <<  hCorrYield_RelativSyserror->GetBinContent(k) << '\n';
-    hCorrYield_RelativStaterror->SetBinContent(k, hCorrYield_RelativStaterror->GetBinError(k)/(Double_t)hCorrYieldNormal->GetBinContent(k)*100.);
-    hCorrYield_RelativStaterror->SetBinError(k,0.);
-    hCorrectedYieldNormEff_StatError->SetBinContent(k, hCorrectedYieldNormEff->GetBinError(k)/(Double_t)hCorrectedYieldNormEff->GetBinContent(k)*100.);
+    // hCorrYield_RelativSyserror->SetBinContent(k, hCorrYield_syserror->GetBinError(k)/(Double_t)hCorrYieldBetterBkg3to8Pulse->GetBinContent(k)*100.);
+    // hCorrYieldBetterBkg3to8Pulse_StatError->SetBinContent(k, hCorrYieldBetterBkg3to8Pulse_StatError->GetBinError(k)/(Double_t)hCorrYieldBetterBkg3to8Pulse->GetBinContent(k)*100.);
+    // hCorrYieldBetterBkg3to8Pulse_StatError->SetBinError(k,0.);
+    // hCorrectedYieldNormEff_StatError->SetBinContent(k, hCorrectedYieldNormEff->GetBinError(k)/(Double_t)hCorrectedYieldNormEff->GetBinContent(k)*100.);
+    // hCorrectedYieldNormEff_StatError->SetBinError(k,0.);
+    // hCorrYield_RelativSyserror->SetBinError(k,0.);
+    // hCorrYield_countsyserror->SetBinContent(k, hCorrYield_countsyserror->GetBinError(k)/(Double_t)hCorrYieldBetterBkg3to8Pulse->GetBinContent(k)*100.);
+    // hCorrYield_paramsyserror->SetBinContent(k, hCorrYield_paramsyserror->GetBinError(k)/(Double_t)hCorrYieldBetterBkg3to8Pulse->GetBinContent(k)*100.);
+    // hCorrYield_BGFitsyserror->SetBinContent(k, hCorrYield_BGFitsyserror->GetBinError(k)/(Double_t)hCorrYieldBetterBkg3to8Pulse->GetBinContent(k)*100.);
+    // hCorrYield_countsyserror->SetBinError(k,0.);
+    // hCorrYield_paramsyserror->SetBinError(k,0.);
+    // hCorrYield_BGFitsyserror->SetBinError(k,0.);
+    hCorrYieldBetterBkg3to8Pulse_StatError->SetBinContent(k, hCorrYieldBetterBkg3to8Pulse_StatError->GetBinError(k)/(Double_t)hCorrYieldBetterBkg3to8Pulse_StatError->GetBinContent(k)*100.);
+    hCorrYieldBetterBkg3to8Pulse_StatError->SetBinError(k,0.);
+
+    hCorrYieldBetterBkgNN_StatError->SetBinContent(k, hCorrYieldBetterBkgNN_StatError->GetBinError(k)/(Double_t)hCorrYieldBetterBkgNN_StatError->GetBinContent(k)*100.);
+    hCorrYieldBetterBkgNN_StatError->SetBinError(k,0.);
+
+    hCorrYieldBetterBkg3to8_StatError->SetBinContent(k, hCorrYieldBetterBkg3to8_StatError->GetBinError(k)/(Double_t)hCorrYieldBetterBkg3to8_StatError->GetBinContent(k)*100.);
+    hCorrYieldBetterBkg3to8_StatError->SetBinError(k,0.);
+
+    hCorrectedYieldNormEff_StatError->SetBinContent(k, hCorrectedYieldNormEff_StatError->GetBinError(k)/(Double_t)hCorrectedYieldNormEff_StatError->GetBinContent(k)*100.);
     hCorrectedYieldNormEff_StatError->SetBinError(k,0.);
-    hCorrYield_RelativSyserror->SetBinError(k,0.);
-    hCorrYield_countsyserror->SetBinContent(k, hCorrYield_countsyserror->GetBinError(k)/(Double_t)hCorrYieldNormal->GetBinContent(k)*100.);
-    hCorrYield_paramsyserror->SetBinContent(k, hCorrYield_paramsyserror->GetBinError(k)/(Double_t)hCorrYieldNormal->GetBinContent(k)*100.);
-    hCorrYield_BGFitsyserror->SetBinContent(k, hCorrYield_BGFitsyserror->GetBinError(k)/(Double_t)hCorrYieldNormal->GetBinContent(k)*100.);
-    hCorrYield_countsyserror->SetBinError(k,0.);
-    hCorrYield_paramsyserror->SetBinError(k,0.);
-    hCorrYield_BGFitsyserror->SetBinError(k,0.);
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -252,145 +261,147 @@ void Systematics(TString PicFormat = "png", int numberneighbours = 4){
   pad2Error->SetTicky();
   pad2Error->SetTickx();
 
-  ///////////////////////////////////////////////////////////////////////////
-  // drwaing yields + ratios
-  canError->cd();
-  pad1Error->Draw();
-  pad2Error->Draw("same");
-  pad1Error->cd();
+  /**
+   * Drawing of systematic plus statistical uncertainties
+   */
+  // canError->cd();
+  // pad1Error->Draw();
+  // pad2Error->Draw("same");
+  // pad1Error->cd();
+  //
+  //
+  //
+  // // pad2InvMass->SetLogy(1);
+  // Double_t meanSys = 0;
+  // for(int i = 1; i < numberbins-3; i++){
+  //   meanSys += hCorrYield_RelativSyserror->GetBinContent(i);
+  // }
+  // meanSys /= (Double_t)(numberbins-4);
+  //
+  // TLine* line_MeanSys = new TLine(1.4, meanSys, 12.0, meanSys);
+  // line_MeanSys->SetLineWidth(2);
+  // line_MeanSys->SetLineStyle(3);
+  //
+  // TLegend* leg = new TLegend(0.18,0.7,0.5,0.9);
+  // SetLegendSettigns(leg, 0.079);
+  // // leg->SetHeader("systematic uncertainties");
+  // leg->AddEntry(line_MeanSys, Form("mean value: %1.2lf %%", meanSys) , "l");
+  // leg->AddEntry(hCorrYield_RelativSyserror, "sum" , "l");
+  //
+  // TLegend* leg2 = new TLegend(0.55,0.6,0.9,0.9);
+  // SetLegendSettigns(leg2, 0.079);
+  // leg2->AddEntry(hCorrYield_paramsyserror, "param. range" , "l");
+  // leg2->AddEntry(hCorrYield_countsyserror, "integration range" , "l");
+  // leg2->AddEntry(hCorrYield_BGFitsyserror, "uncorr. bkg. variation" , "l");
+  //
+  // hCorrYield_RelativSyserror->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+  // hCorrYield_RelativSyserror->SetYTitle("rel. syst. uncertainty (%)");
+  // hCorrYield_countsyserror->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+  // hCorrYield_countsyserror->SetYTitle("rel. syst. uncertainty (%)");
+  // hCorrYield_paramsyserror->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+  // hCorrYield_paramsyserror->SetYTitle("rel. syst. uncertainty (%)");
+  // hCorrYield_BGFitsyserror->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+  // hCorrYield_BGFitsyserror->SetYTitle("rel. syst. uncertainty (%)");
+  //
+  // hCorrYield_RelativSyserror->SetLineWidth(3);
+  // hCorrYield_countsyserror->SetLineWidth(3);
+  // hCorrYield_paramsyserror->SetLineWidth(3);
+  // hCorrYield_BGFitsyserror->SetLineWidth(3);
+  //
+  // hCorrYield_RelativSyserror->GetXaxis()->SetTitleOffset(1.2);
+  // hCorrYield_RelativSyserror->GetXaxis()->SetLabelOffset(0.008);
+  // hCorrYield_RelativSyserror->GetYaxis()->SetTitleOffset(0.9);
+  // hCorrYield_RelativSyserror->GetYaxis()->SetLabelOffset(0.008);
+  //
+  // hCorrYield_RelativSyserror->GetXaxis()->SetRangeUser(1.4, 12.0);
+  // hCorrYield_paramsyserror->GetXaxis()->SetRangeUser(1.4, 12.0);
+  // hCorrYield_countsyserror->GetXaxis()->SetRangeUser(1.4, 12.0);
+  // hCorrYield_BGFitsyserror->GetXaxis()->SetRangeUser(1.4, 12.0);
+  // hCorrYield_RelativSyserror->GetYaxis()->SetRangeUser(-0.5, 9.9);
+  // hCorrYield_RelativSyserror->GetXaxis()->SetTitleSize(42);
+  // hCorrYield_RelativSyserror->GetYaxis()->SetTitleSize(42);
+  // hCorrYield_RelativSyserror->GetXaxis()->SetLabelSize(42);
+  // hCorrYield_RelativSyserror->GetYaxis()->SetLabelSize(42);
+  //
+  // hCorrYield_RelativSyserror->GetXaxis()->SetTitleFont(43);
+  // hCorrYield_RelativSyserror->GetYaxis()->SetTitleFont(43);
+  // hCorrYield_RelativSyserror->GetXaxis()->SetLabelFont(43);
+  // hCorrYield_RelativSyserror->GetYaxis()->SetLabelFont(43);
+  //
+  // hCorrYield_countsyserror->SetLineColor(kMagenta);
+  // hCorrYield_paramsyserror->SetLineColor(kBlue+2);
+  // hCorrYield_BGFitsyserror->SetLineColor(kTeal-7);
+  // hCorrYield_RelativSyserror->SetLineColor(kRed);
+  //
+  // hCorrYield_RelativSyserror->DrawCopy("AXIS");
+  // line_MeanSys->Draw("SAME");
+  // hCorrYield_countsyserror->DrawCopy("SAME HIST");
+  // hCorrYield_paramsyserror->DrawCopy("SAME HIST");
+  // hCorrYield_BGFitsyserror->DrawCopy("SAME HIST");
+  // hCorrYield_RelativSyserror->DrawCopy("SAME HIST");
+  // leg->Draw("SAME");
+  // leg2->Draw("SAME");
+  //
+  // pad1Error->Update();
+  //
+  // pad2Error->cd();
+  //
+  // hCorrYieldBetterBkg3to8Pulse_StatError->SetLineColor(kRed);
+  // hCorrYieldBetterBkg3to8Pulse_StatError->SetMarkerColor(kRed);
+  // hCorrectedYieldNormEff_StatError->SetLineColor(kBlack);
+  // hCorrectedYieldNormEff_StatError->SetMarkerColor(kBlack);
+  //
+  // TLegend* leg_stat = new TLegend(0.18,0.7,0.5,0.9);
+  // SetLegendSettigns(leg_stat, 0.079);
+  // leg_stat->SetTextFont(43);
+  // leg_stat->SetTextSize(42);
+  // leg_stat->AddEntry(hCorrectedYieldNormEff_StatError, "standard method", "l");
+  // leg_stat->AddEntry(hCorrYieldBetterBkg3to8Pulse_StatError, "this method" , "l");
+  // hCorrectedYieldNormEff_StatError->SetYTitle("rel. stat. uncertainty (%)");
+  // hCorrectedYieldNormEff_StatError->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+  //
+  // hCorrectedYieldNormEff_StatError->SetLineWidth(3);
+  // hCorrYieldBetterBkg3to8Pulse_StatError->SetLineWidth(3);
+  //
+  // hCorrectedYieldNormEff_StatError->GetXaxis()->SetTitleOffset(1.8);
+  // hCorrectedYieldNormEff_StatError->GetXaxis()->SetLabelOffset(0.008);
+  // hCorrectedYieldNormEff_StatError->GetYaxis()->SetTitleOffset(0.9);
+  // hCorrectedYieldNormEff_StatError->GetYaxis()->SetLabelOffset(0.008);
+  //
+  // hCorrectedYieldNormEff_StatError->GetXaxis()->SetRangeUser(1.4, 12.0);
+  // hCorrYieldBetterBkg3to8Pulse_StatError->GetXaxis()->SetRangeUser(1.4, 12.0);
+  // hCorrectedYieldNormEff_StatError->GetYaxis()->SetRangeUser(-0.09, 9.9);
+  // hCorrectedYieldNormEff_StatError->GetXaxis()->SetTitleSize(42);
+  // hCorrectedYieldNormEff_StatError->GetYaxis()->SetTitleSize(42);
+  // hCorrectedYieldNormEff_StatError->GetXaxis()->SetLabelSize(42);
+  // hCorrectedYieldNormEff_StatError->GetYaxis()->SetLabelSize(42);
+  //
+  // hCorrectedYieldNormEff_StatError->GetXaxis()->SetTitleFont(43);
+  // hCorrectedYieldNormEff_StatError->GetYaxis()->SetTitleFont(43);
+  // hCorrectedYieldNormEff_StatError->GetXaxis()->SetLabelFont(43);
+  // hCorrectedYieldNormEff_StatError->GetYaxis()->SetLabelFont(43);
+  //
+  // hCorrectedYieldNormEff_StatError->GetXaxis()->SetNdivisions(309);
+  //
+  // hCorrectedYieldNormEff_StatError->DrawCopy("AXIS");
+  // hCorrYieldBetterBkg3to8Pulse_StatError->DrawCopy("SAME HIST");
+  // hCorrectedYieldNormEff_StatError->DrawCopy("SAME HIST");
+  // leg_stat->Draw("");
+  // pad2Error->Update();
+  //
+  //
+  // canError->Update();
+  // canError->SaveAs("Systematics/ErrorPlot." + PicFormat);
+  // canError->Clear("D");
+  //
+  // delete leg;
+  // delete leg2;
 
 
-
-  // pad2InvMass->SetLogy(1);
-  Double_t meanSys = 0;
-  for(int i = 1; i < numberbins-3; i++){
-    meanSys += hCorrYield_RelativSyserror->GetBinContent(i);
-  }
-  meanSys /= (Double_t)(numberbins-4);
-
-  TLine* line_MeanSys = new TLine(1.4, meanSys, 12.0, meanSys);
-  line_MeanSys->SetLineWidth(2);
-  line_MeanSys->SetLineStyle(3);
-
-  TLegend* leg = new TLegend(0.18,0.7,0.5,0.9);
-  SetLegendSettigns(leg, 0.079);
-  // leg->SetHeader("systematic uncertainties");
-  leg->AddEntry(line_MeanSys, Form("mean value: %1.2lf %%", meanSys) , "l");
-  leg->AddEntry(hCorrYield_RelativSyserror, "sum" , "l");
-
-  TLegend* leg2 = new TLegend(0.55,0.6,0.9,0.9);
-  SetLegendSettigns(leg2, 0.079);
-  leg2->AddEntry(hCorrYield_paramsyserror, "param. range" , "l");
-  leg2->AddEntry(hCorrYield_countsyserror, "integration range" , "l");
-  leg2->AddEntry(hCorrYield_BGFitsyserror, "uncorr. bkg. variation" , "l");
-
-  hCorrYield_RelativSyserror->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-  hCorrYield_RelativSyserror->SetYTitle("rel. syst. uncertainty (%)");
-  hCorrYield_countsyserror->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-  hCorrYield_countsyserror->SetYTitle("rel. syst. uncertainty (%)");
-  hCorrYield_paramsyserror->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-  hCorrYield_paramsyserror->SetYTitle("rel. syst. uncertainty (%)");
-  hCorrYield_BGFitsyserror->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-  hCorrYield_BGFitsyserror->SetYTitle("rel. syst. uncertainty (%)");
-
-  hCorrYield_RelativSyserror->SetLineWidth(3);
-  hCorrYield_countsyserror->SetLineWidth(3);
-  hCorrYield_paramsyserror->SetLineWidth(3);
-  hCorrYield_BGFitsyserror->SetLineWidth(3);
-
-  hCorrYield_RelativSyserror->GetXaxis()->SetTitleOffset(1.2);
-  hCorrYield_RelativSyserror->GetXaxis()->SetLabelOffset(0.008);
-  hCorrYield_RelativSyserror->GetYaxis()->SetTitleOffset(0.9);
-  hCorrYield_RelativSyserror->GetYaxis()->SetLabelOffset(0.008);
-
-  hCorrYield_RelativSyserror->GetXaxis()->SetRangeUser(1.4, 12.0);
-  hCorrYield_paramsyserror->GetXaxis()->SetRangeUser(1.4, 12.0);
-  hCorrYield_countsyserror->GetXaxis()->SetRangeUser(1.4, 12.0);
-  hCorrYield_BGFitsyserror->GetXaxis()->SetRangeUser(1.4, 12.0);
-  hCorrYield_RelativSyserror->GetYaxis()->SetRangeUser(-0.5, 9.9);
-  hCorrYield_RelativSyserror->GetXaxis()->SetTitleSize(42);
-  hCorrYield_RelativSyserror->GetYaxis()->SetTitleSize(42);
-  hCorrYield_RelativSyserror->GetXaxis()->SetLabelSize(42);
-  hCorrYield_RelativSyserror->GetYaxis()->SetLabelSize(42);
-
-  hCorrYield_RelativSyserror->GetXaxis()->SetTitleFont(43);
-  hCorrYield_RelativSyserror->GetYaxis()->SetTitleFont(43);
-  hCorrYield_RelativSyserror->GetXaxis()->SetLabelFont(43);
-  hCorrYield_RelativSyserror->GetYaxis()->SetLabelFont(43);
-
-  hCorrYield_countsyserror->SetLineColor(kMagenta);
-  hCorrYield_paramsyserror->SetLineColor(kBlue+2);
-  hCorrYield_BGFitsyserror->SetLineColor(kTeal-7);
-  hCorrYield_RelativSyserror->SetLineColor(kRed);
-
-  hCorrYield_RelativSyserror->DrawCopy("AXIS");
-  line_MeanSys->Draw("SAME");
-  hCorrYield_countsyserror->DrawCopy("SAME HIST");
-  hCorrYield_paramsyserror->DrawCopy("SAME HIST");
-  hCorrYield_BGFitsyserror->DrawCopy("SAME HIST");
-  hCorrYield_RelativSyserror->DrawCopy("SAME HIST");
-  leg->Draw("SAME");
-  leg2->Draw("SAME");
-
-  pad1Error->Update();
-
-  pad2Error->cd();
-
-  hCorrYield_RelativStaterror->SetLineColor(kRed);
-  hCorrYield_RelativStaterror->SetMarkerColor(kRed);
-  hCorrectedYieldNormEff_StatError->SetLineColor(kBlack);
-  hCorrectedYieldNormEff_StatError->SetMarkerColor(kBlack);
-
-  TLegend* leg_stat = new TLegend(0.18,0.7,0.5,0.9);
-  SetLegendSettigns(leg_stat, 0.079);
-  leg_stat->SetTextFont(43);
-  leg_stat->SetTextSize(42);
-  leg_stat->AddEntry(hCorrectedYieldNormEff_StatError, "standard method", "l");
-  leg_stat->AddEntry(hCorrYield_RelativStaterror, "this method" , "l");
-  hCorrectedYieldNormEff_StatError->SetYTitle("rel. stat. uncertainty (%)");
-  hCorrectedYieldNormEff_StatError->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-
-  hCorrectedYieldNormEff_StatError->SetLineWidth(3);
-  hCorrYield_RelativStaterror->SetLineWidth(3);
-
-  hCorrectedYieldNormEff_StatError->GetXaxis()->SetTitleOffset(1.8);
-  hCorrectedYieldNormEff_StatError->GetXaxis()->SetLabelOffset(0.008);
-  hCorrectedYieldNormEff_StatError->GetYaxis()->SetTitleOffset(0.9);
-  hCorrectedYieldNormEff_StatError->GetYaxis()->SetLabelOffset(0.008);
-
-  hCorrectedYieldNormEff_StatError->GetXaxis()->SetRangeUser(1.4, 12.0);
-  hCorrYield_RelativStaterror->GetXaxis()->SetRangeUser(1.4, 12.0);
-  hCorrectedYieldNormEff_StatError->GetYaxis()->SetRangeUser(-0.09, 9.9);
-  hCorrectedYieldNormEff_StatError->GetXaxis()->SetTitleSize(42);
-  hCorrectedYieldNormEff_StatError->GetYaxis()->SetTitleSize(42);
-  hCorrectedYieldNormEff_StatError->GetXaxis()->SetLabelSize(42);
-  hCorrectedYieldNormEff_StatError->GetYaxis()->SetLabelSize(42);
-
-  hCorrectedYieldNormEff_StatError->GetXaxis()->SetTitleFont(43);
-  hCorrectedYieldNormEff_StatError->GetYaxis()->SetTitleFont(43);
-  hCorrectedYieldNormEff_StatError->GetXaxis()->SetLabelFont(43);
-  hCorrectedYieldNormEff_StatError->GetYaxis()->SetLabelFont(43);
-
-  hCorrectedYieldNormEff_StatError->GetXaxis()->SetNdivisions(309);
-
-  hCorrectedYieldNormEff_StatError->DrawCopy("AXIS");
-  hCorrYield_RelativStaterror->DrawCopy("SAME HIST");
-  hCorrectedYieldNormEff_StatError->DrawCopy("SAME HIST");
-  leg_stat->Draw("");
-  pad2Error->Update();
-
-
-  canError->Update();
-  canError->SaveAs("Systematics/ErrorPlot." + PicFormat);
-  canError->Clear("D");
-
-  delete leg;
-  delete leg2;
-
-
-
-  //////////////////////////////////////////////////////////////////////////////
-  // setting up canvas to draw Yield plus relative Systematic error
+  /**
+   * setting up canvas to draw Yield plus relative Systematic error,
+   * or statistical
+   */
   TCanvas *canInvMass = new TCanvas("canInvMass","",1600,1600);
   TPad *pad1InvMass = new TPad("pad1InvMass","",0.0,0.33,1.0,1.0);
   pad1InvMass->SetTopMargin(0.05);
@@ -405,7 +416,7 @@ void Systematics(TString PicFormat = "png", int numberneighbours = 4){
   pad2InvMass->SetTicky();
 
   hCorrYield_syserror->SetMarkerSize(1.5);
-  hCorrYieldNormal->SetMarkerSize(1.5);
+  hCorrYieldBetterBkg3to8Pulse->SetMarkerSize(1.5);
 
   ////////////////////////////////////////////////////////////////////////////
   // drwaing yields + ratios
@@ -421,40 +432,40 @@ void Systematics(TString PicFormat = "png", int numberneighbours = 4){
   TLegend* leg_yield = new TLegend(0.2,0.07,0.35,0.3);
   SetLegendSettigns(leg_yield, 0.025*3./2.);
   leg_yield->SetHeader("parametrization method:");
-  leg_yield->AddEntry(hCorrYieldNormal, "templates (normal)" , "lp");
-  leg_yield->AddEntry(hCorrYieldBetterBkg3to8, "templates (3 to 8)" , "lp");
-  leg_yield->AddEntry(hCorrYieldBetterBkgNN, "templates (next neighbours)" , "lp");
+  leg_yield->AddEntry(hCorrYieldBetterBkg3to8Pulse, "templates" , "lp");
+  // leg_yield->AddEntry(hCorrYieldBetterBkg3to8, "templates (3 to 8)" , "lp");
+  // leg_yield->AddEntry(hCorrYieldBetterBkgNN, "templates (next neighbours)" , "lp");
   leg_yield->AddEntry(hCorrectedYieldNormEff, "function", "lp");
   hCorrectedYieldNormEff->SetMarkerSize(1.5);
 
 
-  hCorrYieldBetterBkg3to8->GetYaxis()->SetTitleOffset(1.7);
-  hCorrYieldBetterBkg3to8->GetYaxis()->SetRangeUser(1.e-7-5.e-8,1.e-1);
-  hCorrYieldBetterBkg3to8->GetXaxis()->SetRangeUser(1.4, 12.0);
-  hCorrYieldBetterBkg3to8->GetXaxis()->SetTitleSize(0.025*3./2.);
-  hCorrYieldBetterBkg3to8->GetYaxis()->SetTitleSize(0.025*3./2.);
-  hCorrYieldBetterBkg3to8->GetXaxis()->SetLabelSize(0.025*3./2.);
-  hCorrYieldBetterBkg3to8->GetYaxis()->SetLabelSize(0.025*3./2.);
-  hCorrYieldBetterBkg3to8->SetMarkerColor(kBlue+2);
-  hCorrYieldBetterBkg3to8->SetLineColor(kBlue+2);
-  hCorrYieldNormal->GetYaxis()->SetTitleOffset(1.7);
-  hCorrYieldNormal->GetYaxis()->SetRangeUser(1.e-7-5.e-8,1.e-1);
-  hCorrYieldNormal->GetXaxis()->SetRangeUser(1.4, 12.0);
-  hCorrYieldNormal->GetXaxis()->SetTitleSize(0.025*3./2.);
-  hCorrYieldNormal->GetYaxis()->SetTitleSize(0.025*3./2.);
-  hCorrYieldNormal->GetXaxis()->SetLabelSize(0.025*3./2.);
-  hCorrYieldNormal->GetYaxis()->SetLabelSize(0.025*3./2.);
-  hCorrYieldNormal->SetMarkerColor(kRed+3);
-  hCorrYieldNormal->SetLineColor(kRed+3);
-  hCorrYieldBetterBkgNN->GetYaxis()->SetTitleOffset(1.7);
-  hCorrYieldBetterBkgNN->GetYaxis()->SetRangeUser(1.e-7-5.e-8,1.e-1);
-  hCorrYieldBetterBkgNN->GetXaxis()->SetRangeUser(1.4, 12.0);
-  hCorrYieldBetterBkgNN->GetXaxis()->SetTitleSize(0.025*3./2.);
-  hCorrYieldBetterBkgNN->GetYaxis()->SetTitleSize(0.025*3./2.);
-  hCorrYieldBetterBkgNN->GetXaxis()->SetLabelSize(0.025*3./2.);
-  hCorrYieldBetterBkgNN->GetYaxis()->SetLabelSize(0.025*3./2.);
-  hCorrYieldBetterBkgNN->SetMarkerColor(kGreen+3);
-  hCorrYieldBetterBkgNN->SetLineColor(kGreen+3);
+  // hCorrYieldBetterBkg3to8->GetYaxis()->SetTitleOffset(1.7);
+  // hCorrYieldBetterBkg3to8->GetYaxis()->SetRangeUser(1.e-7-5.e-8,1.e-1);
+  // hCorrYieldBetterBkg3to8->GetXaxis()->SetRangeUser(1.4, 12.0);
+  // hCorrYieldBetterBkg3to8->GetXaxis()->SetTitleSize(0.025*3./2.);
+  // hCorrYieldBetterBkg3to8->GetYaxis()->SetTitleSize(0.025*3./2.);
+  // hCorrYieldBetterBkg3to8->GetXaxis()->SetLabelSize(0.025*3./2.);
+  // hCorrYieldBetterBkg3to8->GetYaxis()->SetLabelSize(0.025*3./2.);
+  // hCorrYieldBetterBkg3to8->SetMarkerColor(kBlue+2);
+  // hCorrYieldBetterBkg3to8->SetLineColor(kBlue+2);
+  hCorrYieldBetterBkg3to8Pulse->GetYaxis()->SetTitleOffset(1.7);
+  hCorrYieldBetterBkg3to8Pulse->GetYaxis()->SetRangeUser(1.e-7-5.e-8,1.e-1);
+  hCorrYieldBetterBkg3to8Pulse->GetXaxis()->SetRangeUser(1.4, 12.0);
+  hCorrYieldBetterBkg3to8Pulse->GetXaxis()->SetTitleSize(0.025*3./2.);
+  hCorrYieldBetterBkg3to8Pulse->GetYaxis()->SetTitleSize(0.025*3./2.);
+  hCorrYieldBetterBkg3to8Pulse->GetXaxis()->SetLabelSize(0.025*3./2.);
+  hCorrYieldBetterBkg3to8Pulse->GetYaxis()->SetLabelSize(0.025*3./2.);
+  hCorrYieldBetterBkg3to8Pulse->SetMarkerColor(kRed+3);
+  hCorrYieldBetterBkg3to8Pulse->SetLineColor(kRed+3);
+  // hCorrYieldBetterBkgNN->GetYaxis()->SetTitleOffset(1.7);
+  // hCorrYieldBetterBkgNN->GetYaxis()->SetRangeUser(1.e-7-5.e-8,1.e-1);
+  // hCorrYieldBetterBkgNN->GetXaxis()->SetRangeUser(1.4, 12.0);
+  // hCorrYieldBetterBkgNN->GetXaxis()->SetTitleSize(0.025*3./2.);
+  // hCorrYieldBetterBkgNN->GetYaxis()->SetTitleSize(0.025*3./2.);
+  // hCorrYieldBetterBkgNN->GetXaxis()->SetLabelSize(0.025*3./2.);
+  // hCorrYieldBetterBkgNN->GetYaxis()->SetLabelSize(0.025*3./2.);
+  // hCorrYieldBetterBkgNN->SetMarkerColor(kGreen+3);
+  // hCorrYieldBetterBkgNN->SetLineColor(kGreen+3);
   hCorrectedYieldNormEff->GetYaxis()->SetTitleOffset(1.7);
   hCorrectedYieldNormEff->GetYaxis()->SetRangeUser(1.e-7-5.e-8,1.e-1);
   hCorrectedYieldNormEff->GetXaxis()->SetRangeUser(1.4, 12.0);
@@ -464,47 +475,40 @@ void Systematics(TString PicFormat = "png", int numberneighbours = 4){
   hCorrectedYieldNormEff->GetYaxis()->SetLabelSize(0.025*3./2.);
   hCorrectedYieldNormEff->SetMarkerColor(kBlack);
   hCorrectedYieldNormEff->SetLineColor(kBlack);
-  hCorrYield_syserror->SetMarkerColor(kRed+3);
-  hCorrYield_syserror->SetLineColor(kRed+3);
-  hCorrYield_syserror->SetFillColor(kGray+2);
-  hCorrYield_syserror->SetFillStyle(1001);
+  // hCorrYield_syserror->SetMarkerColor(kRed+3);
+  // hCorrYield_syserror->SetLineColor(kRed+3);
+  // hCorrYield_syserror->SetFillColor(kGray+2);
+  // hCorrYield_syserror->SetFillStyle(1001);
 
-  hCorrYieldNormal->DrawCopy("AXIS");
+  hCorrYieldBetterBkg3to8Pulse->DrawCopy("AXIS");
   hCorrectedYieldNormEff->Draw("SAME");
   // hCorrYield_syserror->DrawCopy("SAME E2");          // sys Error draw
-  hCorrYieldNormal->DrawCopy("SAME");
-  hCorrYieldBetterBkg3to8->DrawCopy("SAME");
-  hCorrYieldBetterBkgNN->DrawCopy("SAME");
+  hCorrYieldBetterBkg3to8Pulse->DrawCopy("SAME");
+  // hCorrYieldBetterBkg3to8->DrawCopy("SAME");
+  // hCorrYieldBetterBkgNN->DrawCopy("SAME");
   leg_yield->Draw("SAME");
   canInvMass->Update();
-  DrawLabelALICE(0.6, 0.85, 0.035, 0.025*3./2., "");
+  DrawLabelALICE(0.6, 0.85, 0.035, 35*3./2., "");
   pad1InvMass->Update();
 
 
-  TH1D* hYield_dt_chi2map_corrected_ratio = (TH1D*) hCorrectedYieldNormEff->Clone("hYield_dt_chi2map_corrected_ratio");
-  hYield_dt_chi2map_corrected_ratio->Divide(hCorrYieldNormal);
-  hYield_dt_chi2map_corrected_ratio->SetLineColor(kRed);
-  hYield_dt_chi2map_corrected_ratio->SetMarkerColor(kRed);
-  hYield_dt_chi2map_corrected_ratio->SetYTitle("Ratio");
+  TH1D* hCorrYieldBetterBkg3to8Pulse_Ratio = (TH1D*) hCorrYieldBetterBkg3to8Pulse->Clone("hCorrYieldBetterBkg3to8Pulse_Ratio");
+  hCorrYieldBetterBkg3to8Pulse_Ratio->Divide(hCorrectedYieldNormEff);
+  hCorrYieldBetterBkg3to8Pulse_Ratio->SetLineColor(kRed);
+  hCorrYieldBetterBkg3to8Pulse_Ratio->SetMarkerColor(kRed);
+  hCorrYieldBetterBkg3to8Pulse_Ratio->SetYTitle("Ratio");
 
-  TH1D* hYield_ratio_NN_to_norm = (TH1D*) hCorrYieldBetterBkgNN->Clone("hYield_dt_chi2map_corrected_ratio");
-  hYield_ratio_NN_to_norm->Divide(hCorrYieldNormal);
-  hYield_ratio_NN_to_norm->SetLineColor(kGreen+3);
-  hYield_ratio_NN_to_norm->SetMarkerColor(kGreen+3);
-  hYield_ratio_NN_to_norm->SetYTitle("Ratio");
+  // TH1D* hCorrYieldBetterBkgNN_Ratio = (TH1D*) hCorrYieldBetterBkgNN->Clone("hCorrYieldBetterBkg3to8Pulse_Ratio");
+  // hCorrYieldBetterBkgNN_Ratio->Divide(hCorrectedYieldNormEff);
+  // hCorrYieldBetterBkgNN_Ratio->SetLineColor(kGreen+3);
+  // hCorrYieldBetterBkgNN_Ratio->SetMarkerColor(kGreen+3);
+  // hCorrYieldBetterBkgNN_Ratio->SetYTitle("Ratio");
 
-  TH1D* hYield_ratio_3to8_to_norm = (TH1D*) hCorrYieldBetterBkg3to8->Clone("hYield_dt_chi2map_corrected_ratio");
-  hYield_ratio_3to8_to_norm->Divide(hCorrYieldNormal);
-  hYield_ratio_3to8_to_norm->SetLineColor(kBlue+2);
-  hYield_ratio_3to8_to_norm->SetMarkerColor(kBlue+2);
-  hYield_ratio_3to8_to_norm->SetYTitle("Ratio");
-
-  TH1D* hYield_ratio_3to8_to_NN = (TH1D*) hCorrYieldBetterBkg3to8->Clone("hYield_dt_chi2map_corrected_ratio");
-  hYield_ratio_3to8_to_NN->Divide(hCorrYieldBetterBkgNN);
-  hYield_ratio_3to8_to_NN->SetLineColor(kBlack);
-  hYield_ratio_3to8_to_NN->SetMarkerColor(kBlack);
-  hYield_ratio_3to8_to_NN->SetYTitle("Ratio");
-
+  TH1D* hCorrYieldBetterBkg3to8_Ratio = (TH1D*) hCorrYieldBetterBkg3to8->Clone("hCorrYieldBetterBkg3to8Pulse_Ratio");
+  hCorrYieldBetterBkg3to8_Ratio->Divide(hCorrectedYieldNormEff);
+  hCorrYieldBetterBkg3to8_Ratio->SetLineColor(kBlue+2);
+  hCorrYieldBetterBkg3to8_Ratio->SetMarkerColor(kBlue+2);
+  hCorrYieldBetterBkg3to8_Ratio->SetYTitle("Ratio");
 
 
   pad2InvMass->cd();
@@ -512,30 +516,29 @@ void Systematics(TString PicFormat = "png", int numberneighbours = 4){
   line_ratio1->SetLineWidth(2);
   line_ratio1->SetLineStyle(3);
 
-  hYield_dt_chi2map_corrected_ratio->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-  hYield_dt_chi2map_corrected_ratio->GetXaxis()->SetTitleOffset(1.0);
-  hYield_dt_chi2map_corrected_ratio->GetXaxis()->SetLabelOffset(0.008);
-  hYield_dt_chi2map_corrected_ratio->GetYaxis()->SetTitleOffset(0.8);
-  hYield_dt_chi2map_corrected_ratio->GetYaxis()->SetLabelOffset(0.008);
+  hCorrYieldBetterBkg3to8Pulse_Ratio->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+  hCorrYieldBetterBkg3to8Pulse_Ratio->GetXaxis()->SetTitleOffset(1.0);
+  hCorrYieldBetterBkg3to8Pulse_Ratio->GetXaxis()->SetLabelOffset(0.008);
+  hCorrYieldBetterBkg3to8Pulse_Ratio->GetYaxis()->SetTitleOffset(0.8);
+  hCorrYieldBetterBkg3to8Pulse_Ratio->GetYaxis()->SetLabelOffset(0.008);
 
-  hYield_dt_chi2map_corrected_ratio->GetXaxis()->SetRangeUser(1.4, 12.0);
-  hYield_dt_chi2map_corrected_ratio->GetYaxis()->SetRangeUser(0.84, 1.17);
-  hYield_dt_chi2map_corrected_ratio->GetXaxis()->SetTitleSize(0.025*3./1.);
-  hYield_dt_chi2map_corrected_ratio->GetYaxis()->SetTitleSize(0.025*3./1.);
-  hYield_dt_chi2map_corrected_ratio->GetXaxis()->SetLabelSize(0.025*3./1.);
-  hYield_dt_chi2map_corrected_ratio->GetYaxis()->SetLabelSize(0.025*3./1.);
+  hCorrYieldBetterBkg3to8Pulse_Ratio->GetXaxis()->SetRangeUser(1.4, 12.0);
+  hCorrYieldBetterBkg3to8Pulse_Ratio->GetYaxis()->SetRangeUser(0.84, 1.17);
+  hCorrYieldBetterBkg3to8Pulse_Ratio->GetXaxis()->SetTitleSize(32*3./1.);
+  hCorrYieldBetterBkg3to8Pulse_Ratio->GetYaxis()->SetTitleSize(32*3./1.);
+  hCorrYieldBetterBkg3to8Pulse_Ratio->GetXaxis()->SetLabelSize(32*3./1.);
+  hCorrYieldBetterBkg3to8Pulse_Ratio->GetYaxis()->SetLabelSize(32*3./1.);
 
-  hYield_dt_chi2map_corrected_ratio->GetXaxis()->SetTitleFont(42);
-  hYield_dt_chi2map_corrected_ratio->GetYaxis()->SetTitleFont(42);
-  hYield_dt_chi2map_corrected_ratio->GetXaxis()->SetLabelFont(42);
-  hYield_dt_chi2map_corrected_ratio->GetYaxis()->SetLabelFont(42);
+  hCorrYieldBetterBkg3to8Pulse_Ratio->GetXaxis()->SetTitleFont(43);
+  hCorrYieldBetterBkg3to8Pulse_Ratio->GetYaxis()->SetTitleFont(43);
+  hCorrYieldBetterBkg3to8Pulse_Ratio->GetXaxis()->SetLabelFont(43);
+  hCorrYieldBetterBkg3to8Pulse_Ratio->GetYaxis()->SetLabelFont(43);
 
-  hYield_dt_chi2map_corrected_ratio->DrawCopy("AXIS");
+  hCorrYieldBetterBkg3to8Pulse_Ratio->DrawCopy("AXIS");
   line_ratio1->Draw("SAME");
-  hYield_dt_chi2map_corrected_ratio->DrawCopy("SAME P");
-  hYield_ratio_NN_to_norm->DrawCopy("SAME P");
-  hYield_ratio_3to8_to_norm->DrawCopy("SAME P");
-  hYield_ratio_3to8_to_NN->DrawCopy("SAME P");
+  hCorrYieldBetterBkg3to8Pulse_Ratio->DrawCopy("SAME P");
+  // hCorrYieldBetterBkgNN_Ratio->DrawCopy("SAME P");
+  // hCorrYieldBetterBkg3to8_Ratio->DrawCopy("SAME P");
   pad2InvMass->Update();
 
   pad2InvMass->SetTickx();
@@ -566,67 +569,67 @@ void Systematics(TString PicFormat = "png", int numberneighbours = 4){
 
   // pad2InvMass->SetLogy(1);
 
-  TLegend* leg4 = new TLegend(0.15,0.7,0.5,0.9);
-  SetLegendSettigns(leg4, 0.079);
-  // leg->SetHeader("systematic uncertainties");
-  leg4->AddEntry(line_MeanSys, Form("mean value: %1.2lf %%", meanSys) , "l");
-  leg4->AddEntry(hCorrYield_RelativSyserror, "sum" , "l");
-
-  TLegend* leg5 = new TLegend(0.55,0.6,0.9,0.9);
-  SetLegendSettigns(leg5, 0.079);
-  leg5->AddEntry(hCorrYield_paramsyserror, "param. range" , "l");
-  leg5->AddEntry(hCorrYield_countsyserror, "integration range" , "l");
-  leg5->AddEntry(hCorrYield_BGFitsyserror, "uncorr. bkg. variation" , "l");
-
-  hCorrYield_RelativSyserror->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-  hCorrYield_RelativSyserror->SetYTitle("rel. syst. uncertainty (%)");
-  hCorrYield_countsyserror->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-  hCorrYield_countsyserror->SetYTitle("rel. syst. uncertainty (%)");
-  hCorrYield_paramsyserror->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-  hCorrYield_paramsyserror->SetYTitle("rel. syst. uncertainty (%)");
-  hCorrYield_BGFitsyserror->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-  hCorrYield_BGFitsyserror->SetYTitle("rel. syst. uncertainty (%)");
-
-  hCorrYield_RelativSyserror->GetXaxis()->SetTitleOffset(0.9);
-  hCorrYield_RelativSyserror->GetXaxis()->SetLabelOffset(0.008);
-  hCorrYield_RelativSyserror->GetYaxis()->SetTitleOffset(0.5);
-  hCorrYield_RelativSyserror->GetYaxis()->SetLabelOffset(0.008);
-
-  hCorrYield_RelativSyserror->GetXaxis()->SetRangeUser(1.4, 12.0);
-  hCorrYield_paramsyserror->GetXaxis()->SetRangeUser(1.4, 12.0);
-  hCorrYield_countsyserror->GetXaxis()->SetRangeUser(1.4, 12.0);
-  hCorrYield_BGFitsyserror->GetXaxis()->SetRangeUser(1.4, 12.0);
-  hCorrYield_RelativSyserror->GetYaxis()->SetRangeUser(0, 9.9);
-  hCorrYield_RelativSyserror->GetXaxis()->SetTitleSize(0.085);
-  hCorrYield_RelativSyserror->GetYaxis()->SetTitleSize(0.085);
-  hCorrYield_RelativSyserror->GetXaxis()->SetLabelSize(0.085);
-  hCorrYield_RelativSyserror->GetYaxis()->SetLabelSize(0.085);
-
-  hCorrYield_RelativSyserror->GetXaxis()->SetTitleFont(42);
-  hCorrYield_RelativSyserror->GetYaxis()->SetTitleFont(42);
-  hCorrYield_RelativSyserror->GetXaxis()->SetLabelFont(42);
-  hCorrYield_RelativSyserror->GetYaxis()->SetLabelFont(42);
-
-  hCorrYield_countsyserror->SetLineColor(kMagenta);
-  hCorrYield_paramsyserror->SetLineColor(kBlue+2);
-  hCorrYield_BGFitsyserror->SetLineColor(kTeal-7);
-  hCorrYield_RelativSyserror->SetLineColor(kRed);
-
-  hCorrYield_RelativSyserror->DrawCopy("AXIS");
-  line_MeanSys->Draw("SAME");
-  hCorrYield_countsyserror->DrawCopy("SAME HIST");
-  hCorrYield_paramsyserror->DrawCopy("SAME HIST");
-  hCorrYield_BGFitsyserror->DrawCopy("SAME HIST");
-  hCorrYield_RelativSyserror->DrawCopy("SAME HIST");
-  leg4->Draw("SAME");
-  leg5->Draw("SAME");
-
-  c1->Update();
-  c1->SaveAs("Systematics/RelativeSystematics." + PicFormat);
-  c1->Clear();
-
-  delete leg4;
-  delete leg5;
+  // TLegend* leg4 = new TLegend(0.15,0.7,0.5,0.9);
+  // SetLegendSettigns(leg4, 0.079);
+  // // leg->SetHeader("systematic uncertainties");
+  // leg4->AddEntry(line_MeanSys, Form("mean value: %1.2lf %%", meanSys) , "l");
+  // leg4->AddEntry(hCorrYield_RelativSyserror, "sum" , "l");
+  //
+  // TLegend* leg5 = new TLegend(0.55,0.6,0.9,0.9);
+  // SetLegendSettigns(leg5, 0.079);
+  // leg5->AddEntry(hCorrYield_paramsyserror, "param. range" , "l");
+  // leg5->AddEntry(hCorrYield_countsyserror, "integration range" , "l");
+  // leg5->AddEntry(hCorrYield_BGFitsyserror, "uncorr. bkg. variation" , "l");
+  //
+  // hCorrYield_RelativSyserror->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+  // hCorrYield_RelativSyserror->SetYTitle("rel. syst. uncertainty (%)");
+  // hCorrYield_countsyserror->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+  // hCorrYield_countsyserror->SetYTitle("rel. syst. uncertainty (%)");
+  // hCorrYield_paramsyserror->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+  // hCorrYield_paramsyserror->SetYTitle("rel. syst. uncertainty (%)");
+  // hCorrYield_BGFitsyserror->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+  // hCorrYield_BGFitsyserror->SetYTitle("rel. syst. uncertainty (%)");
+  //
+  // hCorrYield_RelativSyserror->GetXaxis()->SetTitleOffset(0.9);
+  // hCorrYield_RelativSyserror->GetXaxis()->SetLabelOffset(0.008);
+  // hCorrYield_RelativSyserror->GetYaxis()->SetTitleOffset(0.5);
+  // hCorrYield_RelativSyserror->GetYaxis()->SetLabelOffset(0.008);
+  //
+  // hCorrYield_RelativSyserror->GetXaxis()->SetRangeUser(1.4, 12.0);
+  // hCorrYield_paramsyserror->GetXaxis()->SetRangeUser(1.4, 12.0);
+  // hCorrYield_countsyserror->GetXaxis()->SetRangeUser(1.4, 12.0);
+  // hCorrYield_BGFitsyserror->GetXaxis()->SetRangeUser(1.4, 12.0);
+  // hCorrYield_RelativSyserror->GetYaxis()->SetRangeUser(0, 9.9);
+  // hCorrYield_RelativSyserror->GetXaxis()->SetTitleSize(0.085);
+  // hCorrYield_RelativSyserror->GetYaxis()->SetTitleSize(0.085);
+  // hCorrYield_RelativSyserror->GetXaxis()->SetLabelSize(0.085);
+  // hCorrYield_RelativSyserror->GetYaxis()->SetLabelSize(0.085);
+  //
+  // hCorrYield_RelativSyserror->GetXaxis()->SetTitleFont(42);
+  // hCorrYield_RelativSyserror->GetYaxis()->SetTitleFont(42);
+  // hCorrYield_RelativSyserror->GetXaxis()->SetLabelFont(42);
+  // hCorrYield_RelativSyserror->GetYaxis()->SetLabelFont(42);
+  //
+  // hCorrYield_countsyserror->SetLineColor(kMagenta);
+  // hCorrYield_paramsyserror->SetLineColor(kBlue+2);
+  // hCorrYield_BGFitsyserror->SetLineColor(kTeal-7);
+  // hCorrYield_RelativSyserror->SetLineColor(kRed);
+  //
+  // hCorrYield_RelativSyserror->DrawCopy("AXIS");
+  // line_MeanSys->Draw("SAME");
+  // hCorrYield_countsyserror->DrawCopy("SAME HIST");
+  // hCorrYield_paramsyserror->DrawCopy("SAME HIST");
+  // hCorrYield_BGFitsyserror->DrawCopy("SAME HIST");
+  // hCorrYield_RelativSyserror->DrawCopy("SAME HIST");
+  // leg4->Draw("SAME");
+  // leg5->Draw("SAME");
+  //
+  // c1->Update();
+  // c1->SaveAs("Systematics/RelativeSystematics." + PicFormat);
+  // c1->Clear();
+  //
+  // delete leg4;
+  // delete leg5;
 
   //////////////////////////////////////////////////////////////////////////////
   // setting up canvas to draw Yield plus relative Systematic error
@@ -665,54 +668,55 @@ void Systematics(TString PicFormat = "png", int numberneighbours = 4){
   SetLegendSettigns(leg_yield2, 0.025*2.);
   leg_yield2->SetTextFont(43);
   leg_yield2->SetTextSize(42);
-  leg_yield2->AddEntry(hCorrYieldNormal, "signal + corr. bkg. temp." , "lp");
+  leg_yield2->AddEntry(hCorrYieldBetterBkg3to8Pulse, "signal + corr. bkg. temp." , "lp");
   leg_yield2->AddEntry(hCorrectedYieldNormEff, "standard method", "lp");
 
 
-  hCorrYieldNormal->GetXaxis()->SetTitleOffset(1.4);
-  hCorrYieldNormal->GetXaxis()->SetLabelOffset(0.008);
-  hCorrYieldNormal->GetYaxis()->SetTitleOffset(3.5);
-  hCorrYieldNormal->GetYaxis()->SetLabelOffset(0.008);
-  hCorrYieldNormal->GetXaxis()->SetTitleSize(42);
-  hCorrYieldNormal->GetYaxis()->SetTitleSize(42);
-  hCorrYieldNormal->GetXaxis()->SetLabelSize(42);
-  hCorrYieldNormal->GetYaxis()->SetLabelSize(42);
+  hCorrYieldBetterBkg3to8Pulse->GetXaxis()->SetTitleOffset(1.4);
+  hCorrYieldBetterBkg3to8Pulse->GetXaxis()->SetLabelOffset(0.008);
+  hCorrYieldBetterBkg3to8Pulse->GetYaxis()->SetTitleOffset(3.5);
+  hCorrYieldBetterBkg3to8Pulse->GetYaxis()->SetLabelOffset(0.008);
+  hCorrYieldBetterBkg3to8Pulse->GetXaxis()->SetTitleSize(42);
+  hCorrYieldBetterBkg3to8Pulse->GetYaxis()->SetTitleSize(42);
+  hCorrYieldBetterBkg3to8Pulse->GetXaxis()->SetLabelSize(42);
+  hCorrYieldBetterBkg3to8Pulse->GetYaxis()->SetLabelSize(42);
 
-  hCorrYieldNormal->GetXaxis()->SetTitleFont(43);
-  hCorrYieldNormal->GetYaxis()->SetTitleFont(43);
-  hCorrYieldNormal->GetXaxis()->SetLabelFont(43);
-  hCorrYieldNormal->GetYaxis()->SetLabelFont(43);
+  hCorrYieldBetterBkg3to8Pulse->GetXaxis()->SetTitleFont(43);
+  hCorrYieldBetterBkg3to8Pulse->GetYaxis()->SetTitleFont(43);
+  hCorrYieldBetterBkg3to8Pulse->GetXaxis()->SetLabelFont(43);
+  hCorrYieldBetterBkg3to8Pulse->GetYaxis()->SetLabelFont(43);
 
 
-  hCorrYieldNormal->DrawCopy("AXIS");
-  hCorrYield_syserror->DrawCopy("SAME E2");
-  hCorrYieldNormal->DrawCopy("SAME");
+  hCorrYieldBetterBkg3to8Pulse->DrawCopy("AXIS");
+  // hCorrYield_syserror->DrawCopy("SAME E2");
+  hCorrYieldBetterBkg3to8Pulse->DrawCopy("SAME");
+  hCorrectedYieldNormEff      ->DrawCopy("SAME");
   leg_yield2->Draw("SAME");
   canYield->Update();
-  DrawLabelALICE(0.55, 0.85, 0.035, 0.025*2., "");
+  DrawLabelALICE(0.55, 0.85, 0.035, 35*2., "");
   pad1Yield->Update();
 
   pad2Yield->cd();
 
-  hYield_dt_chi2map_corrected_ratio->GetYaxis()->SetRangeUser(0.76,1.26);
-  hYield_dt_chi2map_corrected_ratio->GetYaxis()->SetNdivisions(505);
-  hYield_dt_chi2map_corrected_ratio->SetXTitle("");
-  hYield_dt_chi2map_corrected_ratio->GetXaxis()->SetLabelOffset(0.008);
-  hYield_dt_chi2map_corrected_ratio->GetYaxis()->SetTitleOffset(3.5);
-  hYield_dt_chi2map_corrected_ratio->GetYaxis()->SetLabelOffset(0.008);
-  hYield_dt_chi2map_corrected_ratio->GetXaxis()->SetTitleSize(42);
-  hYield_dt_chi2map_corrected_ratio->GetYaxis()->SetTitleSize(42);
-  hYield_dt_chi2map_corrected_ratio->GetXaxis()->SetLabelSize(42);
-  hYield_dt_chi2map_corrected_ratio->GetYaxis()->SetLabelSize(42);
+  hCorrYieldBetterBkg3to8Pulse_Ratio->GetYaxis()->SetRangeUser(0.76,1.26);
+  hCorrYieldBetterBkg3to8Pulse_Ratio->GetYaxis()->SetNdivisions(505);
+  hCorrYieldBetterBkg3to8Pulse_Ratio->SetXTitle("");
+  hCorrYieldBetterBkg3to8Pulse_Ratio->GetXaxis()->SetLabelOffset(0.008);
+  hCorrYieldBetterBkg3to8Pulse_Ratio->GetYaxis()->SetTitleOffset(3.5);
+  hCorrYieldBetterBkg3to8Pulse_Ratio->GetYaxis()->SetLabelOffset(0.008);
+  hCorrYieldBetterBkg3to8Pulse_Ratio->GetXaxis()->SetTitleSize(42);
+  hCorrYieldBetterBkg3to8Pulse_Ratio->GetYaxis()->SetTitleSize(42);
+  hCorrYieldBetterBkg3to8Pulse_Ratio->GetXaxis()->SetLabelSize(42);
+  hCorrYieldBetterBkg3to8Pulse_Ratio->GetYaxis()->SetLabelSize(42);
 
-  hYield_dt_chi2map_corrected_ratio->GetXaxis()->SetTitleFont(43);
-  hYield_dt_chi2map_corrected_ratio->GetYaxis()->SetTitleFont(43);
-  hYield_dt_chi2map_corrected_ratio->GetXaxis()->SetLabelFont(43);
-  hYield_dt_chi2map_corrected_ratio->GetYaxis()->SetLabelFont(43);
+  hCorrYieldBetterBkg3to8Pulse_Ratio->GetXaxis()->SetTitleFont(43);
+  hCorrYieldBetterBkg3to8Pulse_Ratio->GetYaxis()->SetTitleFont(43);
+  hCorrYieldBetterBkg3to8Pulse_Ratio->GetXaxis()->SetLabelFont(43);
+  hCorrYieldBetterBkg3to8Pulse_Ratio->GetYaxis()->SetLabelFont(43);
 
-  hYield_dt_chi2map_corrected_ratio->DrawCopy("AXIS");
+  hCorrYieldBetterBkg3to8Pulse_Ratio->DrawCopy("AXIS");
   line_ratio1->Draw("SAME");
-  hYield_dt_chi2map_corrected_ratio->DrawCopy("SAME P");
+  hCorrYieldBetterBkg3to8Pulse_Ratio->DrawCopy("SAME P");
   pad2Yield->Update();
 
   pad3Yield->cd();
@@ -738,10 +742,10 @@ void Systematics(TString PicFormat = "png", int numberneighbours = 4){
   leg_stat_yield->SetTextFont(43);
   leg_stat_yield->SetTextSize(42);
   leg_stat_yield->AddEntry(hCorrectedYieldNormEff_StatError, "standard method", "l");
-  leg_stat_yield->AddEntry(hCorrYield_RelativStaterror, "this method" , "l");
+  leg_stat_yield->AddEntry(hCorrYieldBetterBkg3to8Pulse_StatError, "this method" , "l");
 
   hCorrectedYieldNormEff_StatError->DrawCopy("AXIS");
-  hCorrYield_RelativStaterror->DrawCopy("SAME HIST");
+  hCorrYieldBetterBkg3to8Pulse_StatError->DrawCopy("SAME HIST");
   hCorrectedYieldNormEff_StatError->DrawCopy("SAME HIST");
   leg_stat_yield->Draw("");
   pad3Yield->Update();
@@ -755,18 +759,6 @@ void Systematics(TString PicFormat = "png", int numberneighbours = 4){
   delete leg_stat_yield;
   delete leg_stat;
 
-  TString sPath = gDirectory->GetPath();
-  if(numberneighbours == 2){
-    FStatUnc      = new TFile("FStatUnc.root", "RECREATE");
-  }
-
-  else{
-    FStatUnc      = new TFile("FStatUnc.root", "UPDATE");
-  }
-
-  hCorrYield_RelativStaterror->Write(Form("hCorrYield_RelativStaterror_with%02d_bins", numberneighbours));
-  gDirectory->Cd(sPath.Data());
-
   TCanvas* cStatUnc = new TCanvas("cStatUnc", "", 2*1058,2*319);
   SetCanvasStandardSettings(cStatUnc);
   cStatUnc->cd();
@@ -776,15 +768,15 @@ void Systematics(TString PicFormat = "png", int numberneighbours = 4){
   SetLegendSettigns(leg_stat_yield2, 0.079);
   leg_stat_yield2->SetTextFont(43);
   leg_stat_yield2->SetTextSize(42);
-  leg_stat_yield2->SetHeader("method:");
-  leg_stat_yield2->AddEntry(hCorrectedYieldNormEff_StatError, "function parametrization", "l");
-  leg_stat_yield2->AddEntry(hCorrYield_RelativStaterror, "templates parametrization" , "l");
+  leg_stat_yield2->SetHeader("Parametrization method:");
+  leg_stat_yield2->AddEntry(hCorrectedYieldNormEff_StatError, "function", "l");
+  leg_stat_yield2->AddEntry(hCorrYieldBetterBkg3to8Pulse_StatError, "templates" , "l");
 
   hCorrectedYieldNormEff_StatError->GetXaxis()->SetTitleOffset(1.0);
   hCorrectedYieldNormEff_StatError->GetYaxis()->SetTitleOffset(0.5);
 
   hCorrectedYieldNormEff_StatError->DrawCopy("AXIS");
-  hCorrYield_RelativStaterror->DrawCopy("SAME HIST");
+  hCorrYieldBetterBkg3to8Pulse_StatError->DrawCopy("SAME HIST");
   hCorrectedYieldNormEff_StatError->DrawCopy("SAME HIST");
   leg_stat_yield2->Draw("");
 
@@ -800,221 +792,221 @@ void Systematics(TString PicFormat = "png", int numberneighbours = 4){
 
   ////////////////////////////////////////////////////////////////////////////
   // drwaing yields + ratio to Bylikin
-  canInvMass->cd();
-  pad1InvMass->Draw();
-  pad2InvMass->Draw("same");
-  pad1InvMass->cd();
-  pad1InvMass->SetTickx();
-  pad1InvMass->SetTicky();
-
-  pad1InvMass->SetLogy(1);
-
-  TLegend* leg_yield_bylikin = new TLegend(0.2,0.07,0.35,0.3);
-  SetLegendSettigns(leg_yield_bylikin, 0.025*3./2.);
-  leg_yield_bylikin->SetHeader("parametrization method:");
-  leg_yield_bylikin->AddEntry(hCorrYieldNormal, "templates (normal)" , "lp");
-  leg_yield_bylikin->AddEntry(hCorrYieldBetterBkg3to8, "templates (3 to 8)" , "lp");
-  leg_yield_bylikin->AddEntry(hCorrYieldBetterBkgNN, "templates (next neighbours)" , "lp");
-  leg_yield_bylikin->AddEntry(fitBylikin13TeV, "Bylikin", "lp");
-  hCorrectedYieldNormEff->SetMarkerSize(1.5);
-
-
-  hCorrYieldNormal->DrawCopy("AXIS");
-  hCorrectedYieldNormEff->DrawCopy("SAME");
-  fitBylikin13TeV->Draw("SAME");
-  fitBylikin13TeV_3to8->Draw("SAME");
-  hCorrYieldNormal->DrawCopy("SAME");
-  hCorrYieldBetterBkg3to8->DrawCopy("SAME");
-  hCorrYieldBetterBkgNN->DrawCopy("SAME");
-  leg_yield_bylikin->Draw("SAME");
-  canInvMass->Update();
-  DrawLabelALICE(0.6, 0.85, 0.035, 0.025*3./2., "");
-  pad1InvMass->Update();
-
-
-  TH1D* hYield_ratio_func_to_bylikin = (TH1D*) hCorrectedYieldNormEff->Clone("hYield_dt_chi2map_corrected_ratio");
-  hYield_ratio_func_to_bylikin->Divide(fitBylikin13TeV);
-  hYield_ratio_func_to_bylikin->SetLineColor(kBlack);
-  hYield_ratio_func_to_bylikin->SetMarkerColor(kBlack);
-  hYield_ratio_func_to_bylikin->SetMarkerStyle(20);
-  hYield_ratio_func_to_bylikin->SetMarkerSize(1.5);
-  hYield_ratio_func_to_bylikin->SetYTitle("Ratio");
-
-  TH1D* hYield_ratio_norm_to_bylikin = (TH1D*) hCorrYieldNormal->Clone("hYield_dt_chi2map_corrected_ratio");
-  hYield_ratio_norm_to_bylikin->Divide(hCorrectedYieldNormEff);
-  hYield_ratio_norm_to_bylikin->SetLineColor(kRed);
-  hYield_ratio_norm_to_bylikin->SetMarkerColor(kRed);
-  hYield_ratio_norm_to_bylikin->SetYTitle("Ratio");
-
-  TH1D* hYield_ratio_NN_to_bylikin = (TH1D*) hCorrYieldBetterBkgNN->Clone("hYield_dt_chi2map_corrected_ratio");
-  hYield_ratio_NN_to_bylikin->Divide(hCorrectedYieldNormEff);
-  hYield_ratio_NN_to_bylikin->SetLineColor(kGreen+3);
-  hYield_ratio_NN_to_bylikin->SetMarkerColor(kGreen+3);
-  hYield_ratio_NN_to_bylikin->SetYTitle("Ratio");
-
-  TH1D* hYield_ratio_3to8_to_bylikin = (TH1D*) hCorrYieldBetterBkg3to8->Clone("hYield_dt_chi2map_corrected_ratio");
-  hYield_ratio_3to8_to_bylikin->Divide(hCorrectedYieldNormEff);
-  hYield_ratio_3to8_to_bylikin->SetLineColor(kBlue+2);
-  hYield_ratio_3to8_to_bylikin->SetMarkerColor(kBlue+2);
-  hYield_ratio_3to8_to_bylikin->SetYTitle("Ratio");
-
-  Int_t nb = 36;
-  Int_t inside = 0;
-  for(int y = 1; y <= 36; y++){
-    Double_t bc = hYield_ratio_3to8_to_bylikin->GetBinContent(y);
-    if(bc < 1.0){
-      if(bc + hYield_ratio_3to8_to_bylikin->GetBinError(y) >= 1.0){
-        inside++;
-      }
-    }
-    else{
-      if(bc - hYield_ratio_3to8_to_bylikin->GetBinError(y) <= 1.0){
-        inside++;
-      }
-    }
-  }
-std::cout << "percantage of Bins inside of 1sigma range: " << (Double_t)inside/(Double_t)nb << '\n';
-std::cout << "number of Bins inside of 1sigma range: " << inside << '\n';
-
-  hYield_ratio_norm_to_bylikin->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-  hYield_ratio_norm_to_bylikin->GetXaxis()->SetTitleOffset(1.0);
-  hYield_ratio_norm_to_bylikin->GetXaxis()->SetLabelOffset(0.008);
-  hYield_ratio_norm_to_bylikin->GetYaxis()->SetTitleOffset(0.8);
-  hYield_ratio_norm_to_bylikin->GetYaxis()->SetLabelOffset(0.008);
-
-  //changed
-  hYield_ratio_norm_to_bylikin->GetXaxis()->SetRangeUser(1.4, 12.0);
-  hYield_ratio_norm_to_bylikin->GetYaxis()->SetRangeUser(0.84, 1.17); //(0.84, 1.17)
-  hYield_ratio_norm_to_bylikin->GetXaxis()->SetTitleSize(0.025*3./1.);
-  hYield_ratio_norm_to_bylikin->GetYaxis()->SetTitleSize(0.025*3./1.);
-  hYield_ratio_norm_to_bylikin->GetXaxis()->SetLabelSize(0.025*3./1.);
-  hYield_ratio_norm_to_bylikin->GetYaxis()->SetLabelSize(0.025*3./1.);
-
-  hYield_ratio_norm_to_bylikin->GetXaxis()->SetTitleFont(42);
-  hYield_ratio_norm_to_bylikin->GetYaxis()->SetTitleFont(42);
-  hYield_ratio_norm_to_bylikin->GetXaxis()->SetLabelFont(42);
-  hYield_ratio_norm_to_bylikin->GetYaxis()->SetLabelFont(42);
-
-  pad2InvMass->cd();
-
-  hYield_ratio_norm_to_bylikin->DrawCopy("AXIS");
-  line_ratio1->Draw("SAME");
-  // fBylikinRatio->Draw("SAME");
-  // hYield_ratio_norm_to_bylikin->DrawCopy("SAME P");
-  hYield_ratio_NN_to_bylikin->DrawCopy("SAME P");
-  hYield_ratio_3to8_to_bylikin->DrawCopy("SAME P");
-  // hYield_ratio_func_to_bylikin->DrawCopy("SAME P");
-  pad2InvMass->Update();
-
-  pad2InvMass->SetTickx();
-  pad2InvMass->SetTicky();
-
-  pad2InvMass->Update();
-
-  canInvMass->Update();
-  canInvMass->SaveAs(Form("Systematics/CorrectedYieldBylikin." + PicFormat));
-  canInvMass->Clear("D");
-
-  delete leg_yield_bylikin;
-
-  ////////////////////////////////////////////////////////////////////////////
-  // drwaing yields + ratio to Tsallis
-  canInvMass->cd();
-  pad1InvMass->Draw();
-  pad2InvMass->Draw("same");
-  pad1InvMass->cd();
-  pad1InvMass->SetTickx();
-  pad1InvMass->SetTicky();
-
-  pad1InvMass->SetLogy(1);
-
-  TLegend* leg_yield_tsallis = new TLegend(0.2,0.07,0.35,0.3);
-  SetLegendSettigns(leg_yield_tsallis, 0.025*3./2.);
-  leg_yield_tsallis->SetHeader("parametrization method:");
-  leg_yield_tsallis->AddEntry(hCorrYieldNormal, "templates (normal)" , "lp");
-  leg_yield_tsallis->AddEntry(hCorrYieldBetterBkg3to8, "templates (3 to 8)" , "lp");
-  leg_yield_tsallis->AddEntry(hCorrYieldBetterBkgNN, "templates (next neighbours)" , "lp");
-  leg_yield_tsallis->AddEntry(ftsallis13TeV, "Tsallis", "lp");
-  hCorrectedYieldNormEff->SetMarkerSize(1.5);
-
-
-  hCorrYieldNormal->DrawCopy("AXIS");
-  ftsallis13TeV->Draw("SAME");
-  hCorrYieldNormal->DrawCopy("SAME");
-  hCorrYieldBetterBkgNN->DrawCopy("SAME");
-  leg_yield_tsallis->Draw("SAME");
-  canInvMass->Update();
-  DrawLabelALICE(0.6, 0.85, 0.035, 0.025*3./2., "");
-  pad1InvMass->Update();
-
-
-  TH1D* hYield_ratio_func_to_tsallis = (TH1D*) hCorrectedYieldNormEff->Clone("hYield_dt_chi2map_corrected_ratio");
-  hYield_ratio_func_to_tsallis->Divide(fitBylikin13TeV);
-  hYield_ratio_func_to_tsallis->SetLineColor(kBlack);
-  hYield_ratio_func_to_tsallis->SetMarkerColor(kBlack);
-  hYield_ratio_func_to_tsallis->SetYTitle("Ratio");
-
-  TH1D* hYield_ratio_norm_to_tsallis = (TH1D*) hCorrYieldNormal->Clone("hYield_dt_chi2map_corrected_ratio");
-  hYield_ratio_norm_to_tsallis->Divide(hCorrectedYieldNormEff);
-  hYield_ratio_norm_to_tsallis->SetLineColor(kRed);
-  hYield_ratio_norm_to_tsallis->SetMarkerColor(kRed);
-  hYield_ratio_norm_to_tsallis->SetYTitle("Ratio");
-
-  TH1D* hYield_ratio_NN_to_tsallis = (TH1D*) hCorrYieldBetterBkgNN->Clone("hYield_dt_chi2map_corrected_ratio");
-  hYield_ratio_NN_to_tsallis->Divide(hCorrectedYieldNormEff);
-  hYield_ratio_NN_to_tsallis->SetLineColor(kGreen+3);
-  hYield_ratio_NN_to_tsallis->SetMarkerColor(kGreen+3);
-  hYield_ratio_NN_to_tsallis->SetYTitle("Ratio");
-
-  TH1D* hYield_ratio_3to8_to_tsallis = (TH1D*) hCorrYieldBetterBkg3to8->Clone("hYield_dt_chi2map_corrected_ratio");
-  hYield_ratio_3to8_to_tsallis->Divide(hCorrectedYieldNormEff);
-  hYield_ratio_3to8_to_tsallis->SetLineColor(kBlue+2);
-  hYield_ratio_3to8_to_tsallis->SetMarkerColor(kBlue+2);
-  hYield_ratio_3to8_to_tsallis->SetYTitle("Ratio");
-
-
-  hYield_ratio_norm_to_tsallis->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-  hYield_ratio_norm_to_tsallis->GetXaxis()->SetTitleOffset(1.0);
-  hYield_ratio_norm_to_tsallis->GetXaxis()->SetLabelOffset(0.008);
-  hYield_ratio_norm_to_tsallis->GetYaxis()->SetTitleOffset(0.8);
-  hYield_ratio_norm_to_tsallis->GetYaxis()->SetLabelOffset(0.008);
-
-  hYield_ratio_norm_to_tsallis->GetXaxis()->SetRangeUser(1.4, 12.0);
-  //changed
-  hYield_ratio_norm_to_tsallis->GetYaxis()->SetRangeUser(0.84, 1.15); //(0.84, 1.15)
-  hYield_ratio_norm_to_tsallis->GetXaxis()->SetTitleSize(0.025*3./1.);
-  hYield_ratio_norm_to_tsallis->GetYaxis()->SetTitleSize(0.025*3./1.);
-  hYield_ratio_norm_to_tsallis->GetXaxis()->SetLabelSize(0.025*3./1.);
-  hYield_ratio_norm_to_tsallis->GetYaxis()->SetLabelSize(0.025*3./1.);
-
-  hYield_ratio_norm_to_tsallis->GetXaxis()->SetTitleFont(42);
-  hYield_ratio_norm_to_tsallis->GetYaxis()->SetTitleFont(42);
-  hYield_ratio_norm_to_tsallis->GetXaxis()->SetLabelFont(42);
-  hYield_ratio_norm_to_tsallis->GetYaxis()->SetLabelFont(42);
-
-  pad2InvMass->cd();
-
-  hYield_ratio_norm_to_tsallis->DrawCopy("AXIS");
-  line_ratio1->Draw("SAME");
-  // hYield_ratio_norm_to_tsallis->DrawCopy("SAME P");
-  hYield_ratio_NN_to_tsallis->DrawCopy("SAME P");
-  hYield_ratio_3to8_to_tsallis->DrawCopy("SAME P");
-  // hYield_ratio_func_to_tsallis->DrawCopy("SAME P");
-  pad2InvMass->Update();
-
-  pad2InvMass->SetTickx();
-  pad2InvMass->SetTicky();
-
-  pad2InvMass->Update();
-
-  canInvMass->Update();
-  canInvMass->SaveAs(Form("Systematics/CorrectedYieldTsallis." + PicFormat));
-  canInvMass->Clear("D");
-
-  delete ftsallis13TeV;
+//   canInvMass->cd();
+//   pad1InvMass->Draw();
+//   pad2InvMass->Draw("same");
+//   pad1InvMass->cd();
+//   pad1InvMass->SetTickx();
+//   pad1InvMass->SetTicky();
+//
+//   pad1InvMass->SetLogy(1);
+//
+//   TLegend* leg_yield_bylikin = new TLegend(0.2,0.07,0.35,0.3);
+//   SetLegendSettigns(leg_yield_bylikin, 0.025*3./2.);
+//   leg_yield_bylikin->SetHeader("parametrization method:");
+//   leg_yield_bylikin->AddEntry(hCorrYieldBetterBkg3to8Pulse, "templates (normal)" , "lp");
+//   leg_yield_bylikin->AddEntry(hCorrYieldBetterBkg3to8, "templates (3 to 8)" , "lp");
+//   leg_yield_bylikin->AddEntry(hCorrYieldBetterBkgNN, "templates (next neighbours)" , "lp");
+//   leg_yield_bylikin->AddEntry(fitBylikin13TeV, "Bylikin", "lp");
+//   hCorrectedYieldNormEff->SetMarkerSize(1.5);
+//
+//
+//   hCorrYieldBetterBkg3to8Pulse->DrawCopy("AXIS");
+//   hCorrectedYieldNormEff->DrawCopy("SAME");
+//   fitBylikin13TeV->Draw("SAME");
+//   fitBylikin13TeV_3to8->Draw("SAME");
+//   hCorrYieldBetterBkg3to8Pulse->DrawCopy("SAME");
+//   hCorrYieldBetterBkg3to8->DrawCopy("SAME");
+//   hCorrYieldBetterBkgNN->DrawCopy("SAME");
+//   leg_yield_bylikin->Draw("SAME");
+//   canInvMass->Update();
+//   DrawLabelALICE(0.6, 0.85, 0.035, 0.025*3./2., "");
+//   pad1InvMass->Update();
+//
+//
+//   TH1D* hYield_ratio_func_to_bylikin = (TH1D*) hCorrectedYieldNormEff->Clone("hCorrYieldBetterBkg3to8Pulse_Ratio");
+//   hYield_ratio_func_to_bylikin->Divide(fitBylikin13TeV);
+//   hYield_ratio_func_to_bylikin->SetLineColor(kBlack);
+//   hYield_ratio_func_to_bylikin->SetMarkerColor(kBlack);
+//   hYield_ratio_func_to_bylikin->SetMarkerStyle(20);
+//   hYield_ratio_func_to_bylikin->SetMarkerSize(1.5);
+//   hYield_ratio_func_to_bylikin->SetYTitle("Ratio");
+//
+//   TH1D* hYield_ratio_norm_to_bylikin = (TH1D*) hCorrYieldBetterBkg3to8Pulse->Clone("hCorrYieldBetterBkg3to8Pulse_Ratio");
+//   hYield_ratio_norm_to_bylikin->Divide(hCorrectedYieldNormEff);
+//   hYield_ratio_norm_to_bylikin->SetLineColor(kRed);
+//   hYield_ratio_norm_to_bylikin->SetMarkerColor(kRed);
+//   hYield_ratio_norm_to_bylikin->SetYTitle("Ratio");
+//
+//   TH1D* hYield_ratio_NN_to_bylikin = (TH1D*) hCorrYieldBetterBkgNN->Clone("hCorrYieldBetterBkg3to8Pulse_Ratio");
+//   hYield_ratio_NN_to_bylikin->Divide(hCorrectedYieldNormEff);
+//   hYield_ratio_NN_to_bylikin->SetLineColor(kGreen+3);
+//   hYield_ratio_NN_to_bylikin->SetMarkerColor(kGreen+3);
+//   hYield_ratio_NN_to_bylikin->SetYTitle("Ratio");
+//
+//   TH1D* hYield_ratio_3to8_to_bylikin = (TH1D*) hCorrYieldBetterBkg3to8->Clone("hCorrYieldBetterBkg3to8Pulse_Ratio");
+//   hYield_ratio_3to8_to_bylikin->Divide(hCorrectedYieldNormEff);
+//   hYield_ratio_3to8_to_bylikin->SetLineColor(kBlue+2);
+//   hYield_ratio_3to8_to_bylikin->SetMarkerColor(kBlue+2);
+//   hYield_ratio_3to8_to_bylikin->SetYTitle("Ratio");
+//
+//   Int_t nb = 36;
+//   Int_t inside = 0;
+//   for(int y = 1; y <= 36; y++){
+//     Double_t bc = hYield_ratio_3to8_to_bylikin->GetBinContent(y);
+//     if(bc < 1.0){
+//       if(bc + hYield_ratio_3to8_to_bylikin->GetBinError(y) >= 1.0){
+//         inside++;
+//       }
+//     }
+//     else{
+//       if(bc - hYield_ratio_3to8_to_bylikin->GetBinError(y) <= 1.0){
+//         inside++;
+//       }
+//     }
+//   }
+// std::cout << "percantage of Bins inside of 1sigma range: " << (Double_t)inside/(Double_t)nb << '\n';
+// std::cout << "number of Bins inside of 1sigma range: " << inside << '\n';
+//
+//   hYield_ratio_norm_to_bylikin->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+//   hYield_ratio_norm_to_bylikin->GetXaxis()->SetTitleOffset(1.0);
+//   hYield_ratio_norm_to_bylikin->GetXaxis()->SetLabelOffset(0.008);
+//   hYield_ratio_norm_to_bylikin->GetYaxis()->SetTitleOffset(0.8);
+//   hYield_ratio_norm_to_bylikin->GetYaxis()->SetLabelOffset(0.008);
+//
+//   //changed
+//   hYield_ratio_norm_to_bylikin->GetXaxis()->SetRangeUser(1.4, 12.0);
+//   hYield_ratio_norm_to_bylikin->GetYaxis()->SetRangeUser(0.84, 1.17); //(0.84, 1.17)
+//   hYield_ratio_norm_to_bylikin->GetXaxis()->SetTitleSize(0.025*3./1.);
+//   hYield_ratio_norm_to_bylikin->GetYaxis()->SetTitleSize(0.025*3./1.);
+//   hYield_ratio_norm_to_bylikin->GetXaxis()->SetLabelSize(0.025*3./1.);
+//   hYield_ratio_norm_to_bylikin->GetYaxis()->SetLabelSize(0.025*3./1.);
+//
+//   hYield_ratio_norm_to_bylikin->GetXaxis()->SetTitleFont(42);
+//   hYield_ratio_norm_to_bylikin->GetYaxis()->SetTitleFont(42);
+//   hYield_ratio_norm_to_bylikin->GetXaxis()->SetLabelFont(42);
+//   hYield_ratio_norm_to_bylikin->GetYaxis()->SetLabelFont(42);
+//
+//   pad2InvMass->cd();
+//
+//   hYield_ratio_norm_to_bylikin->DrawCopy("AXIS");
+//   line_ratio1->Draw("SAME");
+//   // fBylikinRatio->Draw("SAME");
+//   // hYield_ratio_norm_to_bylikin->DrawCopy("SAME P");
+//   hYield_ratio_NN_to_bylikin->DrawCopy("SAME P");
+//   hYield_ratio_3to8_to_bylikin->DrawCopy("SAME P");
+//   // hYield_ratio_func_to_bylikin->DrawCopy("SAME P");
+//   pad2InvMass->Update();
+//
+//   pad2InvMass->SetTickx();
+//   pad2InvMass->SetTicky();
+//
+//   pad2InvMass->Update();
+//
+//   canInvMass->Update();
+//   canInvMass->SaveAs(Form("Systematics/CorrectedYieldBylikin." + PicFormat));
+//   canInvMass->Clear("D");
+//
+//   delete leg_yield_bylikin;
+//
+//   ////////////////////////////////////////////////////////////////////////////
+//   // drwaing yields + ratio to Tsallis
+//   canInvMass->cd();
+//   pad1InvMass->Draw();
+//   pad2InvMass->Draw("same");
+//   pad1InvMass->cd();
+//   pad1InvMass->SetTickx();
+//   pad1InvMass->SetTicky();
+//
+//   pad1InvMass->SetLogy(1);
+//
+//   TLegend* leg_yield_tsallis = new TLegend(0.2,0.07,0.35,0.3);
+//   SetLegendSettigns(leg_yield_tsallis, 0.025*3./2.);
+//   leg_yield_tsallis->SetHeader("parametrization method:");
+//   leg_yield_tsallis->AddEntry(hCorrYieldBetterBkg3to8Pulse, "templates (normal)" , "lp");
+//   leg_yield_tsallis->AddEntry(hCorrYieldBetterBkg3to8, "templates (3 to 8)" , "lp");
+//   leg_yield_tsallis->AddEntry(hCorrYieldBetterBkgNN, "templates (next neighbours)" , "lp");
+//   leg_yield_tsallis->AddEntry(ftsallis13TeV, "Tsallis", "lp");
+//   hCorrectedYieldNormEff->SetMarkerSize(1.5);
+//
+//
+//   hCorrYieldBetterBkg3to8Pulse->DrawCopy("AXIS");
+//   ftsallis13TeV->Draw("SAME");
+//   hCorrYieldBetterBkg3to8Pulse->DrawCopy("SAME");
+//   hCorrYieldBetterBkgNN->DrawCopy("SAME");
+//   leg_yield_tsallis->Draw("SAME");
+//   canInvMass->Update();
+//   DrawLabelALICE(0.6, 0.85, 0.035, 0.025*3./2., "");
+//   pad1InvMass->Update();
+//
+//
+//   TH1D* hYield_ratio_func_to_tsallis = (TH1D*) hCorrectedYieldNormEff->Clone("hCorrYieldBetterBkg3to8Pulse_Ratio");
+//   hYield_ratio_func_to_tsallis->Divide(fitBylikin13TeV);
+//   hYield_ratio_func_to_tsallis->SetLineColor(kBlack);
+//   hYield_ratio_func_to_tsallis->SetMarkerColor(kBlack);
+//   hYield_ratio_func_to_tsallis->SetYTitle("Ratio");
+//
+//   TH1D* hYield_ratio_norm_to_tsallis = (TH1D*) hCorrYieldBetterBkg3to8Pulse->Clone("hCorrYieldBetterBkg3to8Pulse_Ratio");
+//   hYield_ratio_norm_to_tsallis->Divide(hCorrectedYieldNormEff);
+//   hYield_ratio_norm_to_tsallis->SetLineColor(kRed);
+//   hYield_ratio_norm_to_tsallis->SetMarkerColor(kRed);
+//   hYield_ratio_norm_to_tsallis->SetYTitle("Ratio");
+//
+//   TH1D* hYield_ratio_NN_to_tsallis = (TH1D*) hCorrYieldBetterBkgNN->Clone("hCorrYieldBetterBkg3to8Pulse_Ratio");
+//   hYield_ratio_NN_to_tsallis->Divide(hCorrectedYieldNormEff);
+//   hYield_ratio_NN_to_tsallis->SetLineColor(kGreen+3);
+//   hYield_ratio_NN_to_tsallis->SetMarkerColor(kGreen+3);
+//   hYield_ratio_NN_to_tsallis->SetYTitle("Ratio");
+//
+//   TH1D* hYield_ratio_3to8_to_tsallis = (TH1D*) hCorrYieldBetterBkg3to8->Clone("hCorrYieldBetterBkg3to8Pulse_Ratio");
+//   hYield_ratio_3to8_to_tsallis->Divide(hCorrectedYieldNormEff);
+//   hYield_ratio_3to8_to_tsallis->SetLineColor(kBlue+2);
+//   hYield_ratio_3to8_to_tsallis->SetMarkerColor(kBlue+2);
+//   hYield_ratio_3to8_to_tsallis->SetYTitle("Ratio");
+//
+//
+//   hYield_ratio_norm_to_tsallis->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+//   hYield_ratio_norm_to_tsallis->GetXaxis()->SetTitleOffset(1.0);
+//   hYield_ratio_norm_to_tsallis->GetXaxis()->SetLabelOffset(0.008);
+//   hYield_ratio_norm_to_tsallis->GetYaxis()->SetTitleOffset(0.8);
+//   hYield_ratio_norm_to_tsallis->GetYaxis()->SetLabelOffset(0.008);
+//
+//   hYield_ratio_norm_to_tsallis->GetXaxis()->SetRangeUser(1.4, 12.0);
+//   //changed
+//   hYield_ratio_norm_to_tsallis->GetYaxis()->SetRangeUser(0.84, 1.15); //(0.84, 1.15)
+//   hYield_ratio_norm_to_tsallis->GetXaxis()->SetTitleSize(0.025*3./1.);
+//   hYield_ratio_norm_to_tsallis->GetYaxis()->SetTitleSize(0.025*3./1.);
+//   hYield_ratio_norm_to_tsallis->GetXaxis()->SetLabelSize(0.025*3./1.);
+//   hYield_ratio_norm_to_tsallis->GetYaxis()->SetLabelSize(0.025*3./1.);
+//
+//   hYield_ratio_norm_to_tsallis->GetXaxis()->SetTitleFont(42);
+//   hYield_ratio_norm_to_tsallis->GetYaxis()->SetTitleFont(42);
+//   hYield_ratio_norm_to_tsallis->GetXaxis()->SetLabelFont(42);
+//   hYield_ratio_norm_to_tsallis->GetYaxis()->SetLabelFont(42);
+//
+//   pad2InvMass->cd();
+//
+//   hYield_ratio_norm_to_tsallis->DrawCopy("AXIS");
+//   line_ratio1->Draw("SAME");
+//   // hYield_ratio_norm_to_tsallis->DrawCopy("SAME P");
+//   hYield_ratio_NN_to_tsallis->DrawCopy("SAME P");
+//   hYield_ratio_3to8_to_tsallis->DrawCopy("SAME P");
+//   // hYield_ratio_func_to_tsallis->DrawCopy("SAME P");
+//   pad2InvMass->Update();
+//
+//   pad2InvMass->SetTickx();
+//   pad2InvMass->SetTicky();
+//
+//   pad2InvMass->Update();
+//
+//   canInvMass->Update();
+//   canInvMass->SaveAs(Form("Systematics/CorrectedYieldTsallis." + PicFormat));
+//   canInvMass->Clear("D");
+//
+//   delete ftsallis13TeV;
 
   delete line_ratio1;
-  delete hCorrYieldNormal;
+  delete hCorrYieldBetterBkg3to8Pulse;
   delete cStatUnc;
   // delete hCorrYield_count0d06to0d225;
   // delete hCorrYield_count0d1to0d225;
