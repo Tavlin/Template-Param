@@ -214,9 +214,9 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
          */
         hCorrBack                = (TH1D*) OutputFile->Get(Form("hCorrBack_bin%02d",k));
 
-        SetHistoStandardSettings(hData,     1.2, 1., 35, black);
-        SetHistoStandardSettings(hSignal,   1.2, 1., 35, teal-7);
-        SetHistoStandardSettings(hCorrBack, 1.2, 1., 35, pink-2);
+        SetHistoStandardSettings(hData,     1.2, 1., 32, black);
+        SetHistoStandardSettings(hSignal,   1.2, 1., 32, teal-7);
+        SetHistoStandardSettings(hCorrBack, 1.2, 1., 32, pink-2);
 
 
         if(wpsid == "all" || wpsid.Contains("chi2map")){
@@ -224,17 +224,19 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
           // Drawing Chi2 maps
           c2->cd();
 
-          TLegend* lChi2Map = new TLegend(0.6,0.85,0.9,0.9);
-          SetLegendSettigns(lChi2Map, 35);
+          TLegend* lChi2Map = new TLegend(0.5,0.85,0.8,0.9);
+          SetLegendSettigns(lChi2Map, 32);
           lChi2Map->AddEntry((TObject*) 0x0, str, ""),
 
           SetHistoStandardSettings2(hChi2_2D);
+          hChi2_2D->GetZaxis()->SetTitleOffset(0.8);
 
           hChi2_2D->Draw("COLZ");
           hChi2_2D_sigma->SetLineColor(kWhite);
           hChi2_2D_sigma->SetLineWidth(2);
           hChi2_2D_sigma->SetContour(2, somelist);
           hChi2_2D_sigma->Draw("SAME CONT3");
+          lChi2Map->Draw("SAME");
           c2->Update();
 
           c2->Update();
@@ -258,7 +260,7 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
         if(wpsid == "all" || wpsid.Contains("chi2map")){
           c1->cd();
           TLegend* lParamResultParts = new TLegend(0.6,0.5,0.9,0.63);
-          SetLegendSettigns(lParamResultParts, 35);
+          SetLegendSettigns(lParamResultParts, 32);
           lParamResultParts->   AddEntry(hData, "Data", "l");
           TH1D* hAdded          = NULL;
           TH1D* hSignal_Clone   = NULL;
@@ -284,12 +286,13 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
           lParamResultParts->   AddEntry(paramrange, "Parametrization range",  "l");
 
           hData->             Draw("SAME");
-          hSignal_Clone->     Draw("SAME")
+          hSignal_Clone->     Draw("SAME");
           hSignal_Clone->     Draw("SAME HIST");
           hCorrBack_Clone->   Draw("SAME");
           hCorrBack_Clone->   Draw("SAME HIST");
+          paramrange->        Draw("SAME");
           lParamResultParts-> Draw("SAME");
-          DrawLabelALICE(0.6, 0.9, 0.02, 35, str);
+          DrawLabelALICE(0.6, 0.9, 0.02, 32, str);
 
           c1->Update();
 
@@ -305,19 +308,21 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
           }
           c1->Clear();
           TLegend* lParamResult = new TLegend(0.6,0.5,0.9,0.63);
-          SetLegendSettigns(lParamResulParts, 35);
-          lParamResulParts->AddEntry(hData, "Data", "l");
-          lParamResulParts->AddEntry((TObject*) 0x0, "Parametrization:", "");
-          lParamResulParts->AddEntry(hAdded, "Template", "l");
-          lParamResultParts->AddEntry(paramrange, "Range",  "l");
+          SetLegendSettigns(lParamResult, 32);
+          lParamResult->AddEntry(hData, "Data", "l");
+          lParamResult->AddEntry((TObject*) 0x0, "Parametrization:", "");
+          lParamResult->AddEntry(hAdded, "Template", "l");
+          lParamResult->AddEntry(paramrange, "Range",  "l");
 
 
           c1->Update();
           hData->             Draw("AXIS");
           hData->             Draw("SAME");
           hAdded->            Draw("SAME");
-          lParamResultParts-> Draw("SAME");
-          DrawLabelALICE(0.6, 0.9, 0.02, 35, str);
+          hAdded->            Draw("SAME HIST");
+          lParamResult->      Draw("SAME");
+          paramrange->        Draw("SAME");
+          DrawLabelALICE(0.6, 0.9, 0.02, 32, str);
           c1->Update();
 
           if(templatemethod == 2){
@@ -347,14 +352,14 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
      */
     if(wpsid == "all" || wpsid.Contains("chi2")){
       TLegend* leg2 = new TLegend(0.6,0.75,0.9,0.9);
-      SetLegendSettigns(leg2);
-      leg2->AddHeader("Parametrization with:");
+      SetLegendSettigns(leg2, 32);
+      leg2->SetHeader("Parametrization with:");
       leg2->AddEntry(hChi2Map_Chi2_pT, TempStr, "l");
       leg2->AddEntry(histoChi2_0, "function", "l");
 
 
-      SetHistoStandardSettings(hChi2Map_Chi2_pT, 1.2, 1., 35, magenta-2);
-      SetHistoStandardSettings(histoChi2_0     , 1.2, 1., 35, black);
+      SetHistoStandardSettings(hChi2Map_Chi2_pT, 1.2, 1., 32, magenta-2);
+      SetHistoStandardSettings(histoChi2_0     , 1.2, 1., 32, black);
       hChi2Map_Chi2_pT->GetXaxis()->SetRangeUser(1.4, 12.);
       histoChi2_0->     GetXaxis()->SetRangeUser(1.4, 12.);
 
@@ -367,7 +372,7 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
       hChi2Map_Chi2_pT->Draw("SAME HIST");
       hChi2Map_Chi2_pT->Draw("SAME P");
       leg2->            Draw("same");
-      DrawLabelALICE(0.2, 0.9, 0.018, 35);
+      DrawLabelALICE(0.2, 0.9, 0.018, 32);
 
 
       c1->Update();

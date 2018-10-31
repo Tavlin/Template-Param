@@ -16,11 +16,15 @@ for i in {1..3..1}
     time root -l -q -b Template_CAP.C++\(\"$DIR\",$i\)
   done
 
-# rm -r BetterBkgNN
-# mkdir BetterBkgNN
-# rm -r BetterBkg3to8
-# mkdir BetterBkg3to8
-# rm -r BetterBkg3to8Pulse
-# mkdir BetterBkg3to8Pulse
+rm -r BetterBkgNN
+mkdir BetterBkgNN
+rm -r BetterBkg3to8
+mkdir BetterBkg3to8
+rm -r BetterBkg3to8Pulse
+mkdir BetterBkg3to8Pulse
 
-# time root -l -q -b TemplatePlotting.C++\(\"$1\",\"$2\"\)
+time root -l -q -b TemplatePlotting.C++\(\"$1\",\"$2\"\)
+
+rm -r Systematics
+mkdir Systematics
+time root -l -q -b Systematics.C++\(\"$2\"\)

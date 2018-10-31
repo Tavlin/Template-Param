@@ -89,18 +89,18 @@ TH2D* Chi2MapFunction(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi
   // Testing needed!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   if(templatemethod == 1){
     if(pT < 6.){
-      dx = 0.004;;
+      dx = 0.0032;
       dy = 0.004;
     }
     else{
-      dx = 0.004;; //0.001;
-      dy = 0.002; //0.003;
+      dx = 0.0032; //0.001;
+      dy = 0.0002; //0.003;
     }
   }
   else
   {
-    dx = 0.004;;
-    dy = 0.004;;
+    dx = 0.0032;
+    dy = 0.004;
   }
   Double_t temp_error = 0;                  // Fehlervariable fuer die Templates
   int binnumber2D     = 500;                // Binzahl ~ Feinheit der Suche
@@ -108,21 +108,21 @@ TH2D* Chi2MapFunction(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi
 
   if(templatemethod != 2){
     if(pT < 6.){
-      hChi2map = new TH2D("hChi2map", "", binnumber2D, 0.0, 2.0, binnumber2D, 0.0, 2.0);
+      hChi2map = new TH2D("hChi2map", "", binnumber2D, 0.4, 2.0, binnumber2D, 0.0, 2.0);
       SetHistoStandardSettings2(hChi2map);
     }
 
     else{
-      hChi2map = new TH2D("hChi2map", "", binnumber2D, 0.0, 2.0, binnumber2D, 0.0, 1.0);
+      hChi2map = new TH2D("hChi2map", "", binnumber2D, 0.4, 2.0, binnumber2D, 0.0, 0.1);
       SetHistoStandardSettings2(hChi2map);
     }
   }
   else{
-    hChi2map = new TH2D("hChi2map", "", binnumber2D, 0.0, 2.0, binnumber2D, 0.0, 2.0);
+    hChi2map = new TH2D("hChi2map", "", binnumber2D, 0.4, 2.0, binnumber2D, 0.0, 2.0);
     SetHistoStandardSettings2(hChi2map);
   }
-  hChi2map->SetXTitle("signal scaling factor");
-  hChi2map->SetYTitle("corr. back. scaling factor");
+  hChi2map->SetXTitle("Signal scaling factor");
+  hChi2map->SetYTitle("Corr. bkg. scaling factor");
   hChi2map->SetZTitle("#chi^{2}");
 
   TH1D* hData_clone = (TH1D*) hData->Clone("hData");
@@ -229,12 +229,12 @@ TH2D* Chi2MapFunction(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi
       ndf = upperfitrange-lowerfitrange-3;
       chi2 = 0;
       chi2 = Chi2Calc(hSignal_clone, hCorrback_clone, hData_clone, ndf,
-        dx* ((Double_t)ix), dy*(Double_t)iy, templatemethod, binnumber,
+        dx* ((Double_t)ix+125), dy*(Double_t)iy, templatemethod, binnumber,
         fPulse_eval, sigma_cons);
 
       if(chi2 < chi2_min_temp){
         chi2_min_temp = chi2;
-        x_min = (Double_t)(ix)*dx;
+        x_min = (Double_t)(ix+125)*dx;
         y_min = (Double_t)(iy)*dy;
       }
       hChi2map->SetBinContent(ix+1, iy+1, chi2);
