@@ -135,6 +135,7 @@ void Template_CAP(std::string current_path, int templatemethod){
   TFile* BkgFile                  = NULL; // Self makde lower stat. Bkg File
   TFile* MCFile                   = NULL; // File containig the MC outcome
   TFile* DataFile                 = NULL; // File containig the data outcome
+  TFile* CorrBkgFile              = NULL; // File that contains the corr. bkg
   TFile* CorrectionFile           = NULL; // File which contains the correction-
                                           // histograms for effi and acceptance
 
@@ -213,6 +214,7 @@ void Template_CAP(std::string current_path, int templatemethod){
     hInvMass_MC   = NULL;
     hPeak_MC      = NULL;
     hInvMass_Data = NULL;
+    CorrBkgFile   = NULL;
     hCorrBkg      = NULL;
 
     /**
@@ -258,7 +260,15 @@ void Template_CAP(std::string current_path, int templatemethod){
     }
 
     else if(templatemethod == 2){
+      hCorrBkg = NULL;
       hCorrBkg = BackgroundAdding(k);
+    }
+    else if(templatemethod == 4){
+
+      CorrBkgFile = SafelyOpenRootfile("CorrBkgFile3to8.root");
+      hCorrBkg    = NULL;
+      hCorrBkg    = (TH1D*) CorrBkgFile->Get(Form("hCorrBkgBin%02d", k));
+      hCorrBkg->Rebin(fBinsPi013TeVEMCPtRebin[k-1]);
     }
     else{
       std::cerr << "templatemethod not found!" << '\n';
@@ -350,6 +360,9 @@ void Template_CAP(std::string current_path, int templatemethod){
       else if(templatemethod == 3){
         OutputFile      = new TFile("OutputFileBetterBkgPulse.root", "RECREATE");
       }
+      else if(templatemethod == 4){
+        OutputFile      = new TFile("OutputFileNormal.root", "RECREATE");
+      }
       else{
         std::cerr << "templatemethod not found!" << '\n';
         exit(1);
@@ -365,6 +378,9 @@ void Template_CAP(std::string current_path, int templatemethod){
       }
       else if(templatemethod == 3){
         OutputFile      = new TFile("OutputFileBetterBkgPulse.root", "UPDATE");
+      }
+      else if(templatemethod == 4){
+        OutputFile      = new TFile("OutputFileNormal.root", "UPDATE");
       }
       else{
         std::cerr << "templatemethod not found!" << '\n';
@@ -429,6 +445,9 @@ void Template_CAP(std::string current_path, int templatemethod){
 
     MCFile->Close();
     DataFile->Close();
+    if(templatemethod == 4){
+      CorrBkgFile->Close();
+    }
 
     std::cout << "bin number " << k << " reading and writing... DONE!" << "\n\n";
   }
@@ -487,6 +506,10 @@ void Template_CAP(std::string current_path, int templatemethod){
   hErrYhigh->SetYTitle("upper corr. back. scaling factor uncertainty");
   hErrYhigh->SetXTitle("#it{p}_{T} (GeV/#it{c})");
 
+  TH1D* hEfficiency = new TH1D("hEfficiency", "", numberbins, fBinsPi013TeVEMCPt);
+  hEfficiency->SetYTitle("#epsilon_{rek}");
+  hEfficiency->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+
 
   for (int k = 1; k < numberbins; ++k) {
     hChi2Map_Chi2_pT->SetBinContent(k+1, vChi2_DT_Chi2Map[k-1]/vNDF_DT_Chi2Map[k-1]);
@@ -505,6 +528,7 @@ void Template_CAP(std::string current_path, int templatemethod){
     h_y_min->SetBinError(k+1,
     max(hErrYhigh->GetBinContent(k+1) - h_y_min->GetBinContent(k+1),
     h_y_min->GetBinContent(k+1) - hErrYlow->GetBinContent(k+1)));
+    hEfficiency->SetBinContent(k+1, vInIntRangePercent[k-1]);
   }
 
   /**
@@ -518,6 +542,9 @@ void Template_CAP(std::string current_path, int templatemethod){
   }
   else if(templatemethod == 3){
     OutputFile      = new TFile("OutputFileBetterBkgPulse.root", "UPDATE");
+  }
+  else if(templatemethod == 4){
+    OutputFile      = new TFile("OutputFileNormal.root", "UPDATE");
   }
   else{
     std::cerr << "templatemethod not found!" << '\n';
@@ -628,6 +655,9 @@ void Template_CAP(std::string current_path, int templatemethod){
   hErrYlow->                              Write("hErrYlow");
   hErrYhigh->                             Write("hErrYhigh");
   histoChi2_0->                           Write("histoChi2_0");
+  hEfficiency->                           Write("hEfficiency");
+  hEffi->                                 Write("TrueMesonEffiPt");
+  hAcc->                                  Write("hAcc");
 
   /**
    * Garbage collection part 2.
@@ -645,6 +675,7 @@ void Template_CAP(std::string current_path, int templatemethod){
   delete hErrYhigh;
   delete hYield_framework;
   delete histoChi2_0;
+  delete hEfficiency;
 
   /**
    * clearing all the vectors and freeing memory. Maybe not needed. I dunno

@@ -57,26 +57,34 @@ Int_t fBinsPi013TeVEMCPtRebin[39]               =   {4, 4, 4, 4, 4,    4, 4, 4, 
 /**
  * parametrisation- and counting intervall boarders.
  */
-Double_t lowerparamrange[38] = {0.0195, 0.0205, 0.0225, 0.0235, 0.0255,
-                                0.0275, 0.0285, 0.0305, 0.0315, 0.0335,
-                                0.0355, 0.0365, 0.0385, 0.0395, 0.0415,
+Double_t lowerparamrange[38] = {0.0395, 0.0395, 0.0395, 0.0395, 0.0395,
+                                0.0395, 0.0395, 0.0395, 0.0395, 0.0395,
+                                0.0395, 0.0395, 0.0395, 0.0395, 0.0415,
                                 0.0425, 0.0445, 0.0465, 0.0475, 0.0495,
                                 0.0515, 0.0525, 0.0545, 0.0555, 0.0575,
                                 0.0595, 0.0605, 0.0625, 0.0645, 0.0675,
                                 0.0715, 0.0755, 0.0795, 0.0835, 0.0895,
                                 0.1015, 0.1175, 0.1365};
-const Double_t upperparamrange  = 0.3;
+                                // {0.0195, 0.0205, 0.0225, 0.0235, 0.0255,
+                                //  0.0275, 0.0285, 0.0305, 0.0315, 0.0335,
+                                //  0.0355, 0.0365, 0.0385, 0.0395, 0.0415,
+                                //  0.0425, 0.0445, 0.0465, 0.0475, 0.0495,
+                                //  0.0515, 0.0525, 0.0545, 0.0555, 0.0575,
+                                //  0.0595, 0.0605, 0.0625, 0.0645, 0.0675,
+                                //  0.0715, 0.0755, 0.0795, 0.0835, 0.0895,
+                                //  0.1015, 0.1175, 0.1365};
+const Double_t upperparamrange  = 0.25;
 
 
-Double_t lowercountrange[38] = {0.0195, 0.0205, 0.0225, 0.0235, 0.0255,
-                                0.0275, 0.0285, 0.0305, 0.0315, 0.0335,
-                                0.0355, 0.0365, 0.0385, 0.0395, 0.0415,
+Double_t lowercountrange[38] = {0.0395, 0.0395, 0.0395, 0.0395, 0.0395,
+                                0.0395, 0.0395, 0.0395, 0.0395, 0.0395,
+                                0.0395, 0.0395, 0.0395, 0.0395, 0.0415,
                                 0.0425, 0.0445, 0.0465, 0.0475, 0.0495,
                                 0.0515, 0.0525, 0.0545, 0.0555, 0.0575,
                                 0.0595, 0.0605, 0.0625, 0.0645, 0.0675,
                                 0.0715, 0.0755, 0.0795, 0.0835, 0.0895,
                                 0.1015, 0.1175, 0.1365};
-const Double_t uppercountrange  = 0.3;
+const Double_t uppercountrange  = 0.25;
 
 const Int_t kMaxHit             = 2000;
 const int numberbins            = 39;           // number of actual used pT Bins
@@ -97,6 +105,12 @@ TLegend *legiter                = NULL;
 TLatex* chi_and_param42         = NULL;
 TH1D* mc_full_clone42           = NULL;
 TH1D* korrBG_clone42            = NULL;
+
+/**
+ * definition of the color coding. This is needed to give the
+ * SetHistoStandardSettings Function the option to change the color of the
+ * histogram, since EColor, the type of the kBlack and so furth won't work.
+ */
 const int black   = 1;
 const int teal    = 840;
 const int red     = 632;

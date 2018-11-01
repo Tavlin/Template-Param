@@ -10,7 +10,7 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
   * templatemethod == 1 for 3 to 8 Method
   * templatemethod == 2 for BetterBkg3to8Pulse method
   */
-  for (int templatemethod = 1; templatemethod <= 3; templatemethod++) {
+  for (int templatemethod = 1; templatemethod <= 4; templatemethod++) {
 
     TString str;
     const Int_t nbins = numberbins;
@@ -20,7 +20,7 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
 
     //////////////////////////////////////////////////////////////////////////////
     // setting up the canvas to draw on. Will later be changed for the chi2 pic
-    TCanvas *c1 = new TCanvas("c1","",1200,1000);
+    TCanvas *c1 = new TCanvas("c1","",1540,1417);
     c1->cd();
     c1->SetTopMargin(0.05);
     c1->SetBottomMargin(0.09);
@@ -32,7 +32,7 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
     TGaxis::SetMaxDigits(3);
     gStyle->SetOptStat(0);
 
-    TCanvas *c2 = new TCanvas("c2","",1200,1000);
+    TCanvas *c2 = new TCanvas("c2","",1540,1417);
     c2->cd();
     c2->SetTopMargin(0.05);
     c2->SetBottomMargin(0.09);
@@ -60,38 +60,45 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
     // well as peak factor comp. between pol 1 and double temp fit and the ratio
     // of BG. scaling factor and the Peak scaling factor
 
-    TH1D* hData = NULL;
-    TH1D* hPol1PeakFactor = NULL;
-    TH1D* hYield_dt_chi2map_uncorr = NULL;
-    TH2D* hChi2_2D = NULL;
-    TH2D* hChi2_2D_sigma = NULL;
-    TH1D* hChi2Map_Chi2_pT = NULL;
-    TH1D* histoChi2_0 = NULL;
-    TH1D* hSignalAreaScaling = NULL;
-    TH1D* hCorrbackAreaScaling = NULL;
+    TH1D* hData                       = NULL;
+    TH1D* hPol1PeakFactor             = NULL;
+    TH1D* hYield_dt_chi2map_uncorr    = NULL;
+    TH2D* hChi2_2D                    = NULL;
+    TH2D* hChi2_2D_sigma              = NULL;
+    TH1D* hChi2Map_Chi2_pT            = NULL;
+    TH1D* histoChi2_0                 = NULL;
+    TH1D* hSignalAreaScaling          = NULL;
+    TH1D* hCorrbackAreaScaling        = NULL;
     TH1D* hYield_dt_chi2map_corrected = NULL;
-    TH1D* hYield_pol1_corrected = NULL;
-    TH1D* hCorrectedYieldNormEff = NULL;
-    TH1D* h_x_min = NULL;
-    TH1D* h_y_min = NULL;
-    TH1D* hErrXlow = NULL;
-    TH1D* hErrXhigh = NULL;
-    TH1D* hErrYlow = NULL;
-    TH1D* hErrYhigh = NULL;
-    TH1D* hSignal = NULL;
-    TH1D* hCorrBack = NULL;
-    TF1* f_ChiOverNdf = NULL;
-    TLine* fitrange2 = NULL;
-    TLine* line_0 = NULL;
-    TLine* line_p1 = NULL;
-    TLine* line_m1 = NULL;
-    TLine* line_p3 = NULL;
-    TLine* line_m3 = NULL;
-    TLine* line_one = NULL;
+    TH1D* hYield_pol1_corrected       = NULL;
+    TH1D* hCorrectedYieldNormEff      = NULL;
+    TH1D* h_x_min                     = NULL;
+    TH1D* h_y_min                     = NULL;
+    TH1D* hErrXlow                    = NULL;
+    TH1D* hErrXhigh                   = NULL;
+    TH1D* hErrYlow                    = NULL;
+    TH1D* hErrYhigh                   = NULL;
+    TH1D* hSignal                     = NULL;
+    TH1D* hCorrBack                   = NULL;
+    TH1D* hGG                         = NULL;
+    TH1D* hGC                         = NULL;
+    TH1D* hCC                         = NULL;
+    TH1D* hInvMass_MC                 = NULL;
+    TH1D* hEfficiency                 = NULL;
+    TH1D* hAcc                        = NULL;
+    TF1* f_ChiOverNdf                 = NULL;
+    TLine* fitrange2                  = NULL;
+    TLine* line_0                     = NULL;
+    TLine* line_p1                    = NULL;
+    TLine* line_m1                    = NULL;
+    TLine* line_p3                    = NULL;
+    TLine* line_m3                    = NULL;
+    TLine* line_one                   = NULL;
 
     Double_t line_y = 0;
 
-
+    TFile* MCWithOutFile = NULL;
+    MCWithOutFile = SafelyOpenRootfile("./00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_MC_GammaConvV1WithoutCorrection_00010113_1111112067032220000_01631031000000d0.root");
     TFile* OutputFile = NULL;
     if(templatemethod == 2){
       OutputFile      = SafelyOpenRootfile("OutputFileBetterBkgNNforAdrian.root");
@@ -101,6 +108,9 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
     }
     else if(templatemethod == 3){
       OutputFile      = SafelyOpenRootfile("OutputFileBetterBkgPulse.root");
+    }
+    else if(templatemethod == 4){
+      OutputFile      = SafelyOpenRootfile("OutputFileNormal.root");
     }
     else{
       std::cerr << "No Outputfile loaded!" << std::endl;
@@ -152,6 +162,9 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
      * @param [name] [description]
      */
     h_y_min = (TH1D*)OutputFile->Get("h_y_min");
+    hEfficiency = (TH1D*) OutputFile->Get("hEfficiency");
+    hAcc = (TH1D*) OutputFile->Get("hAcc");
+
 
 
     line_0 = new TLine(0.0, 0.0, 0.4, 0.0);
@@ -174,7 +187,7 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
     line_m3->SetLineWidth(2);
     line_m3->SetLineStyle(2);
     line_m3->SetLineColor(kGray+2);
-    line_one = new TLine(0.0, 1.0, 20.0, 1.0);
+    line_one = new TLine(1.4, 1.0, 12.0, 1.0);
     line_one->SetLineWidth(2);
     line_one->SetLineStyle(3);
     line_one->SetLineColor(kBlack);
@@ -187,6 +200,12 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
     for (int k = 1; k < numberbins-1; k++) {
 
       if(binnumber <=  0 || binnumber > numberbins){
+
+        hGG                      = (TH1D*) MCWithOutFile->Get(Form("Mapping_TrueMesonCaloPhoton_InvMass_in_Pt_Bin%02d", k));
+        hGC                      = (TH1D*) MCWithOutFile->Get(Form("Mapping_TrueMesonMixedCaloConvPhoton_InvMass_in_Pt_Bin%02d", k));
+        hCC                      = (TH1D*) MCWithOutFile->Get(Form("Mapping_TrueMesonCaloConvPhoton_InvMass_in_Pt_Bin%02d", k));
+        hInvMass_MC              = (TH1D*) MCWithOutFile->Get(Form("fHistoMappingSignalInvMass_in_Pt_Bin%02d", k));
+
         /**
          * Same - scaled mixed event from data
          */
@@ -214,9 +233,19 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
          */
         hCorrBack                = (TH1D*) OutputFile->Get(Form("hCorrBack_bin%02d",k));
 
-        SetHistoStandardSettings(hData,     1.2, 1., 32, black);
-        SetHistoStandardSettings(hSignal,   1.2, 1., 32, teal-7);
-        SetHistoStandardSettings(hCorrBack, 1.2, 1., 32, pink-2);
+        SetHistoStandardSettings(hData,      1.2, 1., 40, black);
+        SetHistoStandardSettings(hInvMass_MC,1.2, 1., 40, black);
+        SetHistoStandardSettings(hSignal,    1.2, 1., 40, teal-7);
+        SetHistoStandardSettings(hCorrBack,  1.2, 1., 40, pink-2);
+
+        hData->SetYTitle("d#it{N}/d#it{m}_{inv} (GeV/#it{c}^2)^{-1}");
+        hSignal->SetYTitle("d#it{N}/d#it{m}_{inv} (GeV/#it{c}^2)^{-1}");
+        hCorrBack->SetYTitle("d#it{N}/d#it{m}_{inv} (GeV/#it{c}^2)^{-1}");
+        hData->SetXTitle("#it{m}_{inv} (GeV/#it{c}^{2})");
+        hSignal->SetXTitle("#it{m}_{inv} (GeV/#it{c}^{2})");
+        hCorrBack->SetXTitle("#it{m}_{inv} (GeV/#it{c}^{2})");
+        hInvMass_MC->SetYTitle("d#it{N}/d#it{m}_{inv} (GeV/#it{c}^2)^{-1}");
+        hInvMass_MC->SetXTitle("#it{m}_{inv} (GeV/#it{c}^{2})");
 
 
         if(wpsid == "all" || wpsid.Contains("chi2map")){
@@ -224,13 +253,14 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
           // Drawing Chi2 maps
           c2->cd();
 
-          TLegend* lChi2Map = new TLegend(0.5,0.85,0.8,0.9);
-          SetLegendSettigns(lChi2Map, 32);
+          TLegend* lChi2Map = new TLegend(0.4,0.85,0.7,0.9);
+          SetLegendSettigns(lChi2Map, 40);
           lChi2Map->AddEntry((TObject*) 0x0, str, ""),
 
           SetHistoStandardSettings2(hChi2_2D);
-          hChi2_2D->GetZaxis()->SetTitleOffset(0.8);
-
+          hChi2_2D->GetZaxis()->SetTitleOffset(0.5);
+          hChi2_2D->SetXTitle("SF_{Signal}");
+          hChi2_2D->SetYTitle("SF_{korr. Untergrund}");
           hChi2_2D->Draw("COLZ");
           hChi2_2D_sigma->SetLineColor(kWhite);
           hChi2_2D_sigma->SetLineWidth(2);
@@ -249,6 +279,9 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
           if(templatemethod == 3){
             c2->SaveAs(Form("BetterBkg3to8Pulse/Chi2Map%02d." + PicFormat,k));
           }
+          if(templatemethod == 4){
+            c2->SaveAs(Form("Normal/Chi2Map%02d." + PicFormat,k));
+          }
           c2->Clear();
         }
 
@@ -257,42 +290,47 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
          * one time only the components with the data, one time the complete
          * parametrization comapred with the data.
          */
-        if(wpsid == "all" || wpsid.Contains("chi2map")){
+        if(wpsid == "all" || wpsid.Contains("param")){
           c1->cd();
           TLegend* lParamResultParts = new TLegend(0.6,0.5,0.9,0.63);
-          SetLegendSettigns(lParamResultParts, 32);
-          lParamResultParts->   AddEntry(hData, "Data", "l");
+          SetLegendSettigns(lParamResultParts, 40);
+          lParamResultParts->   AddEntry(hData, "Daten", "l");
           TH1D* hAdded          = NULL;
           TH1D* hSignal_Clone   = NULL;
           TH1D* hCorrBack_Clone = NULL;
           hSignal_Clone         = (TH1D*) hSignal->         Clone("hSignal_Clone");
           hCorrBack_Clone       = (TH1D*) hCorrBack->       Clone("hCorrBack_Clone");
           hSignal_Clone->       Scale(hSignalAreaScaling->  GetBinContent(k)*h_x_min->GetBinContent(k+1));
+          for(int i = 1; i < hCorrBack_Clone->fNcells -2; i++){
+            hCorrBack_Clone->SetBinContent(i, hCorrBack_Clone->GetBinContent(i)*hSignalAreaScaling->GetBinContent(k)*h_y_min->GetBinContent(k+1));
+            hCorrBack_Clone->SetBinError(i, sqrt(pow(hCorrBack_Clone->GetBinContent(i)*hSignalAreaScaling->GetBinContent(k)*h_y_min->GetBinError(k+1),2.)+pow(,2));
+          }
           hCorrBack_Clone->     Scale(hCorrbackAreaScaling->GetBinContent(k)*h_y_min->GetBinContent(k+1));
           hAdded                = (TH1D*) hSignal_Clone->   Clone("hAdded");
           hAdded->              Add(hCorrBack_Clone);
-          lParamResultParts->   AddEntry(hSignal_Clone,   "Signal template",      "l");
-          lParamResultParts->   AddEntry(hCorrBack_Clone, "Corr. bkg. template",  "l");
+          lParamResultParts->   AddEntry((TObject*) 0x0, "Template:", "");
+          lParamResultParts->   AddEntry(hSignal_Clone,   "Signal",      "l");
+          lParamResultParts->   AddEntry(hCorrBack_Clone, "korr. Untergrund.",  "l");
 
           hData->             Draw("AXIS");
           c1->Update();
 
           double line_y = gPad->GetUymax()*0.995;
-          TLine* paramrange = new TLine(lowerparamrange[k-1], line_y, 0.3, line_y);
+          TLine* paramrange = new TLine(lowerparamrange[k-1], line_y, upperparamrange, line_y);
           paramrange->SetLineColor(kAzure+10);
           paramrange->SetLineWidth(7);
           paramrange->Draw("SAME");
 
-          lParamResultParts->   AddEntry(paramrange, "Parametrization range",  "l");
+          lParamResultParts->   AddEntry(paramrange, "Parametrisierungsbereich",  "l");
 
           hData->             Draw("SAME");
-          hSignal_Clone->     Draw("SAME");
+          hSignal_Clone->     Draw("SAME EP");
           hSignal_Clone->     Draw("SAME HIST");
-          hCorrBack_Clone->   Draw("SAME");
+          hCorrBack_Clone->   Draw("SAME EP");
           hCorrBack_Clone->   Draw("SAME HIST");
           paramrange->        Draw("SAME");
           lParamResultParts-> Draw("SAME");
-          DrawLabelALICE(0.6, 0.9, 0.02, 32, str);
+          DrawLabelALICE(0.6, 0.9, 0.02, 40, str);
 
           c1->Update();
 
@@ -306,13 +344,16 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
           if(templatemethod == 3){
             c1->SaveAs(Form("BetterBkg3to8Pulse/ParamResultParts_Bin%02d." + PicFormat,k));
           }
+          if(templatemethod == 3){
+            c1->SaveAs(Form("Normal/ParamResultParts_Bin%02d." + PicFormat,k));
+          }
           c1->Clear();
           TLegend* lParamResult = new TLegend(0.6,0.5,0.9,0.63);
-          SetLegendSettigns(lParamResult, 32);
-          lParamResult->AddEntry(hData, "Data", "l");
-          lParamResult->AddEntry((TObject*) 0x0, "Parametrization:", "");
+          SetLegendSettigns(lParamResult, 40);
+          lParamResult->AddEntry(hData, "Daten", "l");
+          lParamResult->AddEntry((TObject*) 0x0, "Parametrisierung:", "");
           lParamResult->AddEntry(hAdded, "Template", "l");
-          lParamResult->AddEntry(paramrange, "Range",  "l");
+          lParamResult->AddEntry(paramrange, "Bereich",  "l");
 
 
           c1->Update();
@@ -322,7 +363,7 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
           hAdded->            Draw("SAME HIST");
           lParamResult->      Draw("SAME");
           paramrange->        Draw("SAME");
-          DrawLabelALICE(0.6, 0.9, 0.02, 32, str);
+          DrawLabelALICE(0.6, 0.9, 0.02, 40, str);
           c1->Update();
 
           if(templatemethod == 2){
@@ -334,13 +375,70 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
           if(templatemethod == 3){
             c1->SaveAs(Form("BetterBkg3to8Pulse/ParamResult_Bin%02d." + PicFormat,k));
           }
+          if(templatemethod == 4){
+            c1->SaveAs(Form("Normal/ParamResult_Bin%02d." + PicFormat,k));
+          }
 
           c1->Clear();
-
 
           delete lParamResultParts;
           delete lParamResult;
           delete paramrange;
+
+          hSignal->SetMarkerSize(2);
+          hSignal->SetYTitle("d#it{N}/d#it{m}_{inv} (GeV/#it{c}^2)^{-1}");
+          hSignal->SetXTitle("#it{m}_{inv} (GeV/#it{c}^{2})");
+          hSignal->SetLineColor(kBlack);
+          hGG->SetMarkerSize(2);
+          hGC->SetMarkerSize(2);
+          hCC->SetMarkerSize(2);
+          hGC->SetMarkerStyle(34);
+          hCC->SetMarkerStyle(33);
+
+          TLegend* lGammas = new TLegend(0.2,0.7,0.4,0.9);
+          SetLegendSettigns(lGammas, 40);
+          lGammas->AddEntry(hSignal, "Summe", "p");
+          lGammas->AddEntry(hGG, "#gamma#gamma", "p");
+          lGammas->AddEntry(hGC, "#gamma#gamma_{conv}", "p");
+          lGammas->AddEntry(hCC, "#gamma_{conv}#gamma_{conv}",  "p");
+
+          c1->Update();
+          hSignal->Draw("AXIS");
+          hSignal->Draw("SAME");
+          hGG->Draw("SAME");
+          hGC->Draw("SAME");
+          hCC->Draw("SAME");
+          lGammas->Draw("SAME");
+          DrawLabelALICE(0.6, 0.9, 0.02, 40, str);
+          c1->Update();
+
+          if(templatemethod == 4){
+            c1->SaveAs(Form("BetterBkg3to8/PeakTemplateMotivation%02d." + PicFormat,k));
+          }
+          c1->Clear();
+
+          TLegend* lTemplates = new TLegend(0.2,0.6,0.4,0.8);
+          SetLegendSettigns(lTemplates, 40);
+          lTemplates->AddEntry(hInvMass_MC, "Signal", "l");
+          lTemplates->AddEntry((TObject*) 0x0, "+ korr. Untergrund", "");
+          lTemplates->AddEntry((TObject*) 0x0, "+ unkorr. Untergrund", "");
+          lTemplates->AddEntry(hSignal, "Signal Template", "l");
+          lTemplates->AddEntry(hCorrBack, "korr. Untergrund Template", "l");
+
+          c1->Update();
+          hInvMass_MC-> Draw("AXIS");
+          hInvMass_MC-> Draw("SAME");
+          hSignal->     Draw("SAME");
+          hCorrBack->   Draw("SAME");
+          lTemplates->  Draw("SAME");
+          DrawLabelALICE(0.6, 0.9, 0.02, 40, str);
+          c1->Update();
+
+          if(templatemethod == 4){
+            c1->SaveAs(Form("BetterBkg3to8/EntstehungUntergrund%02d." + PicFormat,k));
+          }
+          c1->Clear();
+
 
         }
       }
@@ -352,14 +450,14 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
      */
     if(wpsid == "all" || wpsid.Contains("chi2")){
       TLegend* leg2 = new TLegend(0.6,0.75,0.9,0.9);
-      SetLegendSettigns(leg2, 32);
-      leg2->SetHeader("Parametrization with:");
-      leg2->AddEntry(hChi2Map_Chi2_pT, TempStr, "l");
-      leg2->AddEntry(histoChi2_0, "function", "l");
+      SetLegendSettigns(leg2, 40);
+      leg2->SetHeader("Parametrisierung mit:");
+      leg2->AddEntry(hChi2Map_Chi2_pT, "Template", "l");
+      leg2->AddEntry(histoChi2_0, "Funktionen", "l");
 
 
-      SetHistoStandardSettings(hChi2Map_Chi2_pT, 1.2, 1., 32, magenta-2);
-      SetHistoStandardSettings(histoChi2_0     , 1.2, 1., 32, black);
+      SetHistoStandardSettings(hChi2Map_Chi2_pT, 1.2, 1., 40, magenta-2);
+      SetHistoStandardSettings(histoChi2_0     , 1.2, 1., 40, black);
       hChi2Map_Chi2_pT->GetXaxis()->SetRangeUser(1.4, 12.);
       histoChi2_0->     GetXaxis()->SetRangeUser(1.4, 12.);
 
@@ -372,18 +470,21 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
       hChi2Map_Chi2_pT->Draw("SAME HIST");
       hChi2Map_Chi2_pT->Draw("SAME P");
       leg2->            Draw("same");
-      DrawLabelALICE(0.2, 0.9, 0.018, 32);
+      DrawLabelALICE(0.2, 0.9, 0.018, 40);
 
 
       c1->Update();
-      if(templatemethod == 0){
+      if(templatemethod == 2){
         c1->SaveAs(Form("BetterBkgNN/Chi2Comparison." + PicFormat));
       }
       if(templatemethod == 1){
         c1->SaveAs(Form("BetterBkg3to8/Chi2Comparison." + PicFormat));
       }
-      if(templatemethod == 2){
+      if(templatemethod == 3){
         c1->SaveAs(Form("BetterBkg3to8Pulse/Chi2Comparison." + PicFormat));
+      }
+      if(templatemethod == 4){
+        c1->SaveAs(Form("Normal/Chi2Comparison." + PicFormat));
       }
       c1->Clear();
       c1->SetLogx(0);
@@ -409,7 +510,7 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
       hYield_dt_chi2map_uncorr->Draw("samelp");
       leg->Draw("same");
 
-      DrawLabelALICE(0.55, 0.9, 0.018, 35);
+      DrawLabelALICE(0.55, 0.9, 0.018, 40);
       c1->Update();
       if(templatemethod == 2){
         c1->SaveAs(Form("BetterBkgNN/UncorrYields." + PicFormat));
@@ -419,6 +520,9 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
       }
       if(templatemethod == 3){
         c1->SaveAs(Form("BetterBkg3to8Pulse/UncorrYields." + PicFormat));
+      }
+      if(templatemethod == 4){
+        c1->SaveAs(Form("Normal/UncorrYields." + PicFormat));
       }
       c1->Clear();
       c1->SetLogy(0);
@@ -446,7 +550,6 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
       h_y_min->SetMarkerColor(kMagenta+2);
       h_y_min->SetMarkerStyle(25);
       h_y_min->SetMarkerSize(1.5);
-      h_y_min->GetYaxis()->SetRangeUser(-0.2, 2.55);
       h_y_min->GetXaxis()->SetRangeUser(-1.4, 12.);
 
       h_y_min->Draw();
@@ -461,6 +564,9 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
       if(templatemethod == 3){
         c1->SaveAs(Form("BetterBkg3to8Pulse/BGFactorComp." + PicFormat));
       }
+      if(templatemethod == 4){
+        c1->SaveAs(Form("Normal/BGFactorComp." + PicFormat));
+      }
       c1->Clear();
 
       if(templatemethod == 3){
@@ -471,10 +577,10 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
         fPulse      = (TF1*)  PulseFile->Get("fPulse");
 
         TLegend* leg = new TLegend(0.15,0.7,0.6,0.9);
-        SetLegendSettigns(leg);
-        leg->AddEntry(h_y_min, "Corr. bkg. scaling factor" , "lp");
-        leg->AddEntry(fPulse,  "Pulse function", "l");
-        leg->AddEntry(hConvInter, "ConfidenceInterval", "e");
+        SetLegendSettigns(leg, 40);
+        leg->AddEntry(h_y_min, "korr. Untergrund. Skalierungsfaktor" , "lp");
+        leg->AddEntry(fPulse,  "Pulsefunktion", "l");
+        leg->AddEntry(hConvInter, "Konfidenzintervall", "e");
 
         c1->Update();
         h_y_min->Draw("AXIS");
@@ -512,9 +618,42 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
       if(templatemethod == 3){
         c1->SaveAs(Form("BetterBkg3to8Pulse/b_to_a_ratio." + PicFormat));
       }
+      if(templatemethod == 4){
+        c1->SaveAs(Form("Normal/b_to_a_ratio." + PicFormat));
+      }
       c1->Clear();
 
       h_y_min->Add(h_x_min, -1);
+
+      TLegend* lCorrection = new TLegend(0.15,0.7,0.6,0.9);
+      SetLegendSettigns(lCorrection, 40);
+      lCorrection->AddEntry(hEfficiency, "Effizienz" , "l");
+      lCorrection->AddEntry(hAcc,  "Akzeptanz", "l");
+
+      hEfficiency->SetXTitle(pt_str);
+      hEfficiency->SetYTitle("Korrekturfaktor");
+
+      hEfficiency->SetLineColor(kBlack);
+      hEfficiency->SetLineWidth(5);
+      hAcc->SetMarkerColor(kRed+2);
+      hAcc->SetLineWidth(5);
+      hAcc->SetLineColor(kRed+2);
+
+
+      hEfficiency->Draw("AXIS");
+      hEfficiency->GetYaxis()->SetTitleOffset(0.09);
+      hEfficiency->Draw("SAME");
+      hAcc->Draw("SAME");
+      lCorrection->Draw("SAME");
+      c1->Update();
+      c1->SetLeftMargin(1.2);
+
+      if(templatemethod == 1){
+        c1->SaveAs(Form("BetterBkg3to8/Korrekturfaktoren." + PicFormat));
+      }
+      c1->Clear();
+
+
     }
 
     delete pad1InvMass;

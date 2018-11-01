@@ -217,13 +217,13 @@ void Systematics(TString PicFormat = "png"){
   hCorrYieldBetterBkg3to8_StatError         = (TH1D*) hCorrYieldBetterBkg3to8->Clone("hCorrYieldBetterBkg3to8_StatError");
   hCorrectedYieldNormEff_StatError          = (TH1D*) hCorrectedYieldNormEff->Clone("hCorrectedYieldNormEff_StatError");
   hCorrYieldBetterBkg3to8Pulse_StatError->SetXTitle(pt_str);
-  hCorrYieldBetterBkg3to8Pulse_StatError->SetYTitle("relative stat. uncertainty");
+  hCorrYieldBetterBkg3to8Pulse_StatError->SetYTitle("relative stat. Unsicherheit");
   hCorrYieldBetterBkgNN_StatError->SetXTitle(pt_str);
-  hCorrYieldBetterBkgNN_StatError->SetYTitle("relative stat. uncertainty");
+  hCorrYieldBetterBkgNN_StatError->SetYTitle("relative stat. Unsicherheit");
   hCorrYieldBetterBkg3to8_StatError->SetXTitle(pt_str);
-  hCorrYieldBetterBkg3to8_StatError->SetYTitle("relative stat. uncertainty");
+  hCorrYieldBetterBkg3to8_StatError->SetYTitle("relative stat. Unsicherheit");
   hCorrectedYieldNormEff_StatError->SetXTitle(pt_str);
-  hCorrectedYieldNormEff_StatError->SetYTitle("relative stat. uncertainty");
+  hCorrectedYieldNormEff_StatError->SetYTitle("relative stat. Unsicherheit");
 
   for(int k = 2; k < numberbins; k++){
     // hCorrYield_RelativSyserror->SetBinContent(k, hCorrYield_syserror->GetBinError(k)/(Double_t)hCorrYieldBetterBkg3to8Pulse->GetBinContent(k)*100.);
@@ -410,16 +410,16 @@ void Systematics(TString PicFormat = "png"){
    * setting up canvas to draw Yield plus relative Systematic error,
    * or statistical
    */
-  TCanvas *canInvMass = new TCanvas("canInvMass","",1600,1600);
+  TCanvas *canInvMass = new TCanvas("canInvMass","",1540,1417);
   TPad *pad1InvMass = new TPad("pad1InvMass","",0.0,0.33,1.0,1.0);
   pad1InvMass->SetTopMargin(0.05);
-  pad1InvMass->SetLeftMargin(0.15);
+  pad1InvMass->SetLeftMargin(0.13);
   pad1InvMass->SetBottomMargin(0.0);
   pad1InvMass->SetRightMargin(0.02);
   TPad *pad2InvMass = new TPad("pad2InvMass","",0.0,0.0,1.0,0.33);
   pad2InvMass->SetTopMargin(0.0);
-  pad2InvMass->SetLeftMargin(0.15);
-  pad2InvMass->SetBottomMargin(0.3);
+  pad2InvMass->SetLeftMargin(0.13);
+  pad2InvMass->SetBottomMargin(0.2);
   pad2InvMass->SetRightMargin(0.02);
   pad2InvMass->SetTicky();
 
@@ -438,12 +438,12 @@ void Systematics(TString PicFormat = "png"){
   pad1InvMass->SetLogy(1);
 
   TLegend* leg_yield = new TLegend(0.2,0.07,0.35,0.3);
-  SetLegendSettigns(leg_yield, 38);
-  leg_yield->SetHeader("parametrization method:");
-  leg_yield->AddEntry(hCorrYieldBetterBkg3to8Pulse, "templates" , "lp");
+  SetLegendSettigns(leg_yield, 40);
+  leg_yield->SetHeader("Parametrisierungsmethode:");
+  leg_yield->AddEntry(hCorrYieldBetterBkg3to8Pulse, "Templatess" , "lp");
   // leg_yield->AddEntry(hCorrYieldBetterBkg3to8, "templates (3 to 8)" , "lp");
   // leg_yield->AddEntry(hCorrYieldBetterBkgNN, "templates (next neighbours)" , "lp");
-  leg_yield->AddEntry(hCorrectedYieldNormEff, "function", "lp");
+  leg_yield->AddEntry(hCorrectedYieldNormEff, "Funktionen", "lp");
   hCorrectedYieldNormEff->SetMarkerSize(1.5);
 
 
@@ -459,7 +459,7 @@ void Systematics(TString PicFormat = "png"){
   hCorrYieldBetterBkg3to8Pulse->GetYaxis()->SetTitleOffset(1.7);
   hCorrYieldBetterBkg3to8Pulse->GetYaxis()->SetRangeUser(1.e-7-5.e-8,1.e-1);
   hCorrYieldBetterBkg3to8Pulse->GetXaxis()->SetRangeUser(1.4, 12.0);
-  SetHistoStandardSettings(hCorrYieldBetterBkg3to8Pulse, 1.7, 2.0, 38, red+3);
+  SetHistoStandardSettings(hCorrYieldBetterBkg3to8Pulse, 1.7, 2.0, 40, red+3);
   // hCorrYieldBetterBkgNN->GetYaxis()->SetTitleOffset(1.7);
   // hCorrYieldBetterBkgNN->GetYaxis()->SetRangeUser(1.e-7-5.e-8,1.e-1);
   // hCorrYieldBetterBkgNN->GetXaxis()->SetRangeUser(1.4, 12.0);
@@ -472,7 +472,7 @@ void Systematics(TString PicFormat = "png"){
   hCorrectedYieldNormEff->GetYaxis()->SetTitleOffset(1.7);
   hCorrectedYieldNormEff->GetYaxis()->SetRangeUser(1.e-7-5.e-8,1.e-1);
   hCorrectedYieldNormEff->GetXaxis()->SetRangeUser(1.4, 12.0);
-  SetHistoStandardSettings(hCorrectedYieldNormEff, 1.7, 2.0, 38, black);
+  SetHistoStandardSettings(hCorrectedYieldNormEff, 1.7, 2.0, 40, black);
   // hCorrYield_syserror->SetMarkerColor(kRed+3);
   // hCorrYield_syserror->SetLineColor(kRed+3);
   // hCorrYield_syserror->SetFillColor(kGray+2);
@@ -486,12 +486,12 @@ void Systematics(TString PicFormat = "png"){
   // hCorrYieldBetterBkgNN->DrawCopy("SAME");
   leg_yield->Draw("SAME");
   canInvMass->Update();
-  DrawLabelALICE(0.6, 0.85, 0.035, 38, "");
+  DrawLabelALICE(0.65, 0.85, 0.035, 40, "");
   pad1InvMass->Update();
 
 
   TH1D* hCorrYieldBetterBkg3to8Pulse_Ratio = (TH1D*) hCorrYieldBetterBkg3to8Pulse->Clone("hCorrYieldBetterBkg3to8Pulse_Ratio");
-  hCorrYieldBetterBkg3to8Pulse_Ratio->Divide(hCorrectedYieldNormEff);
+  hCorrYieldBetterBkg3to8Pulse_Ratio->Divide(hCorrYieldBetterBkg3to8Pulse_Ratio, hCorrectedYieldNormEff, 1, 1, "B");
   hCorrYieldBetterBkg3to8Pulse_Ratio->SetLineColor(kRed);
   hCorrYieldBetterBkg3to8Pulse_Ratio->SetMarkerColor(kRed);
   hCorrYieldBetterBkg3to8Pulse_Ratio->SetYTitle("Ratio");
@@ -503,7 +503,7 @@ void Systematics(TString PicFormat = "png"){
   // hCorrYieldBetterBkgNN_Ratio->SetYTitle("Ratio");
 
   TH1D* hCorrYieldBetterBkg3to8_Ratio = (TH1D*) hCorrYieldBetterBkg3to8->Clone("hCorrYieldBetterBkg3to8Pulse_Ratio");
-  hCorrYieldBetterBkg3to8_Ratio->Divide(hCorrectedYieldNormEff);
+  hCorrYieldBetterBkg3to8_Ratio->Divide(hCorrYieldBetterBkg3to8_Ratio, hCorrectedYieldNormEff, 1, 1, "B");
   hCorrYieldBetterBkg3to8_Ratio->SetLineColor(kBlue+2);
   hCorrYieldBetterBkg3to8_Ratio->SetMarkerColor(kBlue+2);
   hCorrYieldBetterBkg3to8_Ratio->SetYTitle("Ratio");
@@ -515,17 +515,17 @@ void Systematics(TString PicFormat = "png"){
   line_ratio1->SetLineStyle(3);
 
   hCorrYieldBetterBkg3to8Pulse_Ratio->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-  hCorrYieldBetterBkg3to8Pulse_Ratio->GetXaxis()->SetTitleOffset(2.5);
+  hCorrYieldBetterBkg3to8Pulse_Ratio->GetXaxis()->SetTitleOffset(2.8);
   hCorrYieldBetterBkg3to8Pulse_Ratio->GetXaxis()->SetLabelOffset(0.008);
   hCorrYieldBetterBkg3to8Pulse_Ratio->GetYaxis()->SetTitleOffset(2.0);
   hCorrYieldBetterBkg3to8Pulse_Ratio->GetYaxis()->SetLabelOffset(0.008);
 
   hCorrYieldBetterBkg3to8Pulse_Ratio->GetXaxis()->SetRangeUser(1.4, 12.0);
-  hCorrYieldBetterBkg3to8Pulse_Ratio->GetYaxis()->SetRangeUser(0.78, 1.17);
-  hCorrYieldBetterBkg3to8Pulse_Ratio->GetXaxis()->SetTitleSize(38);
-  hCorrYieldBetterBkg3to8Pulse_Ratio->GetYaxis()->SetTitleSize(38);
-  hCorrYieldBetterBkg3to8Pulse_Ratio->GetXaxis()->SetLabelSize(38);
-  hCorrYieldBetterBkg3to8Pulse_Ratio->GetYaxis()->SetLabelSize(38);
+  hCorrYieldBetterBkg3to8Pulse_Ratio->GetYaxis()->SetRangeUser(0.86, 1.19);
+  hCorrYieldBetterBkg3to8Pulse_Ratio->GetXaxis()->SetTitleSize(40);
+  hCorrYieldBetterBkg3to8Pulse_Ratio->GetYaxis()->SetTitleSize(40);
+  hCorrYieldBetterBkg3to8Pulse_Ratio->GetXaxis()->SetLabelSize(40);
+  hCorrYieldBetterBkg3to8Pulse_Ratio->GetYaxis()->SetLabelSize(40);
 
   hCorrYieldBetterBkg3to8Pulse_Ratio->GetXaxis()->SetTitleFont(43);
   hCorrYieldBetterBkg3to8Pulse_Ratio->GetYaxis()->SetTitleFont(43);
@@ -663,21 +663,22 @@ void Systematics(TString PicFormat = "png"){
   pad1Yield->cd();
 
   TLegend* leg_yield2 = new TLegend(0.24,0.07,0.35,0.3);
-  SetLegendSettigns(leg_yield2, 38);
+  SetLegendSettigns(leg_yield2, 40);
   leg_yield2->SetTextFont(43);
-  leg_yield2->SetTextSize(38);
-  leg_yield2->AddEntry(hCorrYieldBetterBkg3to8Pulse, "signal + corr. bkg. temp." , "lp");
-  leg_yield2->AddEntry(hCorrectedYieldNormEff, "standard method", "lp");
+  leg_yield2->SetTextSize(40);
+  leg_yield2->SetHeader("Parametrisierungsmethode:");
+  leg_yield2->AddEntry(hCorrYieldBetterBkg3to8Pulse, "Templates" , "lp");
+  leg_yield2->AddEntry(hCorrectedYieldNormEff, "Funktionen", "lp");
 
 
   hCorrYieldBetterBkg3to8Pulse->GetXaxis()->SetTitleOffset(1.4);
   hCorrYieldBetterBkg3to8Pulse->GetXaxis()->SetLabelOffset(0.008);
   hCorrYieldBetterBkg3to8Pulse->GetYaxis()->SetTitleOffset(3.5);
   hCorrYieldBetterBkg3to8Pulse->GetYaxis()->SetLabelOffset(0.008);
-  hCorrYieldBetterBkg3to8Pulse->GetXaxis()->SetTitleSize(38);
-  hCorrYieldBetterBkg3to8Pulse->GetYaxis()->SetTitleSize(38);
-  hCorrYieldBetterBkg3to8Pulse->GetXaxis()->SetLabelSize(38);
-  hCorrYieldBetterBkg3to8Pulse->GetYaxis()->SetLabelSize(38);
+  hCorrYieldBetterBkg3to8Pulse->GetXaxis()->SetTitleSize(40);
+  hCorrYieldBetterBkg3to8Pulse->GetYaxis()->SetTitleSize(40);
+  hCorrYieldBetterBkg3to8Pulse->GetXaxis()->SetLabelSize(40);
+  hCorrYieldBetterBkg3to8Pulse->GetYaxis()->SetLabelSize(40);
 
   hCorrYieldBetterBkg3to8Pulse->GetXaxis()->SetTitleFont(43);
   hCorrYieldBetterBkg3to8Pulse->GetYaxis()->SetTitleFont(43);
@@ -691,7 +692,7 @@ void Systematics(TString PicFormat = "png"){
   hCorrectedYieldNormEff      ->DrawCopy("SAME");
   leg_yield2->Draw("SAME");
   canYield->Update();
-  DrawLabelALICE(0.55, 0.85, 0.035, 32., "");
+  DrawLabelALICE(0.625, 0.85, 0.035, 32., "");
   pad1Yield->Update();
 
   pad2Yield->cd();
@@ -700,12 +701,12 @@ void Systematics(TString PicFormat = "png"){
   hCorrYieldBetterBkg3to8Pulse_Ratio->GetYaxis()->SetNdivisions(505);
   hCorrYieldBetterBkg3to8Pulse_Ratio->SetXTitle("");
   hCorrYieldBetterBkg3to8Pulse_Ratio->GetXaxis()->SetLabelOffset(0.008);
-  hCorrYieldBetterBkg3to8Pulse_Ratio->GetYaxis()->SetTitleOffset(3.2);
+  hCorrYieldBetterBkg3to8Pulse_Ratio->GetYaxis()->SetTitleOffset(3.5);
   hCorrYieldBetterBkg3to8Pulse_Ratio->GetYaxis()->SetLabelOffset(0.008);
-  hCorrYieldBetterBkg3to8Pulse_Ratio->GetXaxis()->SetTitleSize(38);
-  hCorrYieldBetterBkg3to8Pulse_Ratio->GetYaxis()->SetTitleSize(38);
-  hCorrYieldBetterBkg3to8Pulse_Ratio->GetXaxis()->SetLabelSize(38);
-  hCorrYieldBetterBkg3to8Pulse_Ratio->GetYaxis()->SetLabelSize(38);
+  hCorrYieldBetterBkg3to8Pulse_Ratio->GetXaxis()->SetTitleSize(40);
+  hCorrYieldBetterBkg3to8Pulse_Ratio->GetYaxis()->SetTitleSize(40);
+  hCorrYieldBetterBkg3to8Pulse_Ratio->GetXaxis()->SetLabelSize(40);
+  hCorrYieldBetterBkg3to8Pulse_Ratio->GetYaxis()->SetLabelSize(40);
 
   hCorrYieldBetterBkg3to8Pulse_Ratio->GetXaxis()->SetTitleFont(43);
   hCorrYieldBetterBkg3to8Pulse_Ratio->GetYaxis()->SetTitleFont(43);
@@ -730,10 +731,10 @@ void Systematics(TString PicFormat = "png"){
   hCorrectedYieldNormEff_StatError->GetXaxis()->SetLabelOffset(0.008);
   hCorrectedYieldNormEff_StatError->GetYaxis()->SetTitleOffset(3.5);
   hCorrectedYieldNormEff_StatError->GetYaxis()->SetLabelOffset(0.008);
-  hCorrectedYieldNormEff_StatError->GetXaxis()->SetTitleSize(38);
-  hCorrectedYieldNormEff_StatError->GetYaxis()->SetTitleSize(38);
-  hCorrectedYieldNormEff_StatError->GetXaxis()->SetLabelSize(38);
-  hCorrectedYieldNormEff_StatError->GetYaxis()->SetLabelSize(38);
+  hCorrectedYieldNormEff_StatError->GetXaxis()->SetTitleSize(40);
+  hCorrectedYieldNormEff_StatError->GetYaxis()->SetTitleSize(40);
+  hCorrectedYieldNormEff_StatError->GetXaxis()->SetLabelSize(40);
+  hCorrectedYieldNormEff_StatError->GetYaxis()->SetLabelSize(40);
 
   hCorrectedYieldNormEff_StatError->GetXaxis()->SetTitleFont(43);
   hCorrectedYieldNormEff_StatError->GetYaxis()->SetTitleFont(43);
@@ -741,11 +742,12 @@ void Systematics(TString PicFormat = "png"){
   hCorrectedYieldNormEff_StatError->GetYaxis()->SetLabelFont(43);
 
   TLegend* leg_stat_yield = new TLegend(0.24,0.7,0.5,0.9);
-  SetLegendSettigns(leg_stat_yield, 38);
+  SetLegendSettigns(leg_stat_yield, 40);
   leg_stat_yield->SetTextFont(43);
   leg_stat_yield->SetTextSize(42);
-  leg_stat_yield->AddEntry(hCorrectedYieldNormEff_StatError, "standard method", "l");
-  leg_stat_yield->AddEntry(hCorrYieldBetterBkg3to8Pulse_StatError, "this method" , "l");
+  leg_stat_yield->SetHeader("Parametrisierungsmethode:");
+  leg_stat_yield->AddEntry(hCorrYieldBetterBkg3to8Pulse_StatError, "Templates" , "lp");
+  leg_stat_yield->AddEntry(hCorrectedYieldNormEff_StatError, "Funktionen", "lp");
 
   hCorrectedYieldNormEff_StatError->DrawCopy("AXIS");
   hCorrYieldBetterBkg3to8Pulse_StatError->DrawCopy("SAME HIST");
@@ -762,21 +764,25 @@ void Systematics(TString PicFormat = "png"){
   delete leg_stat_yield;
   // delete leg_stat;
 
-  TCanvas* cStatUnc = new TCanvas("cStatUnc", "", 2*1058,2*319);
+  TCanvas* cStatUnc = new TCanvas("cStatUnc", "", 1540,1417);
   SetCanvasStandardSettings(cStatUnc);
   cStatUnc->cd();
-  cStatUnc->SetLeftMargin(0.12);
+  cStatUnc->SetLeftMargin(0.065);
+  cStatUnc->SetBottomMargin(0.09);
 
   TLegend* leg_stat_yield2 = new TLegend(0.20,0.7,0.5,0.9);
-  SetLegendSettigns(leg_stat_yield2, 38);
+  SetLegendSettigns(leg_stat_yield2, 40);
   leg_stat_yield2->SetTextFont(43);
-  leg_stat_yield2->SetTextSize(38);
-  leg_stat_yield2->SetHeader("Parametrization method:");
-  leg_stat_yield2->AddEntry(hCorrectedYieldNormEff_StatError, "function", "l");
-  leg_stat_yield2->AddEntry(hCorrYieldBetterBkg3to8Pulse_StatError, "templates" , "l");
+  leg_stat_yield2->SetTextSize(40);
+  leg_stat_yield2->SetHeader("Parametrisierungsmethode:");
+  leg_stat_yield2->AddEntry(hCorrYieldBetterBkg3to8Pulse_StatError, "Templates" , "l");
+  leg_stat_yield2->AddEntry(hCorrectedYieldNormEff_StatError, "Funktionen", "l");
+
 
   hCorrectedYieldNormEff_StatError->GetXaxis()->SetTitleOffset(1.2);
   hCorrectedYieldNormEff_StatError->GetYaxis()->SetTitleOffset(0.8);
+  hCorrectedYieldNormEff_StatError->SetLineWidth(5);
+  hCorrYieldBetterBkg3to8Pulse_StatError->SetLineWidth(5);
 
   hCorrectedYieldNormEff_StatError->DrawCopy("AXIS");
   hCorrectedYieldNormEff_StatError->DrawCopy("SAME HIST");

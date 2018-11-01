@@ -49,7 +49,7 @@ Double_t Chi2Calc(TH1D* h1, TH1D* h2, TH1D* h3, Double_t &ndf, Double_t a,
     chi2 += pow(b-fPulse_eval, 2.)/pow(sigma_cons, 2.); // 3 to 8 method
   }
 
-  if(templatemethod == 2){
+  else if(templatemethod == 2){
     chi2 += pow(a-b, 2.)/pow(0.01, 2.);
   }
 
@@ -87,7 +87,7 @@ TH2D* Chi2MapFunction(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi
 
   // Maybe x-bin-Range in der Karte ist total fürn Arsch aktuell!!!!!!!!!!!
   // Testing needed!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  if(templatemethod == 1){
+  if(templatemethod == 1 || templatemethod == 3){
     if(pT < 6.){
       dx = 0.0032;
       dy = 0.004;
@@ -96,6 +96,10 @@ TH2D* Chi2MapFunction(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi
       dx = 0.0032; //0.001;
       dy = 0.0002; //0.003;
     }
+  }
+  else if(templatemethod == 4){
+    dx = 0.005;
+    dy = 0.005;
   }
   else
   {
@@ -106,7 +110,7 @@ TH2D* Chi2MapFunction(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi
   int binnumber2D     = 500;                // Binzahl ~ Feinheit der Suche
   TH2D* hChi2map      = NULL;
 
-  if(templatemethod != 2){
+  if(templatemethod == 1 || templatemethod == 3){
     if(pT < 6.){
       hChi2map = new TH2D("hChi2map", "", binnumber2D, 0.4, 2.0, binnumber2D, 0.0, 2.0);
       SetHistoStandardSettings2(hChi2map);
@@ -116,6 +120,10 @@ TH2D* Chi2MapFunction(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi
       hChi2map = new TH2D("hChi2map", "", binnumber2D, 0.4, 2.0, binnumber2D, 0.0, 0.1);
       SetHistoStandardSettings2(hChi2map);
     }
+  }
+  else if(templatemethod == 4){
+    hChi2map = new TH2D("hChi2map", "", binnumber2D, 0.0, 2.5, binnumber2D, 0.0, 2.5);
+    SetHistoStandardSettings2(hChi2map);
   }
   else{
     hChi2map = new TH2D("hChi2map", "", binnumber2D, 0.4, 2.0, binnumber2D, 0.0, 2.0);
@@ -223,21 +231,40 @@ TH2D* Chi2MapFunction(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi
     std::cout << "fPulse_eval = " << fPulse_eval << '\n';
   }
 
+  if(templatemethod != 4){
+    for (int ix = 0; ix < binnumber2D; ix++) {
+      for (int iy = 0; iy < binnumber2D; iy++) {
+        ndf = upperfitrange-lowerfitrange-3;
+        chi2 = 0;
+        chi2 = Chi2Calc(hSignal_clone, hCorrback_clone, hData_clone, ndf,
+          dx* ((Double_t)ix+125), dy*(Double_t)iy, templatemethod, binnumber,
+          fPulse_eval, sigma_cons);
 
-  for (int ix = 0; ix < binnumber2D; ix++) {
-    for (int iy = 0; iy < binnumber2D; iy++) {
-      ndf = upperfitrange-lowerfitrange-3;
-      chi2 = 0;
-      chi2 = Chi2Calc(hSignal_clone, hCorrback_clone, hData_clone, ndf,
-        dx* ((Double_t)ix+125), dy*(Double_t)iy, templatemethod, binnumber,
-        fPulse_eval, sigma_cons);
-
-      if(chi2 < chi2_min_temp){
-        chi2_min_temp = chi2;
-        x_min = (Double_t)(ix+125)*dx;
-        y_min = (Double_t)(iy)*dy;
+        if(chi2 < chi2_min_temp){
+          chi2_min_temp = chi2;
+          x_min = (Double_t)(ix+125)*dx;
+          y_min = (Double_t)(iy)*dy;
+        }
+        hChi2map->SetBinContent(ix+1, iy+1, chi2);
       }
-      hChi2map->SetBinContent(ix+1, iy+1, chi2);
+    }
+  }
+  else{
+    for (int ix = 0; ix < binnumber2D; ix++) {
+      for (int iy = 0; iy < binnumber2D; iy++) {
+        ndf = upperfitrange-lowerfitrange-3;
+        chi2 = 0;
+        chi2 = Chi2Calc(hSignal_clone, hCorrback_clone, hData_clone, ndf,
+          dx* ((Double_t)ix), dy*(Double_t)iy, templatemethod, binnumber,
+          fPulse_eval, sigma_cons);
+
+        if(chi2 < chi2_min_temp){
+          chi2_min_temp = chi2;
+          x_min = (Double_t)(ix)*dx;
+          y_min = (Double_t)(iy)*dy;
+        }
+        hChi2map->SetBinContent(ix+1, iy+1, chi2);
+      }
     }
   }
   chi2_min = chi2_min_temp;
