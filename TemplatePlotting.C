@@ -292,7 +292,7 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
          */
         if(wpsid == "all" || wpsid.Contains("param")){
           c1->cd();
-          TLegend* lParamResultParts = new TLegend(0.6,0.5,0.9,0.63);
+          TLegend* lParamResultParts = new TLegend(0.2,0.5,0.4,0.63);
           SetLegendSettigns(lParamResultParts, 40);
           lParamResultParts->   AddEntry(hData, "Daten", "l");
           TH1D* hAdded          = NULL;
@@ -301,10 +301,11 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
           hSignal_Clone         = (TH1D*) hSignal->         Clone("hSignal_Clone");
           hCorrBack_Clone       = (TH1D*) hCorrBack->       Clone("hCorrBack_Clone");
           hSignal_Clone->       Scale(hSignalAreaScaling->  GetBinContent(k)*h_x_min->GetBinContent(k+1));
-          for(int i = 1; i < hCorrBack_Clone->fNcells -2; i++){
-            hCorrBack_Clone->SetBinContent(i, hCorrBack_Clone->GetBinContent(i)*hSignalAreaScaling->GetBinContent(k)*h_y_min->GetBinContent(k+1));
-            hCorrBack_Clone->SetBinError(i, sqrt(pow(hCorrBack_Clone->GetBinContent(i)*hSignalAreaScaling->GetBinContent(k)*h_y_min->GetBinError(k+1),2.)+pow(,2));
-          }
+          // for(int i = 1; i < hCorrBack_Clone->fNcells -2; i++){
+          //   hCorrBack_Clone->SetBinContent(i, hCorrBack_Clone->GetBinContent(i)*hSignalAreaScaling->GetBinContent(k)*h_y_min->GetBinContent(k+1));
+          //   hCorrBack_Clone->SetBinError(i, sqrt(pow(hCorrBack_Clone->GetBinContent(i)*hSignalAreaScaling->GetBinContent(k)*h_y_min->GetBinError(k+1),2.)+
+          //   pow(hCorrBack_Clone->GetBinError(i)*hSignalAreaScaling->GetBinContent(k)*h_y_min->GetBinContent(k+1),2));
+          // }
           hCorrBack_Clone->     Scale(hCorrbackAreaScaling->GetBinContent(k)*h_y_min->GetBinContent(k+1));
           hAdded                = (TH1D*) hSignal_Clone->   Clone("hAdded");
           hAdded->              Add(hCorrBack_Clone);
@@ -344,7 +345,7 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
           if(templatemethod == 3){
             c1->SaveAs(Form("BetterBkg3to8Pulse/ParamResultParts_Bin%02d." + PicFormat,k));
           }
-          if(templatemethod == 3){
+          if(templatemethod == 4){
             c1->SaveAs(Form("Normal/ParamResultParts_Bin%02d." + PicFormat,k));
           }
           c1->Clear();
