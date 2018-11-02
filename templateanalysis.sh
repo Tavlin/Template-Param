@@ -33,4 +33,6 @@ rm -r Systematics
 mkdir Systematics
 time root -l -q -b Systematics.C++\(\"$2\"\)
 
+rm -r  Untergrund
+mkdir  Untergrund
 time root -l -q -b CorrBackFitPlot.C++\(\"$2\"\)
