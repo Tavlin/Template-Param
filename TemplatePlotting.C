@@ -258,7 +258,8 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
           lChi2Map->AddEntry((TObject*) 0x0, str, ""),
 
           SetHistoStandardSettings2(hChi2_2D);
-          hChi2_2D->GetZaxis()->SetTitleOffset(0.5);
+          hChi2_2D->GetYaxis()->SetTitleOffset(1.2);
+          hChi2_2D->GetZaxis()->SetTitleOffset(0.9);
           hChi2_2D->SetXTitle("SF_{Signal}");
           hChi2_2D->SetYTitle("SF_{korr. Untergrund}");
           hChi2_2D->Draw("COLZ");
@@ -292,7 +293,7 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
          */
         if(wpsid == "all" || wpsid.Contains("param")){
           c1->cd();
-          TLegend* lParamResultParts = new TLegend(0.2,0.5,0.4,0.63);
+          TLegend* lParamResultParts = new TLegend(0.6,0.5,0.9,0.63);
           SetLegendSettigns(lParamResultParts, 40);
           lParamResultParts->   AddEntry(hData, "Daten", "l");
           TH1D* hAdded          = NULL;
@@ -417,14 +418,14 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
             c1->SaveAs(Form("BetterBkg3to8/PeakTemplateMotivation%02d." + PicFormat,k));
           }
           c1->Clear();
+          hSignal->SetLineColor(kTeal-7);
 
-          TLegend* lTemplates = new TLegend(0.2,0.6,0.4,0.8);
+          TLegend* lTemplates = new TLegend(0.6,0.2,0.9,0.6);
           SetLegendSettigns(lTemplates, 40);
-          lTemplates->AddEntry(hInvMass_MC, "Signal", "l");
+          lTemplates->AddEntry(hInvMass_MC, "Signal", "p");
           lTemplates->AddEntry((TObject*) 0x0, "+ korr. Untergrund", "");
-          lTemplates->AddEntry((TObject*) 0x0, "+ unkorr. Untergrund", "");
-          lTemplates->AddEntry(hSignal, "Signal Template", "l");
-          lTemplates->AddEntry(hCorrBack, "korr. Untergrund Template", "l");
+          lTemplates->AddEntry(hSignal, "Signal Template", "p");
+          lTemplates->AddEntry(hCorrBack, "korr. Untergrund Template", "p");
 
           c1->Update();
           hInvMass_MC-> Draw("AXIS");
@@ -432,7 +433,7 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
           hSignal->     Draw("SAME");
           hCorrBack->   Draw("SAME");
           lTemplates->  Draw("SAME");
-          DrawLabelALICE(0.6, 0.9, 0.02, 40, str);
+          DrawLabelALICE(0.6, 0.9, 0.025, 40, str);
           c1->Update();
 
           if(templatemethod == 4){
@@ -461,6 +462,9 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
       SetHistoStandardSettings(histoChi2_0     , 1.2, 1., 40, black);
       hChi2Map_Chi2_pT->GetXaxis()->SetRangeUser(1.4, 12.);
       histoChi2_0->     GetXaxis()->SetRangeUser(1.4, 12.);
+      hChi2Map_Chi2_pT->SetLineWidth(5);
+      histoChi2_0->SetLineWidth(5);
+      histoChi2_0->SetZTitle("#chi^{2}");
 
       c1->cd();
       c1->Clear();
@@ -500,7 +504,7 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
 
       TLegend* leg = new TLegend(0.2,0.2,0.4,0.4);
       SetLegendSettigns(leg);
-      leg->AddEntry(hYield_dt_chi2map_uncorr, TempStr + " with chi2map" , "lp");
+      leg->AddEntry(hYield_dt_chi2map_uncorr, "" , "lp");
       hYield_dt_chi2map_uncorr->GetXaxis()->SetRangeUser(1.4, 12.);
 
       c1->cd();
@@ -508,8 +512,8 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
       c1->Clear();
       c1->SetLogy(1);
       hYield_dt_chi2map_uncorr->Draw("AXIS");
-      hYield_dt_chi2map_uncorr->Draw("samelp");
-      leg->Draw("same");
+      hYield_dt_chi2map_uncorr->Draw("SAME LP");
+      // leg->Draw("same");
 
       DrawLabelALICE(0.55, 0.9, 0.018, 40);
       c1->Update();
@@ -623,8 +627,13 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
         c1->SaveAs(Form("Normal/b_to_a_ratio." + PicFormat));
       }
       c1->Clear();
+      c1->SetLeftMargin(1.2);
 
       h_y_min->Add(h_x_min, -1);
+      SetHistoStandardSettings(hEfficiency,1.2, 1.4, 40, black);
+      SetHistoStandardSettings(hAcc,       1.2, 1.4, 40, red+2);
+      hEfficiency->SetLineWidth(5);
+      hAcc->SetLineWidth(5);
 
       TLegend* lCorrection = new TLegend(0.15,0.7,0.6,0.9);
       SetLegendSettigns(lCorrection, 40);
@@ -633,21 +642,15 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
 
       hEfficiency->SetXTitle(pt_str);
       hEfficiency->SetYTitle("Korrekturfaktor");
-
-      hEfficiency->SetLineColor(kBlack);
-      hEfficiency->SetLineWidth(5);
-      hAcc->SetMarkerColor(kRed+2);
-      hAcc->SetLineWidth(5);
-      hAcc->SetLineColor(kRed+2);
-
+      hEfficiency->GetXaxis()->SetRangeUser(1.4, 12.);
+      hEfficiency->GetYaxis()->SetRangeUser(0.0, 0.4);
+      hAcc->GetXaxis()->SetRangeUser(1.4, 12.);
 
       hEfficiency->Draw("AXIS");
-      hEfficiency->GetYaxis()->SetTitleOffset(0.09);
-      hEfficiency->Draw("SAME");
+      hEfficiency->Draw("SAME HIST");
       hAcc->Draw("SAME");
       lCorrection->Draw("SAME");
       c1->Update();
-      c1->SetLeftMargin(1.2);
 
       if(templatemethod == 1){
         c1->SaveAs(Form("BetterBkg3to8/Korrekturfaktoren." + PicFormat));

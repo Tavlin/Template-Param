@@ -1,3 +1,6 @@
+#ifndef Systematics
+#define Systematics
+
 #include "CommonHeader.h"
 
 void Systematics(TString PicFormat = "png"){
@@ -781,8 +784,8 @@ void Systematics(TString PicFormat = "png"){
 
   hCorrectedYieldNormEff_StatError->GetXaxis()->SetTitleOffset(1.2);
   hCorrectedYieldNormEff_StatError->GetYaxis()->SetTitleOffset(0.8);
-  hCorrectedYieldNormEff_StatError->SetLineWidth(5);
-  hCorrYieldBetterBkg3to8Pulse_StatError->SetLineWidth(5);
+  hCorrectedYieldNormEff_StatError->SetLineWidth(7);
+  hCorrYieldBetterBkg3to8Pulse_StatError->SetLineWidth(7);
 
   hCorrectedYieldNormEff_StatError->DrawCopy("AXIS");
   hCorrectedYieldNormEff_StatError->DrawCopy("SAME HIST");
@@ -1031,3 +1034,5 @@ void Systematics(TString PicFormat = "png"){
   delete hCorrectedYieldNormEff;
 
 }
+
+#endif

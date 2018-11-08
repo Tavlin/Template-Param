@@ -47,27 +47,34 @@ void CorrBackFitPlot(TString PicFormat = "eps"){
   hCorrBkgScaling->SetMarkerColor(kBlue);
   hCorrBkgScaling->SetLineColor(kBlue);
 
-
+  c1->cd();
   SetHistoStandardSettings(hConvInter);
   hConvInter->SetFillColor(2);
 
-  TLegend* leg = new TLegend(0.15,0.7,0.6,0.9);
+  TLegend* leg = new TLegend(0.3,0.7,0.7,0.9);
   SetLegendSettigns(leg, 40);
-  leg->AddEntry(hCorrBkgScaling, "korr. Untergrund. Skalierungsfaktor" , "lp");
-  leg->AddEntry(fPulse,  "Pulsefunktion", "l");
-  leg->AddEntry(hConvInter, "Konfidenzintervall", "e");
+  hConvInter->SetMarkerStyle(1);
+  hConvInter->SetMarkerSize(1);
+  hCorrBkgScaling->SetYTitle("SF_{korr. Untergrund}");
+
+  hCorrBkgScaling->GetXaxis()->SetRangeUser(1.4, 12.);
+  fPulse->GetXaxis()->SetRangeUser(1.4, 12.);
+  hConvInter->GetXaxis()->SetRangeUser(1.4, 12.);
+  leg->AddEntry(hCorrBkgScaling, "SF_{korr. Untergrund}" , "lp");
+  leg->AddEntry(fPulse,  "Konfidenzintervall", "l");
 
   c1->Update();
   hCorrBkgScaling->Draw("AXIS");
-  // fPulse->Draw("SAME");
   hConvInter->Draw("SAME E3");
   hCorrBkgScaling->Draw("SAME PE");
+  leg->Draw("SAME");
   c1->Update();
   c1->SaveAs(Form("BetterBkg3to8Pulse/BkgConfidenceIntervall2." + PicFormat));
   c1->Clear();
 
   for(int k = 1; k < numberbins - 1; k++){
     TString str = Form("%.1lf #leq #it{p}_{T} < %.1lf",fBinsPi013TeVEMCPt[k], fBinsPi013TeVEMCPt[k+1]);
+    TString pTBig = Form("%.1lf #leq #it{p}_{T} < %.1lf",fBinsPi013TeVEMCPt[3], fBinsPi013TeVEMCPt[8]);
     hCorrBkgNormal = NULL;
     hCorrBkg3to8   = NULL;
     hCorrBkgRatio  = NULL;
@@ -83,11 +90,11 @@ void CorrBackFitPlot(TString PicFormat = "eps"){
     hCorrBkg3to8->SetMarkerColor(kRed);
     hCorrBkg3to8->SetLineWidth(5);
 
-    TLegend* leg2 = new TLegend(0.6,0.5,0.9,0.63);
+    TLegend* leg2 = new TLegend(0.25,0.05,0.3,0.2);
     SetLegendSettigns(leg2, 40);
     leg2->SetHeader("korr. Untergrund Template");
-    leg2->AddEntry(hCorrBkgNormal, "pro #{p}_{T}" , "lp");
-    leg2->AddEntry(hCorrBkg3to8,  "einzelnes kombiniertes", "l");
+    leg2->AddEntry(hCorrBkgNormal, str , "l");
+    leg2->AddEntry(hCorrBkg3to8,  pTBig, "l");
 
     canInvMass->cd();
     pad1InvMass->Draw();
@@ -101,16 +108,22 @@ void CorrBackFitPlot(TString PicFormat = "eps"){
     hCorrBkgNormal->DrawCopy("SAME");
     hCorrBkg3to8->DrawCopy("SAME");
     leg2->Draw("SAME");
-    DrawLabelALICE(0.6, 0.9, 0.02, 40, str);
+    DrawLabelALICE(0.6, 0.9, 0.03, 40, "");
 
     pad1InvMass->Update();
+    pad2InvMass->cd();
+    hCorrBkgRatio = (TH1D*) hCorrBkg3to8->Clone("hCorrBkgRatio");
+    SetHistoStandardSettings(hCorrBkgRatio);
     hCorrBkgRatio->Divide(hCorrBkg3to8, hCorrBkgNormal, 1 , 1, "B");
-
     hCorrBkgRatio->SetYTitle("Ratio");
+    hCorrBkgRatio->Draw("AXIS");
+    hCorrBkgRatio->Draw("SAME");
+    hCorrBkgRatio->GetYaxis()->SetRangeUser(0., hCorrBkgRatio->GetBinContent(hCorrBkgRatio->FindBin(0.135))*3.);
+
     pad2InvMass->Update();
     canInvMass->Update();
 
-    canInvMass->SaveAs(Form("Untergrund/BkgConfidenceIntervall2." + PicFormat));
+    canInvMass->SaveAs(Form("Untergrund/BkgRatio%02d." + PicFormat, k));
     canInvMass->Clear("D");
 
 

@@ -70,6 +70,10 @@ void CorrBkgCreation(void){
     hCorrBkg            = (TH1D*) hInvMassData->Clone("hCorrBkg");
     hCorrBkg->          Add(hSignalTemplate, -1);
 
+    for(int i = 1; i < hCorrBkg->GetNbinsX(); i++){
+      hCorrBkg->SetBinError(i, sqrt(pow(hInvMassData->GetBinError(i),2.) - pow(hSignalTemplate->GetBinError(i),2.) ));
+    }
+
     gDirectory = CorrBkgFile;
     hCorrBkg->          GetXaxis()->SetRangeUser(0.0, 0.3);
     hCorrBkg->          Write(Form("hCorrBkgBin%02d", k));
@@ -137,7 +141,7 @@ TH1D* BackgroundAdding(int i){
 
 
   hBack                 = (TH1D*) CorrBkgFile->Get(Form("hCorrBkgBin%02d",i));
-  hBack->Rebin(fBinsPi013TeVEMCPtRebin[i]);
+  hBack->Rebin(fBinsPi013TeVEMCPtRebin[i-1]);
 
   // comment *out* if you want fit without original bin!
   // list->Add(hBack);
@@ -147,7 +151,7 @@ TH1D* BackgroundAdding(int i){
   for(int m = k; m >= j; m--){
     if(m != i){
       aBackStackup[k-m] = (TH1D*) CorrBkgFile->Get(Form("hCorrBkgBin%02d",m));
-      aBackStackup[k-m]->Rebin(fBinsPi013TeVEMCPtRebin[i]);
+      aBackStackup[k-m]->Rebin(fBinsPi013TeVEMCPtRebin[i-1]);
       hRatio[k-m]       = (TH1D*) hBack->Clone();
       fpol0[k-m]        = new TF1(Form("fpol0%02d",b), "[0]", 0.0, 0.3);
       fpol0[k-m]->SetParLimits(0, 0.0, 5.0);
@@ -281,16 +285,16 @@ TH1D* BackGround3to8(int i){
   TH1D* hBack           = NULL;
   TList *list = new TList;
   hBack                 = (TH1D*) CorrBkgFile->Get(Form("hCorrBkgBin%02d",i));
-  hBack->Rebin(fBinsPi013TeVEMCPtRebin[i]);
-  hMinv_pT_ratio->RebinX(fBinsPi013TeVEMCPtRebin[i]);
+  hBack->Rebin(fBinsPi013TeVEMCPtRebin[i-1]);
+  hMinv_pT_ratio->RebinX(fBinsPi013TeVEMCPtRebin[i-1]);
   // needs rescaling since it is 8 histos merged and also for the rebinnig
-  hMinv_pT_ratio->Scale(1./(8.*fBinsPi013TeVEMCPtRebin[i]));
+  hMinv_pT_ratio->Scale(1./(8.*fBinsPi013TeVEMCPtRebin[i-1]));
 
   for(int m = k; m >= j; m--){
     if(m != i){
 
       aBackStackup[k-m] = (TH1D*) CorrBkgFile->Get(Form("hCorrBkgBin%02d",m));
-      aBackStackup[k-m]->Rebin(fBinsPi013TeVEMCPtRebin[i]);
+      aBackStackup[k-m]->Rebin(fBinsPi013TeVEMCPtRebin[i-1]);
       for (int w = 1; w < aBackStackup[k-m]->FindBin(0.3); w++) {
         if(fabs(hMinv_pT_ratio->GetBinContent(w, m+1)) >= 1.e-2){
           aBackStackup[k-m]->SetBinContent(w, aBackStackup[k-m]->GetBinContent(w) * 1./hMinv_pT_ratio->GetBinContent(w, m+1));
@@ -317,7 +321,7 @@ TH1D* BackGround3to8(int i){
 
   Double_t sum = 0;
   Double_t OAC_scaling = 0;
-  for (int b = 1; b <= (800/fBinsPi013TeVEMCPtRebin[i])*3./8.+1; b++) {
+  for (int b = 1; b <= (800/fBinsPi013TeVEMCPtRebin[i-1])*3./8.+1; b++) {
     sum = 0;
     // for (int c = 3; c <= 8; c++) {
     //   if(i == c){
