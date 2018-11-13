@@ -52,6 +52,9 @@ Double_t Chi2Calc(TH1D* h1, TH1D* h2, TH1D* h3, Double_t &ndf, Double_t a,
   else if(templatemethod == 2){
     chi2 += pow(a-b, 2.)/pow(0.01, 2.);
   }
+  else if(templatemethod == 4){
+    chi2 += pow(a-b, 2.)/pow(0.01, 2.);
+  }
 
   return chi2;
 }

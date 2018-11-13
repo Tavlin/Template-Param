@@ -236,7 +236,7 @@ void Template_CAP(std::string current_path, int templatemethod){
      * Histogram from the MC simulation which contains the only the true Pi0s
      * coming from y y; y_conv y; and double y_conv
      */
-    hPeak_MC = (TH1D*) MCFile->Get(Form("Mapping_TrueMeson_InvMass_in_Pt_Bin%02d",k));
+    hPeak_MC = (TH1D*) MCFile->Get(Form("Mapping_TrueFullMeson_InvMass_in_Pt_Bin%02d",k));
 
     /**
     * Open the file which contains the data output of the framework's work so to
@@ -266,9 +266,9 @@ void Template_CAP(std::string current_path, int templatemethod){
     }
     else if(templatemethod == 4){
 
-      CorrBkgFile = SafelyOpenRootfile("CorrBkgFile3to8.root");
+      CorrBkgFile = SafelyOpenRootfile("CorrBkgFileNoRebin.root");
       hCorrBkg    = NULL;
-      hCorrBkg    = (TH1D*) CorrBkgFile->Get(Form("hCorrBkgBin%02d", k));
+      hCorrBkg    = (TH1D*) CorrBkgFile->Get(Form("hCorrBkgNoRebinBin%02d", k));
       hCorrBkg->Rebin(fBinsPi013TeVEMCPtRebin[k-1]);
     }
     else{
@@ -347,6 +347,13 @@ void Template_CAP(std::string current_path, int templatemethod){
 
     temp_chi2_dt = 0;           // resetting the temp. variable for min. Chi^2
 
+    for(int bin = 1; bin <= hCorrBkg->GetNbinsX(); bin++){
+      hCorrBkg->SetBinContent(bin, hCorrBkg->GetBinContent(bin)*y_min*corrbackAreaScaling);
+      hCorrBkg->SetBinError(bin, sqrt(pow(hCorrBkg->GetBinError(bin)*y_min*corrbackAreaScaling,2.)+
+                                      pow(hCorrBkg->GetBinContent(bin)*max(vsigma_dt[k-1][3] - y_min,
+                                      y_min - vsigma_dt[k-1][2])*corrbackAreaScaling,2.)));
+    }
+
     /**
      * creating the new root file(s) to safe all the related histograms and fits
      * in it.
@@ -362,7 +369,7 @@ void Template_CAP(std::string current_path, int templatemethod){
         OutputFile      = new TFile("OutputFileBetterBkgPulse.root", "RECREATE");
       }
       else if(templatemethod == 4){
-        OutputFile      = new TFile("OutputFileNormal.root", "RECREATE");
+        OutputFile      = new TFile("OutputFileNormalWithConstraint.root", "RECREATE");
       }
       else{
         std::cerr << "templatemethod not found!" << '\n';
@@ -381,7 +388,7 @@ void Template_CAP(std::string current_path, int templatemethod){
         OutputFile      = new TFile("OutputFileBetterBkgPulse.root", "UPDATE");
       }
       else if(templatemethod == 4){
-        OutputFile      = new TFile("OutputFileNormal.root", "UPDATE");
+        OutputFile      = new TFile("OutputFileNormalWithConstraint.root", "UPDATE");
       }
       else{
         std::cerr << "templatemethod not found!" << '\n';
@@ -413,7 +420,7 @@ void Template_CAP(std::string current_path, int templatemethod){
      */
     data_clone_for_int_dt_chi2map = (TH1D*) hInvMass_Data->Clone("data_clone_for_int_dt_chi2map");
 
-    hCorrBkg->Scale(y_min*corrbackAreaScaling);       //sclaing of the corr. bkg.
+    // hCorrBkg->Scale(y_min*corrbackAreaScaling);       //sclaing of the corr. bkg.
 
     /**
      * Subtracting the scaled corr. bkg. from the same - scaled mixed event data
@@ -545,7 +552,7 @@ void Template_CAP(std::string current_path, int templatemethod){
     OutputFile      = new TFile("OutputFileBetterBkgPulse.root", "UPDATE");
   }
   else if(templatemethod == 4){
-    OutputFile      = new TFile("OutputFileNormal.root", "UPDATE");
+    OutputFile      = new TFile("OutputFileNormalWithConstraint.root", "UPDATE");
   }
   else{
     std::cerr << "templatemethod not found!" << '\n';
@@ -689,6 +696,8 @@ void Template_CAP(std::string current_path, int templatemethod){
   v_x_min.clear();
   v_y_min.clear();
   vsigma_dt.clear();
+
+  systematics(templatemethod, OutputFile);
 
   /**
    * Closing all the files which were opend for the Yields.

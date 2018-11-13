@@ -21,8 +21,8 @@ Double_t templow             =  1.e10;
 /**
  * Function to create the needed corr. bkg. templates for the NN and the 3 to 8
  * method.
- * The templates will be saved ion a File called "CorrBkgFile3to8.root"
- * Name of the templates: hCorrBkgBin%02d !
+ * The templates will be saved ion a File called "CorrBkgFileNoRebin.root"
+ * Name of the templates: hCorrBkgNoRebinBin%02d !
  */
 void CorrBkgCreation(void){
 
@@ -33,7 +33,7 @@ void CorrBkgCreation(void){
   TH1D* hInvMassData    = NULL;
   TH1D* hCorrBkg        = NULL;
 
-  TFile* CorrBkgFile    = new TFile("CorrBkgFile3to8.root", "RECREATE");
+  TFile* CorrBkgFile    = new TFile("CorrBkgFileNoRebin.root", "RECREATE");
 
   gDirectory->Cd(safePath.Data());                  // for saftey resetting path
 
@@ -76,7 +76,7 @@ void CorrBkgCreation(void){
 
     gDirectory = CorrBkgFile;
     hCorrBkg->          GetXaxis()->SetRangeUser(0.0, 0.3);
-    hCorrBkg->          Write(Form("hCorrBkgBin%02d", k));
+    hCorrBkg->          Write(Form("hCorrBkgNoRebinBin%02d", k));
 
     gDirectory->Cd(safePath.Data());                  // for saftey resetting path
 
@@ -99,8 +99,7 @@ void GetLowerBounds(void){
     std::cout << "lower bin = " << hMinv_pT_ratio_projectionX->GetXaxis()->GetBinCenter(lowerbinnumber)  << '\n';
   }
 
-OACFile->Close();
-
+  OACFile->Close();
 }
 
 
@@ -115,7 +114,7 @@ OACFile->Close();
  */
 TH1D* BackgroundAdding(int i){
 
-  TFile* CorrBkgFile    = SafelyOpenRootfile("./CorrBkgFile3to8.root");
+  TFile* CorrBkgFile    = SafelyOpenRootfile("./CorrBkgFileNoRebin.root");
 
   // setting j and k right depending on the binning
   const int b = 6;
@@ -134,13 +133,13 @@ TH1D* BackgroundAdding(int i){
   TH1D* (aBackStackup[k-j]);
   TFile* BackFile;
   TH1D* hBack           = NULL;
-  TH1D* (hRatio[k-j]);
+  TH1D* hRatio          = NULL;
   TList *list = new TList;
 
-  TF1* (fpol0[k-j]);
+  TF1* fPol0            = NULL;
 
 
-  hBack                 = (TH1D*) CorrBkgFile->Get(Form("hCorrBkgBin%02d",i));
+  hBack                 = (TH1D*) CorrBkgFile->Get(Form("hCorrBkgNoRebinBin%02d",i));
   hBack->Rebin(fBinsPi013TeVEMCPtRebin[i-1]);
 
   // comment *out* if you want fit without original bin!
@@ -150,19 +149,8 @@ TH1D* BackgroundAdding(int i){
 
   for(int m = k; m >= j; m--){
     if(m != i){
-      aBackStackup[k-m] = (TH1D*) CorrBkgFile->Get(Form("hCorrBkgBin%02d",m));
+      aBackStackup[k-m] = (TH1D*) CorrBkgFile->Get(Form("hCorrBkgNoRebinBin%02d",m));
       aBackStackup[k-m]->Rebin(fBinsPi013TeVEMCPtRebin[i-1]);
-      hRatio[k-m]       = (TH1D*) hBack->Clone();
-      fpol0[k-m]        = new TF1(Form("fpol0%02d",b), "[0]", 0.0, 0.3);
-      fpol0[k-m]->SetParLimits(0, 0.0, 5.0);
-      hRatio[k-m]->Divide(hBack, aBackStackup[k-m]);
-      for (int t = 0; t < hRatio[k-m]->fNcells; t++) {
-        if(hRatio[k-m]->GetBinError(t) > 40 || fabs(hRatio[k-m]->GetBinContent(t)) > 40){
-          hRatio[k-m]->SetBinContent(t, 0.0);
-          hRatio[k-m]->SetBinError(t, 0.0);
-        }
-      }
-      hRatio[k-m]->Fit(fpol0[k-m],"QM0P", "",  0.1, 0.2);
 
       ////////////////////////////////////////////////////////////////////////////
       // fit function
@@ -192,7 +180,7 @@ TH1D* BackgroundAdding(int i){
   TH1D* hLowerBkg     = (TH1D*) hBack->Clone("hLowerBkg");
   TH1D* hPilledUpBack = (TH1D*) hBack->Clone("hPilledUpBack");
 
-  Int_t Nbins = (hBack->fNcells)-1;
+  Int_t Nbins = hBack->GetEntries();
   for(int o = 0; o < Nbins; o++){
     for(int l = k; l >= j; l--){
       if(l != i){
@@ -216,31 +204,39 @@ TH1D* BackgroundAdding(int i){
   hPilledUpBack->Merge(list);
   hPilledUpBack->Scale(1./(Double_t)scalefactor);
 
+  hRatio      = (TH1D*) hBack->Clone();
+  hRatio->Divide(hBack, hPilledUpBack, 1, 1);
+
+  fPol0        = new TF1(Form("fPol0_bin%02d",i), "[0]", 0.0, 0.3);
+  fPol0->SetParLimits(0, 0.0, 5.0);
+
+  for (int t = 1; t < hRatio->GetNbinsX(); t++) {
+    if(hRatio->GetBinError(t) > 40 || fabs(hRatio->GetBinContent(t)) > 40){
+      hRatio->SetBinContent(t, 0.0);
+      hRatio->SetBinError(t, 0.0);
+    }
+  }
+  hRatio->Fit(fPol0,"QM0P", "",  0.1, 0.2);
+
   TString sPath = gDirectory->GetPath();
 
   if(i == 1){
-    BackFile      = new TFile("BackFile.root", "RECREATE");
+    BackFile      = new TFile("BackFileNN.root", "RECREATE");
   }
   else{
-    BackFile      = new TFile("BackFile.root", "UPDATE");
+    BackFile      = new TFile("BackFileNN.root", "UPDATE");
   }
 
   hPilledUpBack->Write(Form("hPilledUpBack_Bin%02d_with%02d_bins", i, b));
   hUpperBkg->Write(Form("hUpperBkg_Bin%02d_with%02d_bins", i, b));
   hLowerBkg->Write(Form("hLowerBkg_Bin%02d_with%02d_bins", i, b));
+  hRatio->Write(Form("hRatio_Bin%02d", i));
+  fPol0->Write(Form("fPol0_Bin%02d", i));
 
-  for(int m = k; m >= j; m--){
-    if(m == i){
-      continue;
-    }
-    else{
-    hRatio[k-m]->Write(Form("hRatio_Bin%02d[%02d]", i, m));
-    fpol0[k-m]->Write(Form("fpol0_Bin%02d[%02d]", i, m));
-    aBackStackup[k-m]= NULL;
-    hRatio[k-m] = NULL;
-    delete fpol0[k-m];
-    }
-  }
+  // aBackStackup[k-m]= NULL;
+  hRatio = NULL;
+  delete fPol0;
+
 
   hUpperBkg = NULL;
   hLowerBkg = NULL;
@@ -268,7 +264,7 @@ TH1D* BackGround3to8(int i){
   TFile* OACFile        = SafelyOpenRootfile("./OAC_ToyMCMerged.root");
   TH2D* hMinv_pT_ratio  = (TH2D*)  OACFile->Get("hMinv_pT_ratio");
 
-  TFile* CorrBkgFile    = SafelyOpenRootfile("./CorrBkgFile3to8.root");
+  TFile* CorrBkgFile    = SafelyOpenRootfile("./CorrBkgFileNoRebin.root");
 
   // setting j and k right depending on the binning
   int j = 3;
@@ -283,8 +279,10 @@ TH1D* BackGround3to8(int i){
   TH1D* (aBackStackup[k-j]);
   TFile* BackFile;
   TH1D* hBack           = NULL;
+  TH1D* hRatio          = NULL;
+  TF1*  fPol0           = NULL;
   TList *list = new TList;
-  hBack                 = (TH1D*) CorrBkgFile->Get(Form("hCorrBkgBin%02d",i));
+  hBack                 = (TH1D*) CorrBkgFile->Get(Form("hCorrBkgNoRebinBin%02d",i));
   hBack->Rebin(fBinsPi013TeVEMCPtRebin[i-1]);
   hMinv_pT_ratio->RebinX(fBinsPi013TeVEMCPtRebin[i-1]);
   // needs rescaling since it is 8 histos merged and also for the rebinnig
@@ -293,7 +291,7 @@ TH1D* BackGround3to8(int i){
   for(int m = k; m >= j; m--){
     if(m != i){
 
-      aBackStackup[k-m] = (TH1D*) CorrBkgFile->Get(Form("hCorrBkgBin%02d",m));
+      aBackStackup[k-m] = (TH1D*) CorrBkgFile->Get(Form("hCorrBkgNoRebinBin%02d",m));
       aBackStackup[k-m]->Rebin(fBinsPi013TeVEMCPtRebin[i-1]);
       for (int w = 1; w < aBackStackup[k-m]->FindBin(0.3); w++) {
         if(fabs(hMinv_pT_ratio->GetBinContent(w, m+1)) >= 1.e-2){
@@ -345,9 +343,41 @@ TH1D* BackGround3to8(int i){
     // std::cout << "BinContent = " << hPilledUpBack->GetBinContent(b) << '\n';
   }
 
+  hRatio      = (TH1D*) hBack->Clone();
+  hRatio->Divide(hBack, hPilledUpBack, 1, 1);
+
+  fPol0        = new TF1(Form("fPol0_bin%02d",i), "[0]", 0.0, 0.3);
+  fPol0->SetParLimits(0, 0.0, 5.0);
+
+  for (int t = 1; t < hRatio->GetNbinsX(); t++) {
+    if(hRatio->GetBinError(t) > 40 || fabs(hRatio->GetBinContent(t)) > 40){
+      hRatio->SetBinContent(t, 0.0);
+      hRatio->SetBinError(t, 0.0);
+    }
+  }
+  hRatio->Fit(fPol0,"QM0P", "",  0.1, 0.2);
+
+
+
+  TString sPath = gDirectory->GetPath();
+
+  if(i == 1){
+    BackFile      = new TFile("BackFile3to8.root", "RECREATE");
+  }
+  else{
+    BackFile      = new TFile("BackFile3to8.root", "UPDATE");
+  }
+
+  hRatio->Write(Form("hRatio_Bin%02d", i));
+  fPol0->Write(Form("fPol0_Bin%02d", i));
+  BackFile->Close();
+
+  gDirectory->Cd(sPath.Data());
+
 
   delete list;
   delete hBack;
+  delete fPol0;
   OACFile->Close();
   CorrBkgFile->Close();
 
