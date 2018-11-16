@@ -8,6 +8,8 @@
  * @param  templatemethod [== 1 uses the backgrund templates from the 3 to 8 method,
  *                         == 2 uses the backgrund templates from the Next Neighbours method]
  *                         == 3 uses the fPulse function on the 3 to 8 Output to refine it.
+ *                         == 4 uses "Normal" mode, which means corr. back for every bin
+ *                         == 5 uses MC reko as template
  *                         only useable AFTER 3 to 8 root file was created!
  */
 void Template_CAP(std::string current_path, int templatemethod){
@@ -159,7 +161,7 @@ void Template_CAP(std::string current_path, int templatemethod){
    * 1st. the Doublecounting Histogram
    * 2nd. the MC Histogram of Pi0 in acceptance as a function of pT
    */
-  ESDFile_MC    = SafelyOpenRootfile("./../Daten/" + current_path + ".root");
+  ESDFile_MC    = SafelyOpenRootfile("./../Daten/GammaCalo_503_MC_2017.root");
   if (ESDFile_MC->IsOpen() ) printf("ESDFile_MC opened successfully\n");
 
   lGammaCalo_MC          = (TList*) ESDFile_MC->Get("GammaCalo_503");
@@ -174,7 +176,7 @@ void Template_CAP(std::string current_path, int templatemethod){
    * Access the ESD File form the data for one Histograms:
    * 1st. the NEvents Histogram to get the number of Events with MinBias Trigger
    */
-  ESDFile_data    = SafelyOpenRootfile("./../Daten/GammaCalo-data_503.root");
+  ESDFile_data    = SafelyOpenRootfile("./../Daten/GammaCalo_503_data_2017.root");
   if (ESDFile_data->IsOpen() ) printf("ESDFile_data opened successfully\n");
 
   lGammaCalo_data        = (TList*) ESDFile_data->Get("GammaCalo_503");
@@ -271,6 +273,13 @@ void Template_CAP(std::string current_path, int templatemethod){
       hCorrBkg    = (TH1D*) CorrBkgFile->Get(Form("hCorrBkgNoRebinBin%02d", k));
       hCorrBkg->Rebin(fBinsPi013TeVEMCPtRebin[k-1]);
     }
+    else if(templatemethod == 5){
+      CorrBkgFile = SafelyOpenRootfile("CorrBkgFileNoRebin.root");
+      hCorrBkg    = NULL;
+      hCorrBkg    = (TH1D*) CorrBkgFile->Get(Form("hCorrBkgNoRebinBin%02d", k));
+      hCorrBkg->Rebin(fBinsPi013TeVEMCPtRebin[k-1]);
+      hPeak_MC = (TH1D*) hInvMass_MC->Clone("hPeak_MC");
+    }
     else{
       std::cerr << "templatemethod not found!" << '\n';
       exit(2);
@@ -347,20 +356,13 @@ void Template_CAP(std::string current_path, int templatemethod){
 
     temp_chi2_dt = 0;           // resetting the temp. variable for min. Chi^2
 
-    for(int bin = 1; bin <= hCorrBkg->GetNbinsX(); bin++){
-      hCorrBkg->SetBinContent(bin, hCorrBkg->GetBinContent(bin)*y_min*corrbackAreaScaling);
-      hCorrBkg->SetBinError(bin, sqrt(pow(hCorrBkg->GetBinError(bin)*y_min*corrbackAreaScaling,2.)+
-                                      pow(hCorrBkg->GetBinContent(bin)*max(vsigma_dt[k-1][3] - y_min,
-                                      y_min - vsigma_dt[k-1][2])*corrbackAreaScaling,2.)));
-    }
-
     /**
      * creating the new root file(s) to safe all the related histograms and fits
      * in it.
      */
     if(k == 1){
       if(templatemethod == 2){
-        OutputFile      = new TFile("OutputFileBetterBkgNNforAdrian.root", "RECREATE");
+        OutputFile      = new TFile("OutputFileBetterBkgNN.root", "RECREATE");
       }
       else if(templatemethod == 1){
         OutputFile      = new TFile("OutputFileBetterBkg3to8.root", "RECREATE");
@@ -369,7 +371,10 @@ void Template_CAP(std::string current_path, int templatemethod){
         OutputFile      = new TFile("OutputFileBetterBkgPulse.root", "RECREATE");
       }
       else if(templatemethod == 4){
-        OutputFile      = new TFile("OutputFileNormalWithConstraint.root", "RECREATE");
+        OutputFile      = new TFile("OutputFileNormal.root", "RECREATE");
+      }
+      else if(templatemethod == 5){
+        OutputFile      = new TFile("OutputFileOneTemplate.root", "RECREATE");
       }
       else{
         std::cerr << "templatemethod not found!" << '\n';
@@ -379,7 +384,7 @@ void Template_CAP(std::string current_path, int templatemethod){
 
     else{
       if(templatemethod == 2){
-        OutputFile      = new TFile("OutputFileBetterBkgNNforAdrian.root", "UPDATE");
+        OutputFile      = new TFile("OutputFileBetterBkgNN.root", "UPDATE");
       }
       else if(templatemethod == 1){
         OutputFile      = new TFile("OutputFileBetterBkg3to8.root", "UPDATE");
@@ -388,7 +393,10 @@ void Template_CAP(std::string current_path, int templatemethod){
         OutputFile      = new TFile("OutputFileBetterBkgPulse.root", "UPDATE");
       }
       else if(templatemethod == 4){
-        OutputFile      = new TFile("OutputFileNormalWithConstraint.root", "UPDATE");
+        OutputFile      = new TFile("OutputFileNormal.root", "UPDATE");
+      }
+      else if(templatemethod == 5){
+        OutputFile      = new TFile("OutputFileOneTemplate.root", "UPDATE");
       }
       else{
         std::cerr << "templatemethod not found!" << '\n';
@@ -413,6 +421,24 @@ void Template_CAP(std::string current_path, int templatemethod){
     OutputFile->Close();
 
     gDirectory->Cd(safePath.Data()); // resetting directory again.
+
+    if(templatemethod == 5){
+      for(int bin = 1; bin <= hCorrBkg->GetNbinsX(); bin++){
+        hCorrBkg->SetBinContent(bin, hCorrBkg->GetBinContent(bin)*x_min*corrbackAreaScaling);
+        hCorrBkg->SetBinError(bin, sqrt(pow(hCorrBkg->GetBinError(bin)*x_min*corrbackAreaScaling,2.)+
+                                        pow(hCorrBkg->GetBinContent(bin)*max(vsigma_dt[k-1][1] - x_min,
+                                        x_min - vsigma_dt[k-1][0])*corrbackAreaScaling,2.)));
+      }
+    }
+
+    else{
+      for(int bin = 1; bin <= hCorrBkg->GetNbinsX(); bin++){
+        hCorrBkg->SetBinContent(bin, hCorrBkg->GetBinContent(bin)*y_min*corrbackAreaScaling);
+        hCorrBkg->SetBinError(bin, sqrt(pow(hCorrBkg->GetBinError(bin)*y_min*corrbackAreaScaling,2.)+
+                                        pow(hCorrBkg->GetBinContent(bin)*max(vsigma_dt[k-1][3] - y_min,
+                                        y_min - vsigma_dt[k-1][2])*corrbackAreaScaling,2.)));
+      }
+    }
 
     /**
      * Data histogram clone which will be integrated to get the uncorrected Yield
@@ -543,7 +569,7 @@ void Template_CAP(std::string current_path, int templatemethod){
    * reopening the new root file(s) to safe all the related histograms in it.
    */
   if(templatemethod == 2){
-    OutputFile      = new TFile("OutputFileBetterBkgNNforAdrian.root", "UPDATE");
+    OutputFile      = new TFile("OutputFileBetterBkgNN.root", "UPDATE");
   }
   else if(templatemethod == 1){
     OutputFile      = new TFile("OutputFileBetterBkg3to8.root", "UPDATE");
@@ -552,7 +578,10 @@ void Template_CAP(std::string current_path, int templatemethod){
     OutputFile      = new TFile("OutputFileBetterBkgPulse.root", "UPDATE");
   }
   else if(templatemethod == 4){
-    OutputFile      = new TFile("OutputFileNormalWithConstraint.root", "UPDATE");
+    OutputFile      = new TFile("OutputFileNormal.root", "UPDATE");
+  }
+  else if(templatemethod == 5){
+    OutputFile      = new TFile("OutputFileOneTemplate.root", "UPDATE");
   }
   else{
     std::cerr << "templatemethod not found!" << '\n';
@@ -564,7 +593,7 @@ void Template_CAP(std::string current_path, int templatemethod){
    * Open the file which contains the corrected true norm efficiency Yield from
    * the framework.
    */
-  TFile* FData_corrected = SafelyOpenRootfile("./00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_data_GammaConvV1Correction_00010113_1111112067032220000_01631031000000d0.root");
+  TFile* FData_corrected = SafelyOpenRootfile("/data4/mhemmer/Documents/BachelorArbeit/GammaCalo_503_data_2017/00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_data_GammaConvV1Correction_00010113_1111112067032220000_01631031000000d0.root");
   if (FData_corrected->IsOpen() ) printf("FData_corrected opened successfully\n");
 
   CorrectedYieldNormEff = (TH1D*) FData_corrected->Get(Form("CorrectedYieldNormEff"));
@@ -574,7 +603,7 @@ void Template_CAP(std::string current_path, int templatemethod){
   * Open the MC file which contains the correction histograms for efficiency and
   * acceptance. Obtaining those two directly afterwards.
    */
-  CorrectionFile = SafelyOpenRootfile("./00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_MC_GammaConv_OnlyCorrectionFactor_00010113_1111112067032220000_01631031000000d0.root");
+  CorrectionFile = SafelyOpenRootfile("/data4/mhemmer/Documents/BachelorArbeit/GammaCalo_503_data_2017/00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_MC_GammaConv_OnlyCorrectionFactor_00010113_1111112067032220000_01631031000000d0.root");
   if (CorrectionFile->IsOpen() ) printf("CorrectionFile opened successfully\n");
 
 
@@ -600,12 +629,13 @@ void Template_CAP(std::string current_path, int templatemethod){
   * from the function parametrisation method from the framework.
    */
   DataFile = NULL;
-  DataFile = SafelyOpenRootfile("./00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_data_GammaConvV1WithoutCorrection_00010113_1111112067032220000_01631031000000d0.root");
+  DataFile = SafelyOpenRootfile("/data4/mhemmer/Documents/BachelorArbeit/GammaCalo_503_data_2017/00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_data_GammaConvV1WithoutCorrection_00010113_1111112067032220000_01631031000000d0.root");
   if (DataFile->IsOpen() ) printf("DataFile opened successfully\n");
 
   TH1D* hYield_framework = (TH1D*) DataFile->Get(Form("histoYieldMeson"));
   TH1D* histoChi2_0 = (TH1D*) DataFile->Get(Form("histoChi2_0"));
   SetHistoStandardSettings(histoChi2_0);
+  std::cout << "I AM AFTER OPENING OF ALL 3 FILES" << '\n';
 
   /**
    * correcting the uncorrected framework yield with the efficiency.
@@ -702,9 +732,9 @@ void Template_CAP(std::string current_path, int templatemethod){
   /**
    * Closing all the files which were opend for the Yields.
    */
-  CorrectionFile->Close();
-  OutputFile->Close();
-  DataFile->Close();
-  FData_corrected->Close();
+  // CorrectionFile->Close();
+  // OutputFile->Close();
+  // DataFile->Close();
+  // FData_corrected->Close();
 
 }

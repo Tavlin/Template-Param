@@ -12,7 +12,7 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
   * templatemethod == 1 for 3 to 8 Method
   * templatemethod == 2 for BetterBkg3to8Pulse method
   */
-  for (int templatemethod = 1; templatemethod <= 4; templatemethod++) {
+  for (int templatemethod = 1; templatemethod <= 5; templatemethod++) {
 
     TString str;
     const Int_t nbins = numberbins;
@@ -89,7 +89,7 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
 
 
     if(templatemethod == 2){
-      OutputFile      = SafelyOpenRootfile("OutputFileBetterBkgNNforAdrian.root");
+      OutputFile      = SafelyOpenRootfile("OutputFileBetterBkgNN.root");
     }
     else if(templatemethod == 1){
       OutputFile      = SafelyOpenRootfile("OutputFileBetterBkg3to8.root");
@@ -99,6 +99,9 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
     }
     else if(templatemethod == 4){
       OutputFile      = SafelyOpenRootfile("OutputFileNormal.root");
+    }
+    else if(templatemethod == 5){
+      OutputFile      = SafelyOpenRootfile("OutputFileOneTemplate.root");
     }
     else{
       std::cerr << "No Outputfile loaded!" << std::endl;
@@ -115,19 +118,19 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
      * Chi^2/ndf (pT) from my method
      */
     hChi2Map_Chi2_pT            = (TH1D*)OutputFile->Get("hChi2Map_Chi2_pT");
-    SetHistogramProperties(hCorrbackAreaScaling, "pt", "#chi^{2}/ndf", 0, 1.4, 12.);
+    SetHistogramProperties(hChi2Map_Chi2_pT, "pt", "#chi^{2}/ndf", 0, 1.4, 12.);
 
     /**
      * Chi^2/ndf from the framework method with function parametrization
      */
     histoChi2_0                 = (TH1D*) OutputFile->Get("histoChi2_0");
-    SetHistogramProperties(hCorrbackAreaScaling, "pt", "#chi^{2}/ndf", 5, 1.4, 12.);
+    SetHistogramProperties(histoChi2_0, "pt", "#chi^{2}/ndf", 5, 1.4, 12.);
 
     /**
      * Signal Area Scaling factor. Currently disabled so NO USE!
      */
     hSignalAreaScaling          = (TH1D*)OutputFile->Get("hSignalAreaScaling");
-    SetHistogramProperties(hCorrbackAreaScaling, "pt", "FS_{Signal}", 0, 1.4, 12.);
+    SetHistogramProperties(hSignalAreaScaling, "pt", "FS_{Signal}", 0, 1.4, 12.);
 
     /**
      * Correlated Background Area Scaling factor. Currently disabled so NO USE!
@@ -265,19 +268,36 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
 
           fPol0      = (TF1*)  BackFileNN->Get(Form("fPol0_Bin%02d", k));
 
+          hRatio_Bkg->GetYaxis()->SetRangeUser(fPol0->GetParameter(0)-1.54, fPol0->GetParameter(0)+1.54);
+
           OAhists->Clear();
           OAratios->Clear();
 
-          OAhists->Add(hCorrBack);
-          OAhists->Add(hCorrBackNoRebin);
+          TLegend* legCorrBkgComp = new TLegend(0.4, 0.8, 0.8, 0.95);
+          legCorrBkgComp->SetHeader("Template");
+          legCorrBkgComp->AddEntry(hCorrBack, "korr. Untergrund (kombiniert)", "p");
+          legCorrBkgComp->AddEntry(hCorrBackNoRebin, "korr. Untergrund (einzeln)", "p");
+
+          if(hCorrBack->GetMaximum() > hCorrBackNoRebin->GetMaximum()){
+            OAhists->Add(hCorrBack);
+            OAhists->Add(hCorrBackNoRebin);
+
+          }
+          else{
+            OAhists->Add(hCorrBackNoRebin);
+            OAhists->Add(hCorrBack);
+          }
+          OAhists->Add(legCorrBkgComp);
           OAratios->Add(hRatio_Bkg);
-          // OAratios->Add(fPol0);
+          OAratios->Add(fPol0);
 
           c2 = makeCanvas(OAhists, OAratios, "notimeThickHorizontal", 0, 0);
 
           c2->Update();
           c2->SaveAs(Form("BetterBkgNN/BackgroundWithRatio%02d." + PicFormat,k));
           c2->Clear();
+
+          delete legCorrBkgComp;
         }
         else if(templatemethod == 1){
           hCorrBackNoRebin    = NULL;
@@ -293,14 +313,28 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
 
           SetHistogramProperties(hCorrBackNoRebin, "minv", count_str, 1, 0.0, 0.3);
           SetHistogramProperties(hRatio_Bkg, "minv", "ratio", 5, 0.0, 0.3);
+          hRatio_Bkg->GetYaxis()->SetRangeUser(fPol0->GetParameter(0)-1.5, fPol0->GetParameter(0)+1.5);
 
           OAhists->Clear();
           OAratios->Clear();
 
-          OAhists->Add(hCorrBack);
-          OAhists->Add(hCorrBackNoRebin);
+          TLegend* legCorrBkgComp = new TLegend(0.4, 0.8, 0.8, 0.95);
+          legCorrBkgComp->SetHeader("Template");
+          legCorrBkgComp->AddEntry(hCorrBack, "korr. Untergrund (kombiniert)", "p");
+          legCorrBkgComp->AddEntry(hCorrBackNoRebin, "korr. Untergrund (einzeln)", "p");
+
+          if(hCorrBack->GetMaximum() > hCorrBackNoRebin->GetMaximum()){
+            OAhists->Add(hCorrBack);
+            OAhists->Add(hCorrBackNoRebin);
+          }
+          else{
+            OAhists->Add(hCorrBackNoRebin);
+            OAhists->Add(hCorrBack);
+          }
+          OAhists->Add(legCorrBkgComp);
+
           OAratios->Add(hRatio_Bkg);
-          // OAratios->Add(fPol0);
+          OAratios->Add(fPol0);
 
           c2 = makeCanvas(OAhists, OAratios, "notimeThick", 0, 0);
 
@@ -308,6 +342,8 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
           c2->Update();
           c2->SaveAs(Form("BetterBkg3to8/BackgroundWithRatio%02d." + PicFormat,k));
           c2->Clear();
+
+          delete legCorrBkgComp;
 
         }
         else{
@@ -355,6 +391,9 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
           }
           if(templatemethod == 4){
             cChi2Map->SaveAs(Form("Normal/Chi2Map%02d." + PicFormat,k));
+          }
+          if(templatemethod == 5){
+            cChi2Map->SaveAs(Form("OneTemplate/Chi2Map%02d." + PicFormat,k));
           }
           cChi2Map->Clear();
         }
@@ -415,6 +454,9 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
           if(templatemethod == 4){
             c1->SaveAs(Form("Normal/ParamResultParts_Bin%02d." + PicFormat,k));
           }
+          if(templatemethod == 5){
+            c1->SaveAs(Form("OneTemplate/ParamResultParts_Bin%02d." + PicFormat,k));
+          }
           c1->Clear();
           TLegend* lParamResult = new TLegend(0.58,0.45,0.8,0.63);
           lParamResult->AddEntry(hData, "Signal ohne komb. Untegrund", "l");
@@ -447,6 +489,9 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
           }
           if(templatemethod == 4){
             c1->SaveAs(Form("Normal/ParamResult_Bin%02d." + PicFormat,k));
+          }
+          if(templatemethod == 5){
+            c1->SaveAs(Form("OneTemplate/ParamResult_Bin%02d." + PicFormat,k));
           }
 
           c1->Clear();
@@ -544,6 +589,9 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
       if(templatemethod == 4){
         c1->SaveAs(Form("Normal/Chi2Comparison." + PicFormat));
       }
+      if(templatemethod == 5){
+        c1->SaveAs(Form("OneTemplate/Chi2Comparison." + PicFormat));
+      }
       c1->Clear();
       c1->SetLogx(0);
 
@@ -576,6 +624,9 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
       }
       if(templatemethod == 4){
         c1->SaveAs(Form("Normal/UncorrYields." + PicFormat));
+      }
+      if(templatemethod == 5){
+        c1->SaveAs(Form("OneTemplate/UncorrYields." + PicFormat));
       }
       delete leg;
     }
@@ -611,6 +662,9 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
       }
       if(templatemethod == 4){
         c1->SaveAs(Form("Normal/BGFactorComp." + PicFormat));
+      }
+      if(templatemethod == 5){
+        c1->SaveAs(Form("OneTemplate/BGFactorComp." + PicFormat));
       }
       c1->Clear();
 
@@ -675,6 +729,9 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
       }
       if(templatemethod == 4){
         c1->SaveAs(Form("Normal/b_to_a_ratio." + PicFormat));
+      }
+      if(templatemethod == 5){
+        c1->SaveAs(Form("OneTemplate/b_to_a_ratio." + PicFormat));
       }
       c1->Clear();
 

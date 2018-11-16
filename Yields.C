@@ -6,7 +6,7 @@ void Yields(TString PicFormat = "png"){
     auto OAhists = new TObjArray();
     auto OAratios = new TObjArray();
 
-    TFile* BetterBkgNN    = SafelyOpenRootfile("OutputFileBetterBkgNNforAdrian.root");
+    TFile* BetterBkgNN    = SafelyOpenRootfile("OutputFileBetterBkgNN.root");
 
     TFile* BetterBkg3to8  = SafelyOpenRootfile("OutputFileBetterBkg3to8.root");
 
@@ -14,7 +14,9 @@ void Yields(TString PicFormat = "png"){
 
     TFile* Normal         = SafelyOpenRootfile("OutputFileNormal.root");
 
-    TFile* NormalWC       = SafelyOpenRootfile("OutputFileNormalWithConstraint.root");
+    // TFile* NormalWC       = SafelyOpenRootfile("OutputFileNormalWithConstraint.root");
+
+    TFile* OneTemplate    = SafelyOpenRootfile("OutputFileOneTemplate.root");
 
     TH1D* hCorrYieldME_BetterBkgNN              = NULL;
     TH1D* hCorrYieldME_StatError_BetterBkgNN    = NULL;
@@ -30,9 +32,21 @@ void Yields(TString PicFormat = "png"){
     TH1D* hCorrYieldME_Ratio_Normal             = NULL;
     TH1D* hCorrectedYieldNormEff_StatError      = NULL;
     TH1D* hCorrectedYieldNormEff                = NULL;
-    TH1D* hCorrYieldME_NormalWC                 = NULL;
-    TH1D* hCorrYieldME_StatError_NormalWC       = NULL;
-    TH1D* hCorrYieldME_Ratio_NormalWC           = NULL;
+    // TH1D* hCorrYieldME_NormalWC                 = NULL;
+    // TH1D* hCorrYieldME_StatError_NormalWC       = NULL;
+    // TH1D* hCorrYieldME_Ratio_NormalWC           = NULL;
+    TH1D* Chi2_pT_BetterBkgNN                   = NULL;
+    TH1D* Chi2_pT_BetterBkg3to8                 = NULL;
+    TH1D* Chi2_pT_BetterBkgPulse                = NULL;
+    TH1D* Chi2_pT_Normal                        = NULL;
+    // TH1D* Chi2_pT_NormalWC                      = NULL;
+    TH1D* Chi2_pT_Framework                     = NULL;
+
+    TH1D* hCorrYieldME_OneTemplate              = NULL;
+    TH1D* hCorrYieldME_StatError_OneTemplate    = NULL;
+    TH1D* hCorrYieldME_Ratio_OneTemplate        = NULL;
+    TH1D* Chi2_pT_OneTemplate                   = NULL;
+
     TCanvas* c1                                 = NULL;
 
 
@@ -78,14 +92,47 @@ void Yields(TString PicFormat = "png"){
     hCorrectedYieldNormEff                = (TH1D*) Normal->Get("hCorrectedYieldNormEff");
     SetHistogramProperties(hCorrectedYieldNormEff, "pt", strCorrectedYield, 5, 1.4, 12.);
 
-    hCorrYieldME_NormalWC                 = (TH1D*) NormalWC->Get("hYield_dt_chi2map_corrected");
-    SetHistogramProperties(hCorrYieldME_NormalWC, "pt", strCorrectedYield, 3, 1.4, 12.);
+    // hCorrYieldME_NormalWC                 = (TH1D*) NormalWC->Get("hYield_dt_chi2map_corrected");
+    // SetHistogramProperties(hCorrYieldME_NormalWC, "pt", strCorrectedYield, 3, 1.4, 12.);
 
-    hCorrYieldME_StatError_NormalWC       = (TH1D*) NormalWC->Get("hCorrYieldME_StatError");
-    SetHistogramProperties(hCorrYieldME_StatError_NormalWC, "pt", "Ratio", 3, 1.4, 12.);
+    // hCorrYieldME_StatError_NormalWC       = (TH1D*) NormalWC->Get("hCorrYieldME_StatError");
+    // SetHistogramProperties(hCorrYieldME_StatError_NormalWC, "pt", "Ratio", 3, 1.4, 12.);
 
-    hCorrYieldME_Ratio_NormalWC           = (TH1D*) NormalWC->Get("hCorrYieldME_Ratio");
-    SetHistogramProperties(hCorrYieldME_Ratio_NormalWC, "pt", "Ratio", 3, 1.4, 12.);
+    // hCorrYieldME_Ratio_NormalWC           = (TH1D*) NormalWC->Get("hCorrYieldME_Ratio");
+    // SetHistogramProperties(hCorrYieldME_Ratio_NormalWC, "pt", "Ratio", 3, 1.4, 12.);
+
+
+    Chi2_pT_BetterBkgNN    = (TH1D*) BetterBkgNN->Get("hChi2Map_Chi2_pT");
+    SetHistogramProperties(Chi2_pT_BetterBkgNN, "pt", "#chi^{2}/ndf", 1, 1.4, 12.);
+
+    Chi2_pT_BetterBkg3to8  = (TH1D*) BetterBkg3to8->Get("hChi2Map_Chi2_pT");
+    SetHistogramProperties(Chi2_pT_BetterBkg3to8, "pt", "#chi^{2}/ndf", 2, 1.4, 12.);
+
+    Chi2_pT_BetterBkgPulse = (TH1D*) BetterBkgPulse->Get("hChi2Map_Chi2_pT");
+    SetHistogramProperties(Chi2_pT_BetterBkgPulse, "pt", "#chi^{2}/ndf", 0, 1.4, 12.);
+
+    Chi2_pT_Normal         = (TH1D*) Normal->Get("hChi2Map_Chi2_pT");
+    SetHistogramProperties(Chi2_pT_Normal, "pt", "#chi^{2}/ndf", 4, 1.4, 12.);
+
+    // Chi2_pT_NormalWC       = (TH1D*) NormalWC->Get("hChi2Map_Chi2_pT");
+    // SetHistogramProperties(Chi2_pT_NormalWC, "pt", "#chi^{2}/ndf", 3, 1.4, 12.);
+
+    Chi2_pT_Framework      = (TH1D*) Normal->Get("histoChi2_0");
+    SetHistogramProperties(Chi2_pT_Framework, "pt", "#chi^{2}/ndf", 5, 1.4, 12.);
+
+    hCorrYieldME_OneTemplate = (TH1D*) OneTemplate->Get("hYield_dt_chi2map_corrected");
+    SetHistogramProperties(hCorrYieldME_OneTemplate, "pt", strCorrectedYield, 6, 1.4, 12.);
+
+    hCorrYieldME_StatError_OneTemplate = (TH1D*) OneTemplate->Get("hCorrYieldME_StatError");
+    SetHistogramProperties(hCorrYieldME_StatError_OneTemplate, "pt", StatUn_Str, 6, 1.4, 12.);
+
+    hCorrYieldME_Ratio_OneTemplate = (TH1D*) OneTemplate->Get("hCorrYieldME_Ratio");
+    SetHistogramProperties(hCorrYieldME_Ratio_OneTemplate, "pt", "Ratio", 6, 1.4, 12.);
+
+    Chi2_pT_OneTemplate = (TH1D*) OneTemplate->Get("hChi2Map_Chi2_pT");
+    SetHistogramProperties(Chi2_pT_OneTemplate, "pt", "#chi^{2}/ndf", 6, 1.4, 12.);
+
+
 
 
 
@@ -93,7 +140,7 @@ void Yields(TString PicFormat = "png"){
     legYields->SetHeader("Methode:");
     legYields->AddEntry(hCorrectedYieldNormEff, "Funktionsparametrisierung", "p");
     legYields->AddEntry(hCorrYieldME_Normal, "Templates (normal)", "p");
-    legYields->AddEntry(hCorrYieldME_NormalWC, "Templates (normal mE)", "p");
+    // legYields->AddEntry(hCorrYieldME_NormalWC, "Templates (normal mE)", "p");
     legYields->AddEntry(hCorrYieldME_BetterBkg3to8, "Templates (3 bis 8)", "p");
     legYields->AddEntry(hCorrYieldME_BetterBkgPulse, "Templates (Pulsefunktion)", "p");
     legYields->AddEntry(hCorrYieldME_BetterBkgNN, "Templates (naechste Nachbarn)", "p");
@@ -118,11 +165,16 @@ void Yields(TString PicFormat = "png"){
     legYieldNormal->AddEntry(hCorrectedYieldNormEff, "Funktionsparametrisierung", "p");
     legYieldNormal->AddEntry(hCorrYieldME_Normal, "Templates (normal)", "p");
 
+    TLegend* legYieldOneTemplate = new TLegend(0.21, 0.01, 0.47, 0.25);
+    legYieldOneTemplate->SetHeader("Methode:");
+    legYieldOneTemplate->AddEntry(hCorrectedYieldNormEff, "Funktionsparametrisierung", "p");
+    legYieldOneTemplate->AddEntry(hCorrYieldME_OneTemplate, " einzelnes Template", "p");
+
     TLegend* legYieldStatUncer= new TLegend(0.5, 0.2, 0.8, 0.4);
     legYieldStatUncer->SetHeader("Methode:");
     legYieldStatUncer->AddEntry(hCorrectedYieldNormEff_StatError, "Funktionsparametrisierung", "l");
     legYieldStatUncer->AddEntry(hCorrYieldME_StatError_Normal, "Templates (normal)", "l");
-    legYieldStatUncer->AddEntry(hCorrYieldME_StatError_NormalWC, "Templates (normal mE)", "l");
+    // legYieldStatUncer->AddEntry(hCorrYieldME_StatError_NormalWC, "Templates (normal mE)", "l");
     legYieldStatUncer->AddEntry(hCorrYieldME_StatError_BetterBkg3to8, "Templates (3 bis 8)", "l");
     legYieldStatUncer->AddEntry(hCorrYieldME_StatError_BetterBkgPulse, "Templates (Pulsefunktion)", "l");
     legYieldStatUncer->AddEntry(hCorrYieldME_StatError_BetterBkgNN, "Templates (naechste Nachbarn)", "l");
@@ -133,7 +185,7 @@ void Yields(TString PicFormat = "png"){
     OAratios->Clear();
 
     OAhists->Add(hCorrYieldME_Normal);
-    OAhists->Add(hCorrYieldME_NormalWC);
+    // OAhists->Add(hCorrYieldME_NormalWC);
     OAhists->Add(hCorrYieldME_BetterBkg3to8);
     OAhists->Add(hCorrYieldME_BetterBkgPulse);
     OAhists->Add(hCorrYieldME_BetterBkgNN);
@@ -141,7 +193,7 @@ void Yields(TString PicFormat = "png"){
     OAhists->Add(legYields);
 
     OAratios->Add(hCorrYieldME_Ratio_Normal);
-    OAratios->Add(hCorrYieldME_Ratio_NormalWC);
+    // OAratios->Add(hCorrYieldME_Ratio_NormalWC);
     OAratios->Add(hCorrYieldME_Ratio_BetterBkg3to8);
     OAratios->Add(hCorrYieldME_Ratio_BetterBkgPulse);
     OAratios->Add(hCorrYieldME_Ratio_BetterBkgNN);
@@ -225,6 +277,24 @@ void Yields(TString PicFormat = "png"){
     c1->SaveAs("Yields/YieldNormal." + PicFormat);
 
     /**
+     * Plotting of OneTemplate method Yield in comp. with framework yield
+     */
+    OAhists->Clear();
+    OAratios->Clear();
+
+    OAhists->Add(hCorrYieldME_OneTemplate);
+    OAhists->Add(hCorrectedYieldNormEff);
+    OAhists->Add(legYieldOneTemplate);
+
+    OAratios->Add(hCorrYieldME_Ratio_OneTemplate);
+    OAratios->Add(lOne);
+
+    c1->Clear();
+    c1 = NULL;
+    c1 = makeCanvas(OAhists, OAratios, "notimethicklogY", 0, 0);
+    c1->SaveAs("Yields/YieldOneTemplate." + PicFormat);
+
+    /**
      * Plotting relative stat. uncertainty
      */
     OAhists->Clear();
@@ -236,7 +306,7 @@ void Yields(TString PicFormat = "png"){
     OAhists->Add(hCorrYieldME_StatError_BetterBkg3to8);
     OAhists->Add(hCorrYieldME_StatError_BetterBkgPulse);
     OAhists->Add(hCorrYieldME_StatError_Normal);
-    OAhists->Add(hCorrYieldME_StatError_NormalWC);
+    // OAhists->Add(hCorrYieldME_StatError_NormalWC);
     OAhists->Add(hCorrYieldME_StatError_BetterBkgNN);
     OAhists->Add(legYieldStatUncer);
 
@@ -244,6 +314,31 @@ void Yields(TString PicFormat = "png"){
     c1 = NULL;
     c1 = makeCanvas(OAhists, 0, "notimethickHorizontal", 0, 0);
     c1->SaveAs("Yields/YieldsStatUncer." + PicFormat);
+
+    OAhists->Clear();
+    OAratios->Clear();
+
+    TLegend* legChi2 = new TLegend(0.15, 0.7, 0.4, 0.95);
+    legChi2->SetHeader("Methode:");
+    legChi2->AddEntry(Chi2_pT_Framework, "Funktionsparametrisierung", "l");
+    legChi2->AddEntry(Chi2_pT_Normal, "Templates (normal)", "l");
+    // legChi2->AddEntry(Chi2_pT_NormalWC, "Templates (normal mE)", "l");
+    legChi2->AddEntry(Chi2_pT_BetterBkg3to8, "Templates (3 bis 8)", "l");
+    legChi2->AddEntry(Chi2_pT_BetterBkgPulse, "Templates (Pulsefunktion)", "l");
+    legChi2->AddEntry(Chi2_pT_BetterBkgNN, "Templates (naechste Nachbarn)", "l");
+
+    OAhists->Add(Chi2_pT_BetterBkgNN);
+    OAhists->Add(Chi2_pT_BetterBkg3to8);
+    OAhists->Add(Chi2_pT_BetterBkgPulse);
+    OAhists->Add(Chi2_pT_Normal);
+    // OAhists->Add(Chi2_pT_NormalWC);
+    OAhists->Add(Chi2_pT_Framework);
+    OAhists->Add(legChi2);
+
+    c1->Clear();
+    c1 = NULL;
+    c1 = makeCanvas(OAhists, 0, "notimethickHorizontalLines", 0, 0);
+    c1->SaveAs("Yields/Chi2Comp." + PicFormat);
 
 
     delete OAhists;

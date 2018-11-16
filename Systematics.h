@@ -8,7 +8,7 @@ void systematics(int templatemethod, TFile* OutputFile){
   TFile* InputFile = NULL;
 
   if(templatemethod == 2){
-    InputFile      = SafelyOpenRootfile("OutputFileBetterBkgNNforAdrian.root");
+    InputFile      = SafelyOpenRootfile("OutputFileBetterBkgNN.root");
   }
   else if(templatemethod == 1){
     InputFile      = SafelyOpenRootfile("OutputFileBetterBkg3to8.root");
@@ -17,7 +17,10 @@ void systematics(int templatemethod, TFile* OutputFile){
     InputFile      = SafelyOpenRootfile("OutputFileBetterBkgPulse.root");
   }
   else if(templatemethod == 4){
-    InputFile      = SafelyOpenRootfile("OutputFileNormalWithConstraint.root");
+    InputFile      = SafelyOpenRootfile("OutputFileNormal.root");
+  }
+  else if(templatemethod == 5){
+    InputFile      = SafelyOpenRootfile("OutputFileOneTemplate.root");
   }
   else{
     std::cerr << "templatemethod not found!" << '\n';
@@ -71,7 +74,7 @@ void systematics(int templatemethod, TFile* OutputFile){
   std::vector<Double_t> vBGFitSys;
   std::vector<Double_t> vFinalSys;
 
-  TFile* JoshuasFile      = SafelyOpenRootfile("Pi0_data_GammaConvV1Correction_00010113_1111112067032220000_01631031000000d0.root");
+  // TFile* JoshuasFile      = SafelyOpenRootfile("Pi0_data_GammaConvV1Correction_00010113_1111112067032220000_01631031000000d0.root");
 
   hCorrYieldME            = (TH1D*) InputFile->Get("hYield_dt_chi2map_corrected");
 

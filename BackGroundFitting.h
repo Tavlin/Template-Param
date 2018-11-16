@@ -6,7 +6,8 @@
 // Function for Double Template Param
 Double_t funcCorrBackFitting(Double_t *x,  Double_t *par){
   Double_t xx = x[0];
-  return (Double_t) par[0]*hBackStackup->GetBinContent(hBackStackup->FindBin(xx));
+  Double_t f = par[0]*hBackStackup->GetBinContent(hBackStackup->FindBin(xx));
+  return f;
 }
 
 Double_t funcOpeningAngleCut(Double_t *x, Double_t *par){
@@ -46,7 +47,7 @@ void CorrBkgCreation(void){
      * say.
      */
     MCFile              =
-    SafelyOpenRootfile("/data4/mhemmer/Documents/BachelorArbeit/GammaCalo-All_503_normal_and_extra_Rebin1/00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_MC_GammaConvV1WithoutCorrection_00010113_1111112067032220000_01631031000000d0.root");
+    SafelyOpenRootfile("/data4/mhemmer/Documents/BachelorArbeit/GammaCalo_503_data_2017_Rebin1/00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_MC_GammaConvV1WithoutCorrection_00010113_1111112067032220000_01631031000000d0.root");
 
     /**
      * Histogram from the MC simulation which contains the only the true Pi0s
@@ -58,14 +59,14 @@ void CorrBkgCreation(void){
      * Open the file which contains the data output of the framework's work so to
      * say.
      */
-    DataFile            =
-    SafelyOpenRootfile("/data4/mhemmer/Documents/BachelorArbeit/GammaCalo-All_503_normal_and_extra_Rebin1/00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_MC_GammaConvV1WithoutCorrection_00010113_1111112067032220000_01631031000000d0.root");
+    // DataFile            =
+    // SafelyOpenRootfile("/data4/mhemmer/Documents/BachelorArbeit/GammaCalo_503_data_2017_Rebin1/00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_MC_GammaConvV1WithoutCorrection_00010113_1111112067032220000_01631031000000d0.root");
 
     /**
      * Histogram from the data which was created through the normal analysis
      * method: same events - scaled mixed events.
      */
-    hInvMassData        = (TH1D*) DataFile->Get(Form("fHistoMappingSignalInvMass_in_Pt_Bin%02d",k));
+    hInvMassData        = (TH1D*) MCFile->Get(Form("fHistoMappingSignalInvMass_in_Pt_Bin%02d",k));
 
     hCorrBkg            = (TH1D*) hInvMassData->Clone("hCorrBkg");
     hCorrBkg->          Add(hSignalTemplate, -1);
@@ -75,13 +76,13 @@ void CorrBkgCreation(void){
     }
 
     gDirectory = CorrBkgFile;
-    hCorrBkg->          GetXaxis()->SetRangeUser(0.0, 0.3);
+    // hCorrBkg->          GetXaxis()->SetRangeUser(0.0, 0.3);
     hCorrBkg->          Write(Form("hCorrBkgNoRebinBin%02d", k));
 
     gDirectory->Cd(safePath.Data());                  // for saftey resetting path
 
     MCFile->            Close();
-    DataFile->          Close();
+    // DataFile->          Close();
   }
   CorrBkgFile->Close();
 }
@@ -113,6 +114,8 @@ void GetLowerBounds(void){
  * @param PicFormat Formattype of the pictures. (.eps or .png)
  */
 TH1D* BackgroundAdding(int i){
+
+  TString sPath = gDirectory->GetPath();
 
   TFile* CorrBkgFile    = SafelyOpenRootfile("./CorrBkgFileNoRebin.root");
 
@@ -159,12 +162,13 @@ TH1D* BackgroundAdding(int i){
       }
       hBackStackup = NULL;
       hBackStackup = (TH1D*) (aBackStackup[k-m])->Clone("hBackStackup");
-      TF1* fit = new TF1("fit", &funcCorrBackFitting, 0.0 ,0.4, 1);
+      TF1* fit = new TF1("fit", &funcCorrBackFitting, 0.0 ,0.3, 1);
       fit->SetNpx(ndrawpoints);
-      fit->SetNumberFitPoints(numberbins);
+      fit->SetParameter(0, 1.);
+      // fit->SetNumberFitPoints(numberbins);
       fit->SetLineColor(kRed);
       fit->SetLineWidth(3);
-      hBack->Fit("fit", "QM0P","", 0.1, 0.2);
+      hBack->Fit("fit", "M0P","", 0.0, 0.3);
       aBackStackup[k-m]->Scale(fit->GetParameter(0));
 
       aBackStackup[k-m]->SetMarkerStyle(1);
@@ -218,7 +222,6 @@ TH1D* BackgroundAdding(int i){
   }
   hRatio->Fit(fPol0,"QM0P", "",  0.1, 0.2);
 
-  TString sPath = gDirectory->GetPath();
 
   if(i == 1){
     BackFile      = new TFile("BackFileNN.root", "RECREATE");
@@ -227,9 +230,10 @@ TH1D* BackgroundAdding(int i){
     BackFile      = new TFile("BackFileNN.root", "UPDATE");
   }
 
-  hPilledUpBack->Write(Form("hPilledUpBack_Bin%02d_with%02d_bins", i, b));
-  hUpperBkg->Write(Form("hUpperBkg_Bin%02d_with%02d_bins", i, b));
-  hLowerBkg->Write(Form("hLowerBkg_Bin%02d_with%02d_bins", i, b));
+  // hPilledUpBack->Write(Form("hPilledUpBack_Bin%02d_with%02d_bins", i, b));
+  // hUpperBkg->Write(Form("hUpperBkg_Bin%02d_with%02d_bins", i, b));
+  // hLowerBkg->Write(Form("hLowerBkg_Bin%02d_with%02d_bins", i, b));
+  hPilledUpBack->Write(Form("hPilledUpBack_Bin%02d", i));
   hRatio->Write(Form("hRatio_Bin%02d", i));
   fPol0->Write(Form("fPol0_Bin%02d", i));
 

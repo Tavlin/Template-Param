@@ -108,13 +108,13 @@ void PlotArray(TObjArray *arraytoplot, const char *controlstring ,Short_t *color
         hist->SetLineWidth(0);
       }
       if(control.Contains("Lines")||control.Contains("lines")){
-        cout<<"|         - Lines No errors"<<endl;
+        cout<<"|         - Lines With errors"<<endl;
         if(markerArray){ hist->SetLineStyle(1);}
         if(hh==0) {
           hist->SetMarkerStyle(1);
           hist->SetMarkerSize(1);
           hist->DrawCopy("AXIS");
-          hist->DrawCopy("SAME EP");
+          // hist->DrawCopy("SAME EP");
           hist->DrawCopy("SAME HIST");
           hist->SetMarkerSize(1.5);
           hist->SetMarkerStyle(20);
@@ -122,12 +122,12 @@ void PlotArray(TObjArray *arraytoplot, const char *controlstring ,Short_t *color
         else{
           hist->SetMarkerStyle(1);
           hist->SetMarkerSize(1);
-          hist->DrawCopy("SAME EP");
+          // hist->DrawCopy("SAME EP");
           hist->DrawCopy("SAME HIST");
           hist->SetMarkerStyle(20);
           hist->SetMarkerSize(1.5);
         }
-      }if(control.Contains("Hist")||control.Contains("hist")){
+      }else if(control.Contains("Hist")||control.Contains("hist")){
         cout<<"|         - Lines No errors"<<endl;
         if(markerArray){ hist->SetLineStyle(1);}
         if(hh==0) {
@@ -488,15 +488,15 @@ TCanvas *makeCanvas(TObjArray *histArray, TObjArray *ratioArray,const char *cont
     padFraction = 0.33;                   //0.25
     titleOffsetY=2;
     titleOffsetX=4.5;
-    leftMargin = 0.14;
+    leftMargin = 0.16;
     rightMargin = 0.05;
     topMargin = 0.12 * 1.414213562/2;
     lowMargin = 0.12 * 1.414213562/2;
     if(ratioArray){
       titleOffsetY=2;
-      titleOffsetX=4.5;
+      titleOffsetX=3.5;
       topMargin = (0.06 * 1.414213562/2)/(1-padFraction);
-      lowMargin = (0.12 * 1.414213562/2)/(padFraction);
+      lowMargin = (0.13 * 1.414213562/2)/(padFraction);
     }
     TH1D *hist = (TH1D*) histArray->At(0);
     TString yTitle(hist->GetYaxis()->GetTitle());

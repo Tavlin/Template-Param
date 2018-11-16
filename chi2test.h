@@ -49,13 +49,39 @@ Double_t Chi2Calc(TH1D* h1, TH1D* h2, TH1D* h3, Double_t &ndf, Double_t a,
     chi2 += pow(b-fPulse_eval, 2.)/pow(sigma_cons, 2.); // 3 to 8 method
   }
 
-  else if(templatemethod == 2){
-    chi2 += pow(a-b, 2.)/pow(0.01, 2.);
-  }
-  else if(templatemethod == 4){
-    chi2 += pow(a-b, 2.)/pow(0.01, 2.);
-  }
+  // else if(templatemethod == 2){
+  //   chi2 += pow(a-b, 2.)/pow(0.01, 2.);
+  // }
+  // else if(templatemethod == 4){
+  //   chi2 += pow(a-b, 2.)/pow(0.01, 2.);
+  // }
 
+  return chi2;
+}
+
+Double_t Chi2Calc1D(TH1D* h1, TH1D* h3, Double_t &ndf, Double_t a,
+                    int templatemethod, int binnumber){
+
+  Double_t chi2 = 0;
+  Double_t temp_error = 0;
+  Int_t lowerfitrange = h3->FindBin(lowerparamrange[binnumber-1]);
+  Int_t upperfitrange = h3->FindBin(upperparamrange);
+
+
+  for (int j = lowerfitrange; j <= upperfitrange; j++) {
+
+    if(h1->GetBinContent(j) != 0 && h1->GetBinError(j) != 0){
+
+        temp_error = sqrt(pow(a*h1->GetBinError(j), 2.));
+
+        chi2 += pow(a*h1->GetBinContent(j) - h3->GetBinContent(j),2.)
+        /(pow(temp_error,2.)+pow(h3->GetBinError(j),2.));
+      }
+
+    else{
+      ndf -= 1;
+    }
+  }
   return chi2;
 }
 
@@ -92,44 +118,44 @@ TH2D* Chi2MapFunction(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi
   // Testing needed!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   if(templatemethod == 1 || templatemethod == 3){
     if(pT < 6.){
-      dx = 0.0032;
-      dy = 0.004;
+      dx = 0.01;
+      dy = 0.01;
     }
     else{
-      dx = 0.0032; //0.001;
-      dy = 0.0002; //0.003;
+      dx = 0.01;
+      dy = 0.01;
     }
   }
-  else if(templatemethod == 4){
-    dx = 0.005;
-    dy = 0.005;
+  else if(templatemethod == 4 || templatemethod == 5){
+    dx = 0.01;
+    dy = 0.01;
   }
   else
   {
-    dx = 0.0032;
-    dy = 0.004;
+    dx = 0.01;
+    dy = 0.01;
   }
   Double_t temp_error = 0;                  // Fehlervariable fuer die Templates
-  int binnumber2D     = 500;                // Binzahl ~ Feinheit der Suche
+  int binnumber2D     = 1000;                // Binzahl ~ Feinheit der Suche
   TH2D* hChi2map      = NULL;
 
   if(templatemethod == 1 || templatemethod == 3){
     if(pT < 6.){
-      hChi2map = new TH2D("hChi2map", "", binnumber2D, 0.4, 2.0, binnumber2D, 0.0, 2.0);
+      hChi2map = new TH2D("hChi2map", "", binnumber2D, 0.0, 10., binnumber2D, 0.0, 10.);
       SetHistoStandardSettings2(hChi2map);
     }
 
     else{
-      hChi2map = new TH2D("hChi2map", "", binnumber2D, 0.4, 2.0, binnumber2D, 0.0, 0.1);
+      hChi2map = new TH2D("hChi2map", "", binnumber2D, 0.0, 10., binnumber2D, 0.0, 10.);
       SetHistoStandardSettings2(hChi2map);
     }
   }
-  else if(templatemethod == 4){
-    hChi2map = new TH2D("hChi2map", "", binnumber2D, 0.0, 2.5, binnumber2D, 0.0, 2.5);
+  else if(templatemethod == 4 || templatemethod == 5){
+    hChi2map = new TH2D("hChi2map", "", binnumber2D, 0.0, 10., binnumber2D, 0.0, 10.);
     SetHistoStandardSettings2(hChi2map);
   }
   else{
-    hChi2map = new TH2D("hChi2map", "", binnumber2D, 0.4, 2.0, binnumber2D, 0.0, 2.0);
+    hChi2map = new TH2D("hChi2map", "", binnumber2D, 0.0, 10., binnumber2D, 0.0, 10.);
     SetHistoStandardSettings2(hChi2map);
   }
   hChi2map->SetXTitle("Signal scaling factor");
@@ -188,10 +214,16 @@ TH2D* Chi2MapFunction(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi
   Double_t midpoint = (fBinsPi013TeVEMCPt[binnumber]+fBinsPi013TeVEMCPt[binnumber+1])/2.;
 
   TF1* fPulse = new TF1("fPulse", "[4]+[0]*((1-exp(-(x-[1])/[2])))*exp(-(x-[1])/[3])", 1.4, 20.);
-  fPulse->SetParameter(0, 3.);
+  fPulse->SetParameter(0, 7.);
+  fPulse->SetParLimits(0, 0., 20.);
   fPulse->SetParameter(1, 1.2);
-  fPulse->SetParameter(2, 1.);
-  fPulse->SetParameter(3, 1.);
+  fPulse->SetParLimits(1, 0., 20.);
+  fPulse->SetParameter(2, 2.);
+  fPulse->SetParLimits(2, 0., 20.);
+  fPulse->SetParameter(3, 2.);
+  fPulse->SetParLimits(3, 0., 20.);
+  fPulse->SetParameter(4, 0.);
+  fPulse->SetParLimits(4, 0., 1.);
 
   TFile* file = NULL;
 
@@ -239,16 +271,27 @@ TH2D* Chi2MapFunction(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi
       for (int iy = 0; iy < binnumber2D; iy++) {
         ndf = upperfitrange-lowerfitrange-3;
         chi2 = 0;
-        chi2 = Chi2Calc(hSignal_clone, hCorrback_clone, hData_clone, ndf,
-          dx* ((Double_t)ix+125), dy*(Double_t)iy, templatemethod, binnumber,
-          fPulse_eval, sigma_cons);
+        if(templatemethod == 5){
+          chi2 = Chi2Calc1D(hSignal_clone, hData_clone, ndf,
+            dx* ((Double_t)ix/*+125*/), templatemethod, binnumber);
+        }
+        else{
+          chi2 = Chi2Calc(hSignal_clone, hCorrback_clone, hData_clone, ndf,
+            dx* ((Double_t)ix/*+125*/), dy*(Double_t)iy, templatemethod, binnumber,
+            fPulse_eval, sigma_cons);
+        }
 
         if(chi2 < chi2_min_temp){
           chi2_min_temp = chi2;
-          x_min = (Double_t)(ix+125)*dx;
+          x_min = (Double_t)(ix/*+125*/)*dx;
           y_min = (Double_t)(iy)*dy;
         }
-        hChi2map->SetBinContent(ix+1, iy+1, chi2);
+        if(templatemethod == 5){
+          hChi2map->SetBinContent(ix+1, iy+1, chi2);
+        }
+        else{
+          hChi2map->SetBinContent(ix+1, iy+1, chi2);
+        }
       }
     }
   }
