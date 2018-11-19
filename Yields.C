@@ -140,7 +140,7 @@ void Yields(TString PicFormat = "png"){
     legYields->SetHeader("Methode:");
     legYields->AddEntry(hCorrectedYieldNormEff, "Funktionsparametrisierung", "p");
     legYields->AddEntry(hCorrYieldME_Normal, "Templates (normal)", "p");
-    // legYields->AddEntry(hCorrYieldME_NormalWC, "Templates (normal mE)", "p");
+    legYields->AddEntry(hCorrYieldME_OneTemplate, "Template", "p");
     legYields->AddEntry(hCorrYieldME_BetterBkg3to8, "Templates (3 bis 8)", "p");
     legYields->AddEntry(hCorrYieldME_BetterBkgPulse, "Templates (Pulsefunktion)", "p");
     legYields->AddEntry(hCorrYieldME_BetterBkgNN, "Templates (naechste Nachbarn)", "p");
@@ -174,7 +174,7 @@ void Yields(TString PicFormat = "png"){
     legYieldStatUncer->SetHeader("Methode:");
     legYieldStatUncer->AddEntry(hCorrectedYieldNormEff_StatError, "Funktionsparametrisierung", "l");
     legYieldStatUncer->AddEntry(hCorrYieldME_StatError_Normal, "Templates (normal)", "l");
-    // legYieldStatUncer->AddEntry(hCorrYieldME_StatError_NormalWC, "Templates (normal mE)", "l");
+    legYieldStatUncer->AddEntry(hCorrYieldME_StatError_OneTemplate, "Template", "l");
     legYieldStatUncer->AddEntry(hCorrYieldME_StatError_BetterBkg3to8, "Templates (3 bis 8)", "l");
     legYieldStatUncer->AddEntry(hCorrYieldME_StatError_BetterBkgPulse, "Templates (Pulsefunktion)", "l");
     legYieldStatUncer->AddEntry(hCorrYieldME_StatError_BetterBkgNN, "Templates (naechste Nachbarn)", "l");
@@ -185,7 +185,7 @@ void Yields(TString PicFormat = "png"){
     OAratios->Clear();
 
     OAhists->Add(hCorrYieldME_Normal);
-    // OAhists->Add(hCorrYieldME_NormalWC);
+    OAhists->Add(hCorrYieldME_OneTemplate);
     OAhists->Add(hCorrYieldME_BetterBkg3to8);
     OAhists->Add(hCorrYieldME_BetterBkgPulse);
     OAhists->Add(hCorrYieldME_BetterBkgNN);
@@ -193,7 +193,7 @@ void Yields(TString PicFormat = "png"){
     OAhists->Add(legYields);
 
     OAratios->Add(hCorrYieldME_Ratio_Normal);
-    // OAratios->Add(hCorrYieldME_Ratio_NormalWC);
+    OAratios->Add(hCorrYieldME_Ratio_OneTemplate);
     OAratios->Add(hCorrYieldME_Ratio_BetterBkg3to8);
     OAratios->Add(hCorrYieldME_Ratio_BetterBkgPulse);
     OAratios->Add(hCorrYieldME_Ratio_BetterBkgNN);
@@ -306,7 +306,7 @@ void Yields(TString PicFormat = "png"){
     OAhists->Add(hCorrYieldME_StatError_BetterBkg3to8);
     OAhists->Add(hCorrYieldME_StatError_BetterBkgPulse);
     OAhists->Add(hCorrYieldME_StatError_Normal);
-    // OAhists->Add(hCorrYieldME_StatError_NormalWC);
+    OAhists->Add(hCorrYieldME_StatError_OneTemplate);
     OAhists->Add(hCorrYieldME_StatError_BetterBkgNN);
     OAhists->Add(legYieldStatUncer);
 
@@ -322,17 +322,17 @@ void Yields(TString PicFormat = "png"){
     legChi2->SetHeader("Methode:");
     legChi2->AddEntry(Chi2_pT_Framework, "Funktionsparametrisierung", "l");
     legChi2->AddEntry(Chi2_pT_Normal, "Templates (normal)", "l");
-    // legChi2->AddEntry(Chi2_pT_NormalWC, "Templates (normal mE)", "l");
+    legChi2->AddEntry(Chi2_pT_OneTemplate, "Template", "l");
     legChi2->AddEntry(Chi2_pT_BetterBkg3to8, "Templates (3 bis 8)", "l");
     legChi2->AddEntry(Chi2_pT_BetterBkgPulse, "Templates (Pulsefunktion)", "l");
     legChi2->AddEntry(Chi2_pT_BetterBkgNN, "Templates (naechste Nachbarn)", "l");
 
-    OAhists->Add(Chi2_pT_BetterBkgNN);
+    OAhists->Add(Chi2_pT_Framework);
+    OAhists->Add(Chi2_pT_Normal);
+    OAhists->Add(Chi2_pT_OneTemplate);
     OAhists->Add(Chi2_pT_BetterBkg3to8);
     OAhists->Add(Chi2_pT_BetterBkgPulse);
-    OAhists->Add(Chi2_pT_Normal);
-    // OAhists->Add(Chi2_pT_NormalWC);
-    OAhists->Add(Chi2_pT_Framework);
+    OAhists->Add(Chi2_pT_BetterBkgNN);
     OAhists->Add(legChi2);
 
     c1->Clear();

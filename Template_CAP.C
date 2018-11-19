@@ -161,7 +161,7 @@ void Template_CAP(std::string current_path, int templatemethod){
    * 1st. the Doublecounting Histogram
    * 2nd. the MC Histogram of Pi0 in acceptance as a function of pT
    */
-  ESDFile_MC    = SafelyOpenRootfile("./../Daten/GammaCalo_503_MC_2017.root");
+  ESDFile_MC    = SafelyOpenRootfile("./../Daten/GammaCalo_503_JJ_2017.root");
   if (ESDFile_MC->IsOpen() ) printf("ESDFile_MC opened successfully\n");
 
   lGammaCalo_MC          = (TList*) ESDFile_MC->Get("GammaCalo_503");
@@ -271,13 +271,13 @@ void Template_CAP(std::string current_path, int templatemethod){
       CorrBkgFile = SafelyOpenRootfile("CorrBkgFileNoRebin.root");
       hCorrBkg    = NULL;
       hCorrBkg    = (TH1D*) CorrBkgFile->Get(Form("hCorrBkgNoRebinBin%02d", k));
-      hCorrBkg->Rebin(fBinsPi013TeVEMCPtRebin[k-1]);
+      hCorrBkg->Rebin(fBinsPi013TeVEMCPtRebin[k]);
     }
     else if(templatemethod == 5){
       CorrBkgFile = SafelyOpenRootfile("CorrBkgFileNoRebin.root");
       hCorrBkg    = NULL;
       hCorrBkg    = (TH1D*) CorrBkgFile->Get(Form("hCorrBkgNoRebinBin%02d", k));
-      hCorrBkg->Rebin(fBinsPi013TeVEMCPtRebin[k-1]);
+      hCorrBkg->Rebin(fBinsPi013TeVEMCPtRebin[k]);
       hPeak_MC = (TH1D*) hInvMass_MC->Clone("hPeak_MC");
     }
     else{
@@ -544,25 +544,47 @@ void Template_CAP(std::string current_path, int templatemethod){
   hEfficiency->SetYTitle("#epsilon_{rek}");
   hEfficiency->SetXTitle("#it{p}_{T} (GeV/#it{c})");
 
-
-  for (int k = 1; k < numberbins; ++k) {
-    hChi2Map_Chi2_pT->SetBinContent(k+1, vChi2_DT_Chi2Map[k-1]/vNDF_DT_Chi2Map[k-1]);
-    hChi2Map_Chi2_pT->SetBinError(k+1, sqrt(2./vNDF_DT_Chi2Map[k-1]));
-    hSignalAreaScaling->SetBinContent(k, vSignalAreaScaling[k-1]);
-    hCorrbackAreaScaling->SetBinContent(k, vCorrbackAreaScaling[k-1]);
-    h_x_min->SetBinContent(k+1, v_x_min[k-1]);
-    h_y_min->SetBinContent(k+1, v_y_min[k-1]);
-    hErrXlow->SetBinContent(k+1, vsigma_dt[k-1][0]);
-    hErrXhigh->SetBinContent(k+1, vsigma_dt[k-1][1]);
-    hErrYlow->SetBinContent(k+1, vsigma_dt[k-1][2]);
-    hErrYhigh->SetBinContent(k+1, vsigma_dt[k-1][3]);
-    h_x_min->SetBinError(k+1,
-    max(hErrXhigh->GetBinContent(k+1)-h_x_min->GetBinContent(k+1),
-    h_x_min->GetBinContent(k+1) - hErrXlow->GetBinContent(k+1)));
-    h_y_min->SetBinError(k+1,
-    max(hErrYhigh->GetBinContent(k+1) - h_y_min->GetBinContent(k+1),
-    h_y_min->GetBinContent(k+1) - hErrYlow->GetBinContent(k+1)));
-    hEfficiency->SetBinContent(k+1, vInIntRangePercent[k-1]);
+  if(templatemethod == 5){
+    for (int k = 1; k < numberbins; ++k) {
+      hChi2Map_Chi2_pT->SetBinContent(k+1, vChi2_DT_Chi2Map[k-1]/vNDF_DT_Chi2Map[k-1]);
+      hChi2Map_Chi2_pT->SetBinError(k+1, sqrt(2./vNDF_DT_Chi2Map[k-1]));
+      hSignalAreaScaling->SetBinContent(k, vSignalAreaScaling[k-1]);
+      hCorrbackAreaScaling->SetBinContent(k, vCorrbackAreaScaling[k-1]);
+      h_x_min->SetBinContent(k+1, v_x_min[k-1]);
+      h_y_min->SetBinContent(k+1, v_x_min[k-1]);
+      hErrXlow->SetBinContent(k+1, vsigma_dt[k-1][0]);
+      hErrXhigh->SetBinContent(k+1, vsigma_dt[k-1][1]);
+      hErrYlow->SetBinContent(k+1, vsigma_dt[k-1][0]);
+      hErrYhigh->SetBinContent(k+1, vsigma_dt[k-1][1]);
+      h_x_min->SetBinError(k+1,
+      max(hErrXhigh->GetBinContent(k+1)-h_x_min->GetBinContent(k+1),
+      h_x_min->GetBinContent(k+1) - hErrXlow->GetBinContent(k+1)));
+      h_y_min->SetBinError(k+1,
+      max(hErrYhigh->GetBinContent(k+1) - h_y_min->GetBinContent(k+1),
+      h_y_min->GetBinContent(k+1) - hErrYlow->GetBinContent(k+1)));
+      hEfficiency->SetBinContent(k+1, vInIntRangePercent[k-1]);
+    }
+  }
+  else{
+    for (int k = 1; k < numberbins; ++k) {
+      hChi2Map_Chi2_pT->SetBinContent(k+1, vChi2_DT_Chi2Map[k-1]/vNDF_DT_Chi2Map[k-1]);
+      hChi2Map_Chi2_pT->SetBinError(k+1, sqrt(2./vNDF_DT_Chi2Map[k-1]));
+      hSignalAreaScaling->SetBinContent(k, vSignalAreaScaling[k-1]);
+      hCorrbackAreaScaling->SetBinContent(k, vCorrbackAreaScaling[k-1]);
+      h_x_min->SetBinContent(k+1, v_x_min[k-1]);
+      h_y_min->SetBinContent(k+1, v_y_min[k-1]);
+      hErrXlow->SetBinContent(k+1, vsigma_dt[k-1][0]);
+      hErrXhigh->SetBinContent(k+1, vsigma_dt[k-1][1]);
+      hErrYlow->SetBinContent(k+1, vsigma_dt[k-1][2]);
+      hErrYhigh->SetBinContent(k+1, vsigma_dt[k-1][3]);
+      h_x_min->SetBinError(k+1,
+      max(hErrXhigh->GetBinContent(k+1)-h_x_min->GetBinContent(k+1),
+      h_x_min->GetBinContent(k+1) - hErrXlow->GetBinContent(k+1)));
+      h_y_min->SetBinError(k+1,
+      max(hErrYhigh->GetBinContent(k+1) - h_y_min->GetBinContent(k+1),
+      h_y_min->GetBinContent(k+1) - hErrYlow->GetBinContent(k+1)));
+      hEfficiency->SetBinContent(k+1, vInIntRangePercent[k-1]);
+    }
   }
 
   /**
