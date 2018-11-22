@@ -103,64 +103,27 @@ Double_t Chi2Calc1D(TH1D* h1, TH1D* h3, Double_t &ndf, Double_t a,
  * @param k                   current PT bin
  */
 TH2D* Chi2MapFunction(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi2_min,
-  Double_t &signalAreaScaling, Double_t &corrbackAreaScaling, Double_t &x_min,
-  Double_t &y_min, Double_t &ndf, int templatemethod, Double_t pT, int binnumber){
+                      Double_t &signalAreaScaling, Double_t &corrbackAreaScaling,
+                      Double_t &x_min, Double_t &y_min, Double_t &ndf,
+                      int templatemethod, Double_t pT, int binnumber,
+                      Double_t NEvents_data, Double_t NEvents_MC){
+
   Double_t chi2_min_temp = 10.e10;
   Double_t chi2 = 0;
-  Double_t A_c = 0;                         // Area of the same - scaled mixed event
-  Double_t A_b = 0;                         // Area of corr. back. template
-  Double_t A_a = 0;                         // Area of the signal template
-  Double_t dx;                              // Stepsize in x
-  Double_t dy;                              // Area of signal
-  TString safePath = gDirectory->GetPath();            // retrieve neutral path
+  Double_t A_c        = 0;                   // Area of the same - scaled mixed event
+  Double_t A_b        = 0;                   // Area of corr. back. template
+  Double_t A_a        = 0;                   // Area of the signal template
+  Double_t stepwidth;
+  Int_t numbersteps;
+  Double_t temp_error = 0;                   // Fehlervariable fuer die Templates
+  Double_t x_min_temp = 0;
+  Double_t y_min_temp = 0;
+  Double_t fPulse_eval  = 0;
+  Double_t sigma_cons   = 0;
+  Double_t* pfPulse_eval = &fPulse_eval;
+  Double_t* psigma_cons  = &sigma_cons;
+  TString safePath = gDirectory->GetPath();  // retrieve neutral path
 
-  // Maybe x-bin-Range in der Karte ist total fürn Arsch aktuell!!!!!!!!!!!
-  // Testing needed!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  if(templatemethod == 1 || templatemethod == 3){
-    if(pT < 6.){
-      dx = 0.01;
-      dy = 0.01;
-    }
-    else{
-      dx = 0.01;
-      dy = 0.01;
-    }
-  }
-  else if(templatemethod == 4 || templatemethod == 5){
-    dx = 0.01;
-    dy = 0.01;
-  }
-  else
-  {
-    dx = 0.01;
-    dy = 0.01;
-  }
-  Double_t temp_error = 0;                  // Fehlervariable fuer die Templates
-  int binnumber2D     = 1000;                // Binzahl ~ Feinheit der Suche
-  TH2D* hChi2map      = NULL;
-
-  if(templatemethod == 1 || templatemethod == 3){
-    if(pT < 6.){
-      hChi2map = new TH2D("hChi2map", "", binnumber2D, 0.0, 10., binnumber2D, 0.0, 10.);
-      SetHistoStandardSettings2(hChi2map);
-    }
-
-    else{
-      hChi2map = new TH2D("hChi2map", "", binnumber2D, 0.0, 10., binnumber2D, 0.0, 10.);
-      SetHistoStandardSettings2(hChi2map);
-    }
-  }
-  else if(templatemethod == 4 || templatemethod == 5){
-    hChi2map = new TH2D("hChi2map", "", binnumber2D, 0.0, 10., binnumber2D, 0.0, 10.);
-    SetHistoStandardSettings2(hChi2map);
-  }
-  else{
-    hChi2map = new TH2D("hChi2map", "", binnumber2D, 0.0, 10., binnumber2D, 0.0, 10.);
-    SetHistoStandardSettings2(hChi2map);
-  }
-  hChi2map->SetXTitle("Signal scaling factor");
-  hChi2map->SetYTitle("Corr. bkg. scaling factor");
-  hChi2map->SetZTitle("#chi^{2}");
 
   TH1D* hData_clone = (TH1D*) hData->Clone("hData");
   TH1D* hSignal_clone = (TH1D*) hSignal->Clone("hSignal");
@@ -169,9 +132,6 @@ TH2D* Chi2MapFunction(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi
   Int_t lowerfitrange = hData_clone->FindBin(lowerparamrange[binnumber-1]);
   Int_t upperfitrange = hData_clone->FindBin(upperparamrange);
 
-  //////////////////////////////////////////////////////////////////////////////
-  // Setting all the bins with pT > 0.3 GeV/c to 0
-  //////////////////////////////////////////////////////////////////////////////
   /**
    * Setting all the bins with pT > 0.3 GeV/c to 0
    * @param i loop variable indicating
@@ -187,6 +147,10 @@ TH2D* Chi2MapFunction(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi
     }
   }
 
+  /**
+   * Areascaling method as general idea to compensate for difference in number
+   * of Events in MC and data. Needed to have a general range for the Chi2Map
+   */
   // A_c = hData_clone->Integral();
   // A_b = hCorrback_clone->Integral();
   // A_a = hSignal_clone->Integral();
@@ -205,86 +169,155 @@ TH2D* Chi2MapFunction(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi
   corrbackAreaScaling = 1.;
   signalAreaScaling = 1.;
 
-  TFile* PulseFile = NULL;
-  if(binnumber == 1 && templatemethod == 3){
-    PulseFile = new TFile("Pulse.root", "RECREATE");
-  }
-  gDirectory->Cd(safePath.Data());
 
-  Double_t midpoint = (fBinsPi013TeVEMCPt[binnumber]+fBinsPi013TeVEMCPt[binnumber+1])/2.;
+  /**
+  * Chi2Map Creation:
+  * First Setting the Stepsize in which Chi2 will be calculated
+  * Then create the Chi2Maps
+  * @param templatemethod [description]
+  */
 
-  TF1* fPulse = new TF1("fPulse", "[4]+[0]*((1-exp(-(x-[1])/[2])))*exp(-(x-[1])/[3])", 1.4, 20.);
-  fPulse->SetParameter(0, 7.);
-  fPulse->SetParLimits(0, 0., 20.);
-  fPulse->SetParameter(1, 1.2);
-  fPulse->SetParLimits(1, 0., 20.);
-  fPulse->SetParameter(2, 2.);
-  fPulse->SetParLimits(2, 0., 20.);
-  fPulse->SetParameter(3, 2.);
-  fPulse->SetParLimits(3, 0., 20.);
-  fPulse->SetParameter(4, 0.);
-  fPulse->SetParLimits(4, 0., 1.);
+  x_min = (1./10.)*(NEvents_data/NEvents_MC);
+  y_min = (1./10.)*(NEvents_data/NEvents_MC);
+  TH2D* hChi2map      = NULL;
+  for(int nIterationsChi2Fit = 1; nIterationsChi2Fit < 4; nIterationsChi2Fit++){
 
-  TFile* file = NULL;
+    hChi2map      = NULL;
+    if(corrbackAreaScaling == 1. && signalAreaScaling == 1.){
 
-  Double_t fPulse_eval  = 0;
-  Double_t sigma_cons   = 0;
-  Double_t* pfPulse_eval = &fPulse_eval;
-  Double_t* psigma_cons   = &sigma_cons;
-  if(templatemethod == 3){
-    TFile* file = SafelyOpenRootfile("OutputFileBetterBkg3to8.root");
-    if(!file){
-      std::cerr << "Error: Opening OutputFileBetterBkg3to8.root FAILED!" << '\n';
-      exit(2);
+      stepwidth   = (1./pow(10., nIterationsChi2Fit)) * (NEvents_data/NEvents_MC);
+      numbersteps = 100;
+      std::cout << "x_min = " << x_min << '\n';
+      std::cout << "y_min = " << y_min << '\n';
+      hChi2map    = new TH2D("hChi2map", "",
+      numbersteps, x_min - numbersteps*stepwidth/2, x_min + numbersteps*stepwidth/2,
+      numbersteps, y_min - numbersteps*stepwidth/2, y_min + numbersteps*stepwidth/2);
+      SetHistoStandardSettings2(hChi2map);
+    }
+    else if(corrbackAreaScaling != 1. || signalAreaScaling != 1.){
+
+      stepwidth = 0.025;
+      numbersteps = 100;
+
+      hChi2map = new TH2D("hChi2map", "",
+      numbersteps, 0.0, numbersteps*stepwidth,
+      numbersteps, 0.0, numbersteps*stepwidth);
+      SetHistoStandardSettings2(hChi2map);
+    }
+    else{
+      std::cerr << "Neither Areascaling nor no Areascaling oO!" << '\n';
+      exit(42);
     }
 
-    TH1D* h = (TH1D*) file->Get("h_y_min");
+    hChi2map->SetXTitle("SF_{Signal}");
+    hChi2map->SetYTitle("SF_{korr. Untergrund}");
+    hChi2map->SetZTitle("#chi^{2}");
 
-    h->Fit(fPulse, "QM0P", "",  1.4, 12.);
-    ///2. A histogram
-    //Create a histogram to hold the confidence intervals
 
-    fPulse_eval = fPulse->Eval(midpoint);
-    TH1D *hint = new TH1D("hint",
-      "Fitted gaussian with .95 conf.band", numberbins-1, fBinsPi013TeVEMCPt);
-    (TVirtualFitter::GetFitter())->GetConfidenceIntervals(hint, 0.6827);
-    //Now the "hint" histogram has the fitted function values as the
-    //bin contents and the confidence intervals as bin errors
 
-    if(binnumber == 1){
-      gDirectory = PulseFile;          // changing directory to the output file
-      fPulse->  Write("fPulse");
-      hint->    Write("hConvInter");
-      PulseFile->Close();
+    TFile* PulseFile = NULL;
+    if(binnumber == 1 && templatemethod == 3 && nIterationsChi2Fit == 1){
+      PulseFile = new TFile("Pulse.root", "RECREATE");
+      gDirectory->Cd(safePath.Data());
     }
-    gDirectory->Cd(safePath.Data());
-    sigma_cons = hint->GetBinError(hint->FindBin(midpoint));
-    std::cout << "Uncertainty at bin (" << hint->FindBin(midpoint) << ") = " << hint->GetBinError(hint->FindBin(midpoint)) << '\n';
-    std::cout << "sigma_cons = " << sigma_cons << '\n';
-    hint = NULL;
 
-    std::cout << "fPulse_eval = " << fPulse_eval << '\n';
-  }
+    Double_t midpoint = (fBinsPi013TeVEMCPt[binnumber]+fBinsPi013TeVEMCPt[binnumber+1])/2.;
 
-  if(templatemethod != 4){
-    for (int ix = 0; ix < binnumber2D; ix++) {
-      for (int iy = 0; iy < binnumber2D; iy++) {
+    TFile* file = NULL;
+    if(templatemethod == 3){
+      file = SafelyOpenRootfile("OutputFileBetterBkg3to8.root");
+
+      if(!file){
+        std::cerr << "Error: Opening OutputFileBetterBkg3to8.root FAILED!" << '\n';
+        exit(2);
+      }
+
+
+        TH1D* h = (TH1D*) file->Get("h_y_min");
+
+        /**
+         * Pulsefunction which should describe the SF of the corr. back
+         */
+        TF1* fPulse = new TF1("fPulse", "[4]+[0]*((1-exp(-(x-[1])/[2])))*exp(-(x-[1])/[3])", 1.4, 20.);
+        Double_t onehun_pc  = h->GetBinCenter(h->GetMaximumBin());
+        Double_t fifty_pc   = h->GetBinCenter(h->FindLastBinAbove(h->GetMaximum()*0.5));
+        Double_t ten_pc     = h->GetBinCenter(h->FindFirstBinAbove(h->GetMaximum()*0.1));
+
+        std::cout << "onehun_pc = " << onehun_pc << '\n';
+        std::cout << "fifty_pc = " << fifty_pc << '\n';
+        std::cout << "ten_pc = " << ten_pc << '\n';
+
+        if(h->GetBinContent(onehun_pc)< 0.1){
+          fPulse->SetParameter(0, onehun_pc/3);
+          fPulse->SetParLimits(0, 0., 3*onehun_pc);
+        }
+        else{
+          fPulse->SetParameter(0, 3*onehun_pc);
+          fPulse->SetParLimits(0, 0., 10*onehun_pc);
+        }
+        fPulse->SetParameter(1, h->GetBinCenter(1));
+        fPulse->SetParLimits(1, 0., onehun_pc);
+        fPulse->SetParameter(2, onehun_pc - ten_pc);
+        fPulse->SetParLimits(2, 0., onehun_pc);
+        fPulse->SetParameter(3, fifty_pc - onehun_pc);
+        fPulse->SetParLimits(3, 0., fifty_pc + 5);
+        fPulse->SetParameter(4, 0.001);
+        fPulse->SetParLimits(4, 0., 1.);
+
+        h->Fit(fPulse, "QM0P", "",  1.4, 12.);
+        ///2. A histogram
+        //Create a histogram to hold the confidence intervals
+
+        TH1D *hint = new TH1D("hint",
+          "Fitted gaussian with .95 conf.band", numberbins-1, fBinsPi013TeVEMCPt);
+        (TVirtualFitter::GetFitter())->GetConfidenceIntervals(hint, 0.6827);
+        //Now the "hint" histogram has the fitted function values as the
+        //bin contents and the confidence intervals as bin errors
+
+        std::cout << "before closing PulseFIle" << '\n';
+        if(binnumber == 1 && templatemethod == 3 && nIterationsChi2Fit == 1){
+          gDirectory = PulseFile;          // changing directory to the output file
+          fPulse->  Write("fPulse");
+          hint->    Write("hConvInter");
+          PulseFile->Close();
+          gDirectory->Cd(safePath.Data());
+        }
+        std::cout << "after closing PulseFIle" << '\n';
+
+        fPulse_eval = fPulse->Eval(midpoint);
+        sigma_cons = hint->GetBinError(hint->FindBin(midpoint));
+
+        std::cout << "Uncertainty at bin (" << hint->FindBin(midpoint) << ") = " << hint->GetBinError(hint->FindBin(midpoint)) << '\n';
+        std::cout << "sigma_cons = " << sigma_cons << '\n';
+        hint = NULL;
+
+        std::cout << "fPulse_eval = " << fPulse_eval << '\n';
+      }
+
+      if(templatemethod != 3){
+        fPulse_eval  = 0;
+        sigma_cons   = 0;
+      }
+    for (int ix = 0; ix < numbersteps; ix++) {
+      for (int iy = 0; iy < numbersteps; iy++) {
         ndf = upperfitrange-lowerfitrange-3;
         chi2 = 0;
         if(templatemethod == 5){
           chi2 = Chi2Calc1D(hSignal_clone, hData_clone, ndf,
-            dx* ((Double_t)ix/*+125*/), templatemethod, binnumber);
+            stepwidth* ((Double_t)ix), templatemethod, binnumber);
         }
         else{
           chi2 = Chi2Calc(hSignal_clone, hCorrback_clone, hData_clone, ndf,
-            dx* ((Double_t)ix/*+125*/), dy*(Double_t)iy, templatemethod, binnumber,
+            2.*stepwidth * (Double_t)ix + (x_min - numbersteps*stepwidth),
+            2.*stepwidth * (Double_t)iy + (y_min - numbersteps*stepwidth),
+            templatemethod, binnumber,
             fPulse_eval, sigma_cons);
         }
 
         if(chi2 < chi2_min_temp){
           chi2_min_temp = chi2;
-          x_min = (Double_t)(ix/*+125*/)*dx;
-          y_min = (Double_t)(iy)*dy;
+          x_min_temp = max(2.*stepwidth * (Double_t)ix + (x_min - numbersteps*stepwidth), 0.0);
+          y_min_temp = max(2.*stepwidth * (Double_t)iy + (y_min - numbersteps*stepwidth), 0.0);
         }
         if(templatemethod == 5){
           hChi2map->SetBinContent(ix+1, iy+1, chi2);
@@ -294,32 +327,22 @@ TH2D* Chi2MapFunction(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi
         }
       }
     }
-  }
-  else{
-    for (int ix = 0; ix < binnumber2D; ix++) {
-      for (int iy = 0; iy < binnumber2D; iy++) {
-        ndf = upperfitrange-lowerfitrange-3;
-        chi2 = 0;
-        chi2 = Chi2Calc(hSignal_clone, hCorrback_clone, hData_clone, ndf,
-          dx* ((Double_t)ix), dy*(Double_t)iy, templatemethod, binnumber,
-          fPulse_eval, sigma_cons);
+    chi2_min = chi2_min_temp;
+    x_min = x_min_temp;
+    y_min = y_min_temp;
+    std::cout << "chi^2_min = " << chi2_min << std::endl;
+    std::cout << "ndf = " << ndf << std::endl;
 
-        if(chi2 < chi2_min_temp){
-          chi2_min_temp = chi2;
-          x_min = (Double_t)(ix)*dx;
-          y_min = (Double_t)(iy)*dy;
-        }
-        hChi2map->SetBinContent(ix+1, iy+1, chi2);
-      }
+    // delete hint;
+    // delete fPulse;
+    if(nIterationsChi2Fit < 3){
+      delete hChi2map;
     }
-  }
-  chi2_min = chi2_min_temp;
-  std::cout << "chi^2_min = " << chi2_min << std::endl;
-  std::cout << "ndf = " << ndf << std::endl;
+    if(templatemethod == 3){
+      file->Close();
+    }
 
-  // delete hint;
-  // delete fPulse;
-  // file->Close();
+  }
 
   return hChi2map;
 }

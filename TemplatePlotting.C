@@ -3,7 +3,7 @@
 //MCTemplatesAnData
 
 // wpsid = which picture should I draw
-void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
+void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::string Data = ""){
   TGaxis::SetMaxDigits(3);
   int binnumber = -1;
  /**
@@ -72,7 +72,7 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
     Double_t line_y = 0;
 
     TFile* MCWithOutFile = NULL;
-    MCWithOutFile = SafelyOpenRootfile("./00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_MC_GammaConvV1WithoutCorrection_00010113_1111112067032220000_01631031000000d0.root");
+    MCWithOutFile = SafelyOpenRootfile(Data);
     TFile* OutputFile   = NULL;
     TFile* BackFileNN   = NULL;
     TFile* BackFile3to8 = NULL;
@@ -90,24 +90,28 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
 
     if(templatemethod == 2){
       OutputFile      = SafelyOpenRootfile("OutputFileBetterBkgNN.root");
+      std::cout << "Start Plotting Better Bkg NN Method" << '\n';
     }
     else if(templatemethod == 1){
       OutputFile      = SafelyOpenRootfile("OutputFileBetterBkg3to8.root");
+      std::cout << "Start Plotting Better Bkg 3 to 8 Method" << '\n';
     }
     else if(templatemethod == 3){
       OutputFile      = SafelyOpenRootfile("OutputFileBetterBkgPulse.root");
+      std::cout << "Start Plotting Pulse Method" << '\n';
     }
     else if(templatemethod == 4){
       OutputFile      = SafelyOpenRootfile("OutputFileNormal.root");
+      std::cout << "Start Plotting 'Normal' Method" << '\n';
     }
     else if(templatemethod == 5){
       OutputFile      = SafelyOpenRootfile("OutputFileOneTemplate.root");
+      std::cout << "Start Plotting One Template Method" << '\n';
     }
     else{
       std::cerr << "No Outputfile loaded!" << std::endl;
     }
     if (OutputFile->IsOpen() ) printf("OutputFile opened successfully\n");
-
     /**
      * uncorrected Yield obtained via my (template) method
      */
@@ -197,6 +201,7 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
 
       if(binnumber <=  0 || binnumber > numberbins){
 
+
         hGG                      = (TH1D*) MCWithOutFile->Get(Form("Mapping_TrueMesonCaloPhoton_InvMass_in_Pt_Bin%02d", k));
         SetHistogramProperties(hGG, "minv", count_str, 2, 0.0, 0.3);
 
@@ -206,8 +211,10 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
         hCC                      = (TH1D*) MCWithOutFile->Get(Form("Mapping_TrueMesonCaloConvPhoton_InvMass_in_Pt_Bin%02d", k));
         SetHistogramProperties(hCC, "minv", count_str, 7, 0.0, 0.3);
 
+
         hInvMass_MC              = (TH1D*) MCWithOutFile->Get(Form("fHistoMappingSignalInvMass_in_Pt_Bin%02d", k));
         SetHistogramProperties(hInvMass_MC, "minv", count_str, 5, 0.0, 0.3);
+
 
         /**
          * Same - scaled mixed event from data
@@ -227,6 +234,7 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
          */
         hChi2_2D_sigma           = (TH2D*) OutputFile->Get(Form("hChi2_2D_sigma_bin%02d",k));
 
+
         /**
          * Signal Template UNSCALED!
          */
@@ -239,8 +247,10 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png"){
         hCorrBack                = (TH1D*) OutputFile->Get(Form("hCorrBack_bin%02d",k));
         SetHistogramProperties(hCorrBack, "minv", count_str, 3, 0.0, 0.3);
 
+
         hSignal_scaled = (TH1D*) hSignal->Clone("hSignal_scaled");
         hCorrBack_scaled = (TH1D*) hCorrBack->Clone("hCorrBack_scaled");
+
 
         hSignal_scaled->       Scale(hSignalAreaScaling->  GetBinContent(k+1)*h_x_min->GetBinContent(k+1));
         hCorrBack_scaled->     Scale(hCorrbackAreaScaling->GetBinContent(k+1)*h_y_min->GetBinContent(k+1));

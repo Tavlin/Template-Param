@@ -12,7 +12,9 @@
  *                         == 5 uses MC reko as template
  *                         only useable AFTER 3 to 8 root file was created!
  */
-void Template_CAP(std::string current_path, int templatemethod){
+void Template_CAP(std::string current_path, int templatemethod, std::string ESD_MC,
+                 std::string ESD_data, std::string MC, std::string Data,
+                 std::string CorrectedData, std::string Correction, std::string MCRebin1){
 
 
   TString safePath = gDirectory->GetPath();            // retrieve neutral path
@@ -150,8 +152,10 @@ void Template_CAP(std::string current_path, int templatemethod){
   TList* lCutNumber_MC            = NULL; // TLists inside the ESD File (MC)
   TList* lMC_MC                   = NULL; // Innerst TList for MC histos from MC
   TList* lTrue_MC                 = NULL; // Innerst TList for True histos from MC
+  TList* lESD_MC                  = NULL; // Innerst TList for ESD histos for NEvents_data
 
-  TH1D* hNEvents                  = NULL; // histo containing number of Events
+  TH1D* hNEvents_data             = NULL; // histo containing number of Events in Data
+  TH1D* hNEvents_MC               = NULL; // histo containing number of Events in MC
   TH1D* hMC_Pi0InAcc_Pt           = NULL; // acceptance histo
   TH2D* hTrueDoubleCounting_Pi0   = NULL; // 2D Histo including Doublecounting
   TH1D* CorrectedYieldNormEff     = NULL; // Corrected Yield from the Framwork
@@ -161,30 +165,33 @@ void Template_CAP(std::string current_path, int templatemethod){
    * 1st. the Doublecounting Histogram
    * 2nd. the MC Histogram of Pi0 in acceptance as a function of pT
    */
-  ESDFile_MC    = SafelyOpenRootfile("./../Daten/GammaCalo_503_JJ_2017.root");
+  ESDFile_MC    = SafelyOpenRootfile("./../Daten/" + ESD_MC + ".root");
   if (ESDFile_MC->IsOpen() ) printf("ESDFile_MC opened successfully\n");
 
   lGammaCalo_MC          = (TList*) ESDFile_MC->Get("GammaCalo_503");
   lCutNumber_MC          = (TList*) lGammaCalo_MC->FindObject("Cut Number 00010113_1111112067032220000_01631031000000d0");
   lMC_MC                 = (TList*) lCutNumber_MC->FindObject("00010113_1111112067032220000_01631031000000d0 MC histograms");
   lTrue_MC               = (TList*) lCutNumber_MC->FindObject("00010113_1111112067032220000_01631031000000d0 True histograms");
+  lESD_MC                 = (TList*) lCutNumber_MC->FindObject("00010113_1111112067032220000_01631031000000d0 ESD histograms");
   hMC_Pi0InAcc_Pt         = (TH1D*)  lMC_MC->FindObject("MC_Pi0InAcc_Pt");
   hTrueDoubleCounting_Pi0 = (TH2D*)  lTrue_MC->FindObject("ESD_TrueDoubleCountPi0_InvMass_Pt");
+  hNEvents_MC             = (TH1D*)  lESD_MC->FindObject("NEvents");
+  Double_t NEvents_MC  = hNEvents_MC->GetBinContent(1);
   ESDFile_MC->Close();
 
   /**
    * Access the ESD File form the data for one Histograms:
-   * 1st. the NEvents Histogram to get the number of Events with MinBias Trigger
+   * 1st. the NEvents_data Histogram to get the number of Events with MinBias Trigger
    */
-  ESDFile_data    = SafelyOpenRootfile("./../Daten/GammaCalo_503_data_2017.root");
+  ESDFile_data    = SafelyOpenRootfile("./../Daten/" + ESD_data + ".root");
   if (ESDFile_data->IsOpen() ) printf("ESDFile_data opened successfully\n");
 
   lGammaCalo_data        = (TList*) ESDFile_data->Get("GammaCalo_503");
   lCutNumber_data        = (TList*) lGammaCalo_data->FindObject("Cut Number 00010113_1111112067032220000_01631031000000d0");
   lESD_data              = (TList*) lCutNumber_data->FindObject("00010113_1111112067032220000_01631031000000d0 ESD histograms");
-  hNEvents               = (TH1D*)  lESD_data->FindObject("NEvents");
+  hNEvents_data          = (TH1D*)  lESD_data->FindObject("NEvents");
 
-  Double_t NEvents  = hNEvents->GetBinContent(1);   // retrieve NEents MinBias
+  Double_t NEvents_data  = hNEvents_data->GetBinContent(1);   // retrieve NEents MinBias
   ESDFile_data->Close();
 
   gDirectory->Cd(safePath.Data());                  // for saftey resetting path
@@ -194,7 +201,7 @@ void Template_CAP(std::string current_path, int templatemethod){
    * should make the needed normal corr. bkg templates for the other two
    * methods.
    */
-  CorrBkgCreation();
+  CorrBkgCreation(MCRebin1);
 
   /**
    * For loop to loop over all pT bins definded by fBinsPi013TeVEMCPt. Bin 0 is
@@ -224,7 +231,7 @@ void Template_CAP(std::string current_path, int templatemethod){
      * Open the file which contains the MC output of the framework's work so to
      * say.
      */
-    MCFile = SafelyOpenRootfile("./00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_MC_GammaConvV1WithoutCorrection_00010113_1111112067032220000_01631031000000d0.root");
+    MCFile = SafelyOpenRootfile(MC);
     if (MCFile->IsOpen() ) printf("MCFile opened successfully\n");
 
 
@@ -244,7 +251,7 @@ void Template_CAP(std::string current_path, int templatemethod){
     * Open the file which contains the data output of the framework's work so to
     * say.
      */
-    DataFile = SafelyOpenRootfile("./00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_data_GammaConvV1WithoutCorrection_00010113_1111112067032220000_01631031000000d0.root");
+    DataFile = SafelyOpenRootfile(Data);
     if (DataFile->IsOpen() ) printf("DataFile opened successfully\n");
 
     /**
@@ -330,7 +337,7 @@ void Template_CAP(std::string current_path, int templatemethod){
      */
     hChi2Map[k-1] = Chi2MapFunction(hInvMass_Data, hPeak_MC, hCorrBkg, temp_chi2_dt,
       signalAreaScaling, corrbackAreaScaling, x_min, y_min, ndf, templatemethod,
-      fBinsPi013TeVEMCPt[k], k);
+      fBinsPi013TeVEMCPt[k], k, NEvents_data, NEvents_MC);
 
     /**
      * Function from Sebastian to calculate the 1 sigma region around the min
@@ -615,7 +622,7 @@ void Template_CAP(std::string current_path, int templatemethod){
    * Open the file which contains the corrected true norm efficiency Yield from
    * the framework.
    */
-  TFile* FData_corrected = SafelyOpenRootfile("/data4/mhemmer/Documents/BachelorArbeit/GammaCalo_503_data_2017/00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_data_GammaConvV1Correction_00010113_1111112067032220000_01631031000000d0.root");
+  TFile* FData_corrected = SafelyOpenRootfile(CorrectedData);
   if (FData_corrected->IsOpen() ) printf("FData_corrected opened successfully\n");
 
   CorrectedYieldNormEff = (TH1D*) FData_corrected->Get(Form("CorrectedYieldNormEff"));
@@ -625,7 +632,7 @@ void Template_CAP(std::string current_path, int templatemethod){
   * Open the MC file which contains the correction histograms for efficiency and
   * acceptance. Obtaining those two directly afterwards.
    */
-  CorrectionFile = SafelyOpenRootfile("/data4/mhemmer/Documents/BachelorArbeit/GammaCalo_503_data_2017/00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_MC_GammaConv_OnlyCorrectionFactor_00010113_1111112067032220000_01631031000000d0.root");
+  CorrectionFile = SafelyOpenRootfile(Correction);
   if (CorrectionFile->IsOpen() ) printf("CorrectionFile opened successfully\n");
 
 
@@ -633,7 +640,7 @@ void Template_CAP(std::string current_path, int templatemethod){
   TH1D* hAcc    = (TH1D*) CorrectionFile->Get(Form("fMCMesonAccepPt"));
   TH1D* hEffi   = (TH1D*) CorrectionFile->Get(Form("TrueMesonEffiPt"));
 
-  // correction for 2pi, BR, NEvents, Y, Binwidth
+  // correction for 2pi, BR, NEvents_data, Y, Binwidth
   /**
    * Correction for the number of Events
    * 2*Pi
@@ -641,7 +648,7 @@ void Template_CAP(std::string current_path, int templatemethod){
    * the branching ratio for pi0 to decay into two photons
    * the bin width
    */
-  hYield_dt_chi2map_uncorr->Scale(1./(NEvents*2*M_PI*1.6*0.98798),"width");
+  hYield_dt_chi2map_uncorr->Scale(1./(NEvents_data*2*M_PI*1.6*0.98798),"width");
   hYield_dt_chi2map_uncorr->SetYTitle(rawyield);
   hYield_dt_chi2map_uncorr->SetXTitle(pt_str);
 
@@ -651,13 +658,12 @@ void Template_CAP(std::string current_path, int templatemethod){
   * from the function parametrisation method from the framework.
    */
   DataFile = NULL;
-  DataFile = SafelyOpenRootfile("/data4/mhemmer/Documents/BachelorArbeit/GammaCalo_503_data_2017/00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_data_GammaConvV1WithoutCorrection_00010113_1111112067032220000_01631031000000d0.root");
+  DataFile = SafelyOpenRootfile(Data);
   if (DataFile->IsOpen() ) printf("DataFile opened successfully\n");
 
   TH1D* hYield_framework = (TH1D*) DataFile->Get(Form("histoYieldMeson"));
   TH1D* histoChi2_0 = (TH1D*) DataFile->Get(Form("histoChi2_0"));
   SetHistoStandardSettings(histoChi2_0);
-  std::cout << "I AM AFTER OPENING OF ALL 3 FILES" << '\n';
 
   /**
    * correcting the uncorrected framework yield with the efficiency.

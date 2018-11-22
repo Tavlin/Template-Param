@@ -25,7 +25,7 @@ Double_t templow             =  1.e10;
  * The templates will be saved ion a File called "CorrBkgFileNoRebin.root"
  * Name of the templates: hCorrBkgNoRebinBin%02d !
  */
-void CorrBkgCreation(void){
+void CorrBkgCreation(std::string MCRebin1){
 
   TString safePath = gDirectory->GetPath();            // retrieve neutral path
   TFile* MCFile         = NULL;
@@ -47,7 +47,7 @@ void CorrBkgCreation(void){
      * say.
      */
     MCFile              =
-    SafelyOpenRootfile("/data4/mhemmer/Documents/BachelorArbeit/GammaCalo_503_JJ_2017_Rebin1/00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_MC_GammaConvV1WithoutCorrection_00010113_1111112067032220000_01631031000000d0.root");
+    SafelyOpenRootfile(MCRebin1);
 
     /**
      * Histogram from the MC simulation which contains the only the true Pi0s
@@ -163,7 +163,6 @@ TH1D* BackgroundAdding(int i){
       hBackStackup = NULL;
       hBackStackup = (TH1D*) (aBackStackup[k-m])->Clone("hBackStackup");
       Int_t NFitPoints = hBackStackup->FindBin(0.3) - hBackStackup->FindBin(0.1);
-      std::cout << "Before Fit" << '\n';
       TF1* fit = new TF1("fit", &funcCorrBackFitting, 0.0 ,0.3, 1);
       fit->SetNpx(ndrawpoints);
       fit->SetParameter(0, 1.);
@@ -171,7 +170,6 @@ TH1D* BackgroundAdding(int i){
       fit->SetLineColor(kRed);
       fit->SetLineWidth(3);
       hBack->Fit("fit", "QM0P","", 0.1, 0.3);
-      std::cout << "After Fit" << '\n';
       aBackStackup[k-m]->Scale(fit->GetParameter(0));
 
       aBackStackup[k-m]->SetMarkerStyle(1);

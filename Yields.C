@@ -136,7 +136,7 @@ void Yields(TString PicFormat = "png"){
 
 
 
-    TLegend* legYields = new TLegend(0.21, 0.01, 0.47, 0.25);
+    TLegend* legYields = new TLegend(0.4, 0.5, 0.8, 0.9);
     legYields->SetHeader("Methode:");
     legYields->AddEntry(hCorrectedYieldNormEff, "Funktionsparametrisierung", "p");
     legYields->AddEntry(hCorrYieldME_Normal, "Templates (normal)", "p");
