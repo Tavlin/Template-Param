@@ -189,9 +189,11 @@ TH2D* Chi2MapFunction(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi
       numbersteps = 100;
       std::cout << "x_min = " << x_min << '\n';
       std::cout << "y_min = " << y_min << '\n';
+      std::cout << "x_min - (numbersteps+2)*stepwidth/2 = " << x_min - (numbersteps+2)*stepwidth/2 << '\n';
+      std::cout << "x_min + (numbersteps-2)*stepwidth/2 = " << x_min + (numbersteps-2)*stepwidth/2. << '\n';
       hChi2map    = new TH2D("hChi2map", "",
-      numbersteps, x_min - numbersteps*stepwidth/2, x_min + numbersteps*stepwidth/2,
-      numbersteps, y_min - numbersteps*stepwidth/2, y_min + numbersteps*stepwidth/2);
+      numbersteps, x_min - (numbersteps+2)*stepwidth/2., x_min + (numbersteps+2)*stepwidth/2.,
+      numbersteps, y_min - (numbersteps-2)*stepwidth/2., y_min + (numbersteps-2)*stepwidth/2.);
       SetHistoStandardSettings2(hChi2map);
     }
     else if(corrbackAreaScaling != 1. || signalAreaScaling != 1.){
@@ -247,13 +249,13 @@ TH2D* Chi2MapFunction(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi
         std::cout << "fifty_pc = " << fifty_pc << '\n';
         std::cout << "ten_pc = " << ten_pc << '\n';
 
-        if(h->GetBinContent(onehun_pc)< 0.1){
-          fPulse->SetParameter(0, onehun_pc/3);
-          fPulse->SetParLimits(0, 0., 3*onehun_pc);
+        if(h->GetMaximum()< 0.1){
+          fPulse->SetParameter(0, h->GetMaximum()/3);
+          fPulse->SetParLimits(0, 0., 3*h->GetMaximum());
         }
         else{
-          fPulse->SetParameter(0, 3*onehun_pc);
-          fPulse->SetParLimits(0, 0., 10*onehun_pc);
+          fPulse->SetParameter(0, 3*h->GetMaximum());
+          fPulse->SetParLimits(0, 0., 10*h->GetMaximum());
         }
         fPulse->SetParameter(1, h->GetBinCenter(1));
         fPulse->SetParLimits(1, 0., onehun_pc);
@@ -304,20 +306,27 @@ TH2D* Chi2MapFunction(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi
         chi2 = 0;
         if(templatemethod == 5){
           chi2 = Chi2Calc1D(hSignal_clone, hData_clone, ndf,
-            stepwidth* ((Double_t)ix), templatemethod, binnumber);
+            stepwidth * (Double_t)ix + (x_min - (numbersteps+2)*stepwidth/2.),
+            templatemethod, binnumber);
         }
         else{
           chi2 = Chi2Calc(hSignal_clone, hCorrback_clone, hData_clone, ndf,
-            2.*stepwidth * (Double_t)ix + (x_min - numbersteps*stepwidth),
-            2.*stepwidth * (Double_t)iy + (y_min - numbersteps*stepwidth),
+            stepwidth * (Double_t)ix + (x_min - (numbersteps+2)*stepwidth/2.),
+            stepwidth * (Double_t)iy + (y_min - (numbersteps+2)*stepwidth/2.),
             templatemethod, binnumber,
             fPulse_eval, sigma_cons);
         }
 
         if(chi2 < chi2_min_temp){
           chi2_min_temp = chi2;
-          x_min_temp = max(2.*stepwidth * (Double_t)ix + (x_min - numbersteps*stepwidth), 0.0);
-          y_min_temp = max(2.*stepwidth * (Double_t)iy + (y_min - numbersteps*stepwidth), 0.0);
+          if(templatemethod != 5){
+            x_min_temp = max(stepwidth * (Double_t)ix + (x_min - (numbersteps+2)*stepwidth/2.), 0.0);
+            y_min_temp = max(stepwidth * (Double_t)iy + (y_min - (numbersteps+2)*stepwidth/2.), 0.0);
+          }
+          else{
+            x_min_temp = max(stepwidth * (Double_t)ix + (x_min - (numbersteps+2)*stepwidth/2.), 0.0);
+            y_min_temp = max(stepwidth * (Double_t)iy + (x_min - (numbersteps+2)*stepwidth/2.), 0.0);
+          }
         }
         if(templatemethod == 5){
           hChi2map->SetBinContent(ix+1, iy+1, chi2);

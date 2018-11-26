@@ -3,7 +3,7 @@
 //MCTemplatesAnData
 
 // wpsid = which picture should I draw
-void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::string Data = ""){
+void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::string Data = "", TString SaveAppendix = ""){
   TGaxis::SetMaxDigits(3);
   int binnumber = -1;
  /**
@@ -202,14 +202,14 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
       if(binnumber <=  0 || binnumber > numberbins){
 
 
-        hGG                      = (TH1D*) MCWithOutFile->Get(Form("Mapping_TrueMesonCaloPhoton_InvMass_in_Pt_Bin%02d", k));
-        SetHistogramProperties(hGG, "minv", count_str, 2, 0.0, 0.3);
-
-        hGC                      = (TH1D*) MCWithOutFile->Get(Form("Mapping_TrueMesonMixedCaloConvPhoton_InvMass_in_Pt_Bin%02d", k));
-        SetHistogramProperties(hGC, "minv", count_str, 4, 0.0, 0.3);
-
-        hCC                      = (TH1D*) MCWithOutFile->Get(Form("Mapping_TrueMesonCaloConvPhoton_InvMass_in_Pt_Bin%02d", k));
-        SetHistogramProperties(hCC, "minv", count_str, 7, 0.0, 0.3);
+        // hGG                      = (TH1D*) MCWithOutFile->Get(Form("Mapping_TrueMesonCaloPhoton_InvMass_in_Pt_Bin%02d", k));
+        // SetHistogramProperties(hGG, "minv", count_str, 2, 0.0, 0.3);
+        //
+        // hGC                      = (TH1D*) MCWithOutFile->Get(Form("Mapping_TrueMesonMixedCaloConvPhoton_InvMass_in_Pt_Bin%02d", k));
+        // SetHistogramProperties(hGC, "minv", count_str, 4, 0.0, 0.3);
+        //
+        // hCC                      = (TH1D*) MCWithOutFile->Get(Form("Mapping_TrueMesonCaloConvPhoton_InvMass_in_Pt_Bin%02d", k));
+        // SetHistogramProperties(hCC, "minv", count_str, 7, 0.0, 0.3);
 
 
         hInvMass_MC              = (TH1D*) MCWithOutFile->Get(Form("fHistoMappingSignalInvMass_in_Pt_Bin%02d", k));
@@ -304,7 +304,7 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
           c2 = makeCanvas(OAhists, OAratios, "notimeThickHorizontal", 0, 0);
 
           c2->Update();
-          c2->SaveAs(Form("BetterBkgNN/BackgroundWithRatio%02d." + PicFormat,k));
+          c2->SaveAs(Form("BetterBkgNN/BackgroundWithRatio%02d" + SaveAppendix + "." + PicFormat,k));
           c2->Clear();
 
           delete legCorrBkgComp;
@@ -350,7 +350,7 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
 
 
           c2->Update();
-          c2->SaveAs(Form("BetterBkg3to8/BackgroundWithRatio%02d." + PicFormat,k));
+          c2->SaveAs(Form("BetterBkg3to8/BackgroundWithRatio%02d" + SaveAppendix + "." + PicFormat,k));
           c2->Clear();
 
           delete legCorrBkgComp;
@@ -391,19 +391,19 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
 
           cChi2Map->Update();
           if(templatemethod == 2){
-            cChi2Map->SaveAs(Form("BetterBkgNN/Chi2Map%02d." + PicFormat,k));
+            cChi2Map->SaveAs(Form("BetterBkgNN/Chi2Map%02d" + SaveAppendix + "." + PicFormat,k));
           }
           if(templatemethod == 1){
-            cChi2Map->SaveAs(Form("BetterBkg3to8/Chi2Map%02d." + PicFormat,k));
+            cChi2Map->SaveAs(Form("BetterBkg3to8/Chi2Map%02d" + SaveAppendix + "." + PicFormat,k));
           }
           if(templatemethod == 3){
-            cChi2Map->SaveAs(Form("BetterBkg3to8Pulse/Chi2Map%02d." + PicFormat,k));
+            cChi2Map->SaveAs(Form("BetterBkg3to8Pulse/Chi2Map%02d" + SaveAppendix + "." + PicFormat,k));
           }
           if(templatemethod == 4){
-            cChi2Map->SaveAs(Form("Normal/Chi2Map%02d." + PicFormat,k));
+            cChi2Map->SaveAs(Form("Normal/Chi2Map%02d" + SaveAppendix + "." + PicFormat,k));
           }
           if(templatemethod == 5){
-            cChi2Map->SaveAs(Form("OneTemplate/Chi2Map%02d." + PicFormat,k));
+            cChi2Map->SaveAs(Form("OneTemplate/Chi2Map%02d" + SaveAppendix + "." + PicFormat,k));
           }
           cChi2Map->Clear();
         }
@@ -453,19 +453,19 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
 
           c1->Update();
           if(templatemethod == 2){
-            c1->SaveAs(Form("BetterBkgNN/ParamResultParts_Bin%02d." + PicFormat,k));
+            c1->SaveAs(Form("BetterBkgNN/ParamResultParts_Bin%02d" + SaveAppendix + "." + PicFormat,k));
           }
           if(templatemethod == 1){
-            c1->SaveAs(Form("BetterBkg3to8/ParamResultParts_Bin%02d." + PicFormat,k));
+            c1->SaveAs(Form("BetterBkg3to8/ParamResultParts_Bin%02d" + SaveAppendix + "." + PicFormat,k));
           }
           if(templatemethod == 3){
-            c1->SaveAs(Form("BetterBkg3to8Pulse/ParamResultParts_Bin%02d." + PicFormat,k));
+            c1->SaveAs(Form("BetterBkg3to8Pulse/ParamResultParts_Bin%02d" + SaveAppendix + "." + PicFormat,k));
           }
           if(templatemethod == 4){
-            c1->SaveAs(Form("Normal/ParamResultParts_Bin%02d." + PicFormat,k));
+            c1->SaveAs(Form("Normal/ParamResultParts_Bin%02d" + SaveAppendix + "." + PicFormat,k));
           }
           if(templatemethod == 5){
-            c1->SaveAs(Form("OneTemplate/ParamResultParts_Bin%02d." + PicFormat,k));
+            c1->SaveAs(Form("OneTemplate/ParamResultParts_Bin%02d" + SaveAppendix + "." + PicFormat,k));
           }
           c1->Clear();
           TLegend* lParamResult = new TLegend(0.58,0.45,0.8,0.63);
@@ -489,19 +489,19 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
           c1->Update();
 
           if(templatemethod == 2){
-            c1->SaveAs(Form("BetterBkgNN/ParamResult_Bin%02d." + PicFormat,k));
+            c1->SaveAs(Form("BetterBkgNN/ParamResult_Bin%02d" + SaveAppendix + "." + PicFormat,k));
           }
           if(templatemethod == 1){
-            c1->SaveAs(Form("BetterBkg3to8/ParamResult_Bin%02d." + PicFormat,k));
+            c1->SaveAs(Form("BetterBkg3to8/ParamResult_Bin%02d" + SaveAppendix + "." + PicFormat,k));
           }
           if(templatemethod == 3){
-            c1->SaveAs(Form("BetterBkg3to8Pulse/ParamResult_Bin%02d." + PicFormat,k));
+            c1->SaveAs(Form("BetterBkg3to8Pulse/ParamResult_Bin%02d" + SaveAppendix + "." + PicFormat,k));
           }
           if(templatemethod == 4){
-            c1->SaveAs(Form("Normal/ParamResult_Bin%02d." + PicFormat,k));
+            c1->SaveAs(Form("Normal/ParamResult_Bin%02d" + SaveAppendix + "." + PicFormat,k));
           }
           if(templatemethod == 5){
-            c1->SaveAs(Form("OneTemplate/ParamResult_Bin%02d." + PicFormat,k));
+            c1->SaveAs(Form("OneTemplate/ParamResult_Bin%02d" + SaveAppendix + "." + PicFormat,k));
           }
 
           c1->Clear();
@@ -510,28 +510,28 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
           delete lParamResult;
           delete paramrange;
 
-          if(templatemethod == 4){
-            TLegend* lGammas = new TLegend(0.2,0.7,0.4,0.9);
-            lGammas->AddEntry(hSignal, "Summe reko. #pi^{0}", "p");
-            lGammas->AddEntry(hGG, "#gamma#gamma", "p");
-            lGammas->AddEntry(hGC, "#gamma#gamma_{conv}", "p");
-            lGammas->AddEntry(hCC, "#gamma_{conv}#gamma_{conv}",  "p");
-
-            OAhists->Clear();
-            OAhists->Add(hSignal);
-            OAhists->Add(hGG);
-            OAhists->Add(hGC);
-            OAhists->Add(hCC);
-            OAhists->Add(lGammas);
-
-            c1 = makeCanvas(OAhists, 0, "notimethickhorizontallabel", 0, 0);
-
-            c1->Update();
-            // DrawLabelALICE(0.6, 0.9, 0.02, 40, str);
-            c1->Update();
-
-            c1->SaveAs(Form("BetterBkg3to8/PeakTemplateMotivation%02d." + PicFormat,k));
-          }
+          // if(templatemethod == 4){
+          //   TLegend* lGammas = new TLegend(0.2,0.7,0.4,0.9);
+          //   lGammas->AddEntry(hSignal, "Summe reko. #pi^{0}", "p");
+          //   lGammas->AddEntry(hGG, "#gamma#gamma", "p");
+          //   lGammas->AddEntry(hGC, "#gamma#gamma_{conv}", "p");
+          //   lGammas->AddEntry(hCC, "#gamma_{conv}#gamma_{conv}",  "p");
+          //
+          //   OAhists->Clear();
+          //   OAhists->Add(hSignal);
+          //   OAhists->Add(hGG);
+          //   OAhists->Add(hGC);
+          //   OAhists->Add(hCC);
+          //   OAhists->Add(lGammas);
+          //
+          //   c1 = makeCanvas(OAhists, 0, "notimethickhorizontallabel", 0, 0);
+          //
+          //   c1->Update();
+          //   // DrawLabelALICE(0.6, 0.9, 0.02, 40, str);
+          //   c1->Update();
+          //
+          //   c1->SaveAs(Form("BetterBkg3to8/PeakTemplateMotivation%02d" + SaveAppendix + "." + PicFormat,k));
+          // }
 
           if(templatemethod == 4){
             c1->Clear();
@@ -553,7 +553,7 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
             c1->Update();
             // DrawLabelALICE(0.6, 0.9, 0.025, 40, str);
             c1->Update();
-            c1->SaveAs(Form("BetterBkg3to8/EntstehungUntergrund%02d." + PicFormat,k));
+            c1->SaveAs(Form("BetterBkg3to8/EntstehungUntergrund%02d" + SaveAppendix + "." + PicFormat,k));
           }
           c1->Clear();
 
@@ -588,19 +588,19 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
 
       c1->Update();
       if(templatemethod == 2){
-        c1->SaveAs(Form("BetterBkgNN/Chi2Comparison." + PicFormat));
+        c1->SaveAs(Form("BetterBkgNN/Chi2Comparison" + SaveAppendix + "." + PicFormat));
       }
       if(templatemethod == 1){
-        c1->SaveAs(Form("BetterBkg3to8/Chi2Comparison." + PicFormat));
+        c1->SaveAs(Form("BetterBkg3to8/Chi2Comparison" + SaveAppendix + "." + PicFormat));
       }
       if(templatemethod == 3){
-        c1->SaveAs(Form("BetterBkg3to8Pulse/Chi2Comparison." + PicFormat));
+        c1->SaveAs(Form("BetterBkg3to8Pulse/Chi2Comparison" + SaveAppendix + "." + PicFormat));
       }
       if(templatemethod == 4){
-        c1->SaveAs(Form("Normal/Chi2Comparison." + PicFormat));
+        c1->SaveAs(Form("Normal/Chi2Comparison" + SaveAppendix + "." + PicFormat));
       }
       if(templatemethod == 5){
-        c1->SaveAs(Form("OneTemplate/Chi2Comparison." + PicFormat));
+        c1->SaveAs(Form("OneTemplate/Chi2Comparison" + SaveAppendix + "." + PicFormat));
       }
       c1->Clear();
       c1->SetLogx(0);
@@ -624,19 +624,19 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
       // DrawLabelALICE(0.55, 0.9, 0.018, 40);
       c1->Update();
       if(templatemethod == 2){
-        c1->SaveAs(Form("BetterBkgNN/UncorrYields." + PicFormat));
+        c1->SaveAs(Form("BetterBkgNN/UncorrYields" + SaveAppendix + "." + PicFormat));
       }
       if(templatemethod == 1){
-        c1->SaveAs(Form("BetterBkg3to8/UncorrYields." + PicFormat));
+        c1->SaveAs(Form("BetterBkg3to8/UncorrYields" + SaveAppendix + "." + PicFormat));
       }
       if(templatemethod == 3){
-        c1->SaveAs(Form("BetterBkg3to8Pulse/UncorrYields." + PicFormat));
+        c1->SaveAs(Form("BetterBkg3to8Pulse/UncorrYields" + SaveAppendix + "." + PicFormat));
       }
       if(templatemethod == 4){
-        c1->SaveAs(Form("Normal/UncorrYields." + PicFormat));
+        c1->SaveAs(Form("Normal/UncorrYields" + SaveAppendix + "." + PicFormat));
       }
       if(templatemethod == 5){
-        c1->SaveAs(Form("OneTemplate/UncorrYields." + PicFormat));
+        c1->SaveAs(Form("OneTemplate/UncorrYields" + SaveAppendix + "." + PicFormat));
       }
       delete leg;
     }
@@ -662,19 +662,19 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
 
       c1->Update();
       if(templatemethod == 2){
-        c1->SaveAs(Form("BetterBkgNN/BGFactorComp." + PicFormat));
+        c1->SaveAs(Form("BetterBkgNN/BGFactorComp" + SaveAppendix + "." + PicFormat));
       }
       if(templatemethod == 1){
-        c1->SaveAs(Form("BetterBkg3to8/BGFactorComp." + PicFormat));
+        c1->SaveAs(Form("BetterBkg3to8/BGFactorComp" + SaveAppendix + "." + PicFormat));
       }
       if(templatemethod == 3){
-        c1->SaveAs(Form("BetterBkg3to8Pulse/BGFactorComp." + PicFormat));
+        c1->SaveAs(Form("BetterBkg3to8Pulse/BGFactorComp" + SaveAppendix + "." + PicFormat));
       }
       if(templatemethod == 4){
-        c1->SaveAs(Form("Normal/BGFactorComp." + PicFormat));
+        c1->SaveAs(Form("Normal/BGFactorComp" + SaveAppendix + "." + PicFormat));
       }
       if(templatemethod == 5){
-        c1->SaveAs(Form("OneTemplate/BGFactorComp." + PicFormat));
+        c1->SaveAs(Form("OneTemplate/BGFactorComp" + SaveAppendix + "." + PicFormat));
       }
       c1->Clear();
 
@@ -700,7 +700,7 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
 
         c1 = makeCanvas(OAhists, 0, "notimethickhorizontal", 0, 0);
         c1->Update();
-        c1->SaveAs(Form("BetterBkg3to8Pulse/BkgConfidenceIntervall." + PicFormat));
+        c1->SaveAs(Form("BetterBkg3to8Pulse/BkgConfidenceIntervall" + SaveAppendix + "." + PicFormat));
 
         delete leg;
 
@@ -729,19 +729,19 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
 
       c1->Update();
       if(templatemethod == 2){
-        c1->SaveAs(Form("BetterBkgNN/b_to_a_ratio." + PicFormat));
+        c1->SaveAs(Form("BetterBkgNN/b_to_a_ratio" + SaveAppendix + "." + PicFormat));
       }
       if(templatemethod == 1){
-        c1->SaveAs(Form("BetterBkg3to8/b_to_a_ratio." + PicFormat));
+        c1->SaveAs(Form("BetterBkg3to8/b_to_a_ratio" + SaveAppendix + "." + PicFormat));
       }
       if(templatemethod == 3){
-        c1->SaveAs(Form("BetterBkg3to8Pulse/b_to_a_ratio." + PicFormat));
+        c1->SaveAs(Form("BetterBkg3to8Pulse/b_to_a_ratio" + SaveAppendix + "." + PicFormat));
       }
       if(templatemethod == 4){
-        c1->SaveAs(Form("Normal/b_to_a_ratio." + PicFormat));
+        c1->SaveAs(Form("Normal/b_to_a_ratio" + SaveAppendix + "." + PicFormat));
       }
       if(templatemethod == 5){
-        c1->SaveAs(Form("OneTemplate/b_to_a_ratio." + PicFormat));
+        c1->SaveAs(Form("OneTemplate/b_to_a_ratio" + SaveAppendix + "." + PicFormat));
       }
       c1->Clear();
 
@@ -761,7 +761,7 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
       c1->Update();
 
       if(templatemethod == 1){
-        c1->SaveAs(Form("BetterBkg3to8/Korrekturfaktoren." + PicFormat));
+        c1->SaveAs(Form("BetterBkg3to8/Korrekturfaktoren" + SaveAppendix + "." + PicFormat));
       }
       c1->Clear();
 

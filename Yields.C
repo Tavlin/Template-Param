@@ -1,7 +1,7 @@
 #include "Plotting_Patrick.h"
 #include "CommonHeader.h"
 
-void Yields(TString PicFormat = "png"){
+void Yields(TString PicFormat = "png", TString SaveAppendix = ""){
     TGaxis::SetMaxDigits(3);
     auto OAhists = new TObjArray();
     auto OAratios = new TObjArray();
@@ -202,7 +202,7 @@ void Yields(TString PicFormat = "png"){
 
     c1 = NULL;
     c1 = makeCanvas(OAhists, OAratios, "notimethicklogY", 0, 0);
-    c1->SaveAs("Yields/Yields." + PicFormat);
+    c1->SaveAs("Yields/Yields" + SaveAppendix + "." + PicFormat);
 
     /**
      * Plotting NN method Yield in comp. with framework yield
@@ -220,7 +220,7 @@ void Yields(TString PicFormat = "png"){
     c1->Clear();
     c1 = NULL;
     c1 = makeCanvas(OAhists, OAratios, "notimethicklogY", 0, 0);
-    c1->SaveAs("Yields/YieldNN." + PicFormat);
+    c1->SaveAs("Yields/YieldNN" + SaveAppendix + "." + PicFormat);
 
     /**
      * Plotting of 3 to 8 method Yield in comp. with framework yield
@@ -238,7 +238,7 @@ void Yields(TString PicFormat = "png"){
     c1->Clear();
     c1 = NULL;
     c1 = makeCanvas(OAhists, OAratios, "notimethicklogY", 0, 0);
-    c1->SaveAs("Yields/Yield3to8." + PicFormat);
+    c1->SaveAs("Yields/Yield3to8" + SaveAppendix + "." + PicFormat);
 
     /**
      * Plotting of Pulse method Yield in comp. with framework yield
@@ -256,7 +256,7 @@ void Yields(TString PicFormat = "png"){
     c1->Clear();
     c1 = NULL;
     c1 = makeCanvas(OAhists, OAratios, "notimethicklogY", 0, 0);
-    c1->SaveAs("Yields/YieldPulse." + PicFormat);
+    c1->SaveAs("Yields/YieldPulse" + SaveAppendix + "." + PicFormat);
 
     /**
      * Plotting of Normal method Yield in comp. with framework yield
@@ -274,7 +274,7 @@ void Yields(TString PicFormat = "png"){
     c1->Clear();
     c1 = NULL;
     c1 = makeCanvas(OAhists, OAratios, "notimethicklogY", 0, 0);
-    c1->SaveAs("Yields/YieldNormal." + PicFormat);
+    c1->SaveAs("Yields/YieldNormal" + SaveAppendix + "." + PicFormat);
 
     /**
      * Plotting of OneTemplate method Yield in comp. with framework yield
@@ -292,7 +292,7 @@ void Yields(TString PicFormat = "png"){
     c1->Clear();
     c1 = NULL;
     c1 = makeCanvas(OAhists, OAratios, "notimethicklogY", 0, 0);
-    c1->SaveAs("Yields/YieldOneTemplate." + PicFormat);
+    c1->SaveAs("Yields/YieldOneTemplate" + SaveAppendix + "." + PicFormat);
 
     /**
      * Plotting relative stat. uncertainty
@@ -313,7 +313,7 @@ void Yields(TString PicFormat = "png"){
     c1->Clear();
     c1 = NULL;
     c1 = makeCanvas(OAhists, 0, "notimethickHorizontal", 0, 0);
-    c1->SaveAs("Yields/YieldsStatUncer." + PicFormat);
+    c1->SaveAs("Yields/YieldsStatUncer" + SaveAppendix + "." + PicFormat);
 
     OAhists->Clear();
     OAratios->Clear();
@@ -338,7 +338,7 @@ void Yields(TString PicFormat = "png"){
     c1->Clear();
     c1 = NULL;
     c1 = makeCanvas(OAhists, 0, "notimethickHorizontalLines", 0, 0);
-    c1->SaveAs("Yields/Chi2Comp." + PicFormat);
+    c1->SaveAs("Yields/Chi2Comp" + SaveAppendix + "." + PicFormat);
 
 
     delete OAhists;

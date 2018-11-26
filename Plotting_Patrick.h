@@ -33,6 +33,8 @@ Double_t fPtPlotRange = 49.9;
 TCanvas *makeCanvas(TObjArray *histArray, TObjArray *ratioArray = 0,const char *controlstring="", Short_t *colorArray = 0, Short_t *markerArray = 0);
 void SetHistogramProperties(TH1D* &h, TString XTitle, TString YTitle, Int_t ColorIndex);
 
+void SetRatioRange(TObjArray *ratioArray = 0);
+
 Int_t GetNiceColor(Int_t i)
 {//
   Int_t niceColors[] = {kRed+1, kGreen-3, kBlue+1, kViolet-4, kOrange-3, kBlack, kCyan-2, kGray+2, kOrange+2, kBlack, kYellow+3};
@@ -368,6 +370,7 @@ TCanvas *makeCanvas(TObjArray *histArray, TObjArray *ratioArray,const char *cont
   Int_t mrkMCO  = 25;
 
   gStyle->SetTextFont(43);
+  if(ratioArray){SetRatioRange(ratioArray);}
   TString control(controlstring);
 
   //   Short_t colorArray[]={kRed,kOrange-3,kGreen-3,kGreen+3,kCyan+3,kBlue};
@@ -756,5 +759,39 @@ void SetHistogramProperties(TH1D* &h, TString XTitle, TString YTitle,
   // if(minValue<minYValue) minYValue = minValue;
   // if(maxValue>maxYValue) maxYValue = maxValue;
 }
+void SetRatioRange(TObjArray *ratioArray)
+{
+  Int_t nbrEntries = ratioArray->GetEntries();
+  Double_t min      = 1;
+  Double_t max      = 0;
+  Double_t min_temp = 1;
+  Double_t max_temp = 0;
+  std::cout << "I was here" << '\n';
 
+  if(ratioArray){
+    for (Int_t i = nbrEntries-1; i > -1; i--) {
+      if(ratioArray->At(i)){
+        if (ratioArray->At(i)->InheritsFrom("TH1")){
+          TH1D *ratio = (TH1D*) ratioArray->At(i);
+          if(!ratio){cout<<"| ERROR: Histogram empty"<<endl;}
+          else{
+            if(ratio->GetMaximum()> max_temp) {max_temp = ratio->GetMaximum();}
+            if(ratio->GetMinimum()< min_temp) {min_temp = ratio->GetMinimum();}
+            if(i == 0){
+              if(min_temp < 0) {min = 1.05* min_temp;}
+              else             {min = 0.95* min_temp;}
+              if(max_temp < 0) {max = 0.95* max_temp;}
+              else             {max = 1.05* max_temp;}
+              ratio->GetYaxis()->SetRangeUser(min, max);
+            }
+          }
+        }
+        else{std::cout << "ERROR: Object does not inherit from TH1" << '\n';}
+      }
+    }
+  }
+  else{
+    std::cout << "WARNING: RatioArray = 0" << '\n';
+  }
+}
 #endif

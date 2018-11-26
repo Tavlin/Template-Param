@@ -53,7 +53,7 @@ void CorrBkgCreation(std::string MCRebin1){
      * Histogram from the MC simulation which contains the only the true Pi0s
      * coming from y y; y_conv y; and double y_conv
      */
-    hSignalTemplate     = (TH1D*) MCFile->Get(Form("Mapping_TrueMeson_InvMass_in_Pt_Bin%02d",k));
+    hSignalTemplate     = (TH1D*) MCFile->Get(Form("Mapping_TrueFullMeson_InvMass_in_Pt_Bin%02d",k));
 
     /**
      * Open the file which contains the data output of the framework's work so to
