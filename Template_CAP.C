@@ -590,6 +590,7 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
         h_y_min->GetBinContent(k+1) - hErrYlow->GetBinContent(k+1)));
         hEfficiency->SetBinContent(k+1, vInIntRangePercent[k-1]);
       }
+    }
 
   /**
    * reopening the new root file(s) to safe all the related histograms in it.
