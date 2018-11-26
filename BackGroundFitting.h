@@ -25,7 +25,7 @@ Double_t templow             =  1.e10;
  * The templates will be saved ion a File called "CorrBkgFileNoRebin.root"
  * Name of the templates: hCorrBkgNoRebinBin%02d !
  */
-void CorrBkgCreation(void){
+void CorrBkgCreation(std::string MCRebin1){
 
   TString safePath = gDirectory->GetPath();            // retrieve neutral path
   TFile* MCFile         = NULL;
@@ -47,7 +47,7 @@ void CorrBkgCreation(void){
      * say.
      */
     MCFile              =
-    SafelyOpenRootfile("/data4/mhemmer/Documents/BachelorArbeit/GammaCalo_503_data_2017_Rebin1/00010113_1111112067032220000_01631031000000d0/13TeV/Pi0_MC_GammaConvV1WithoutCorrection_00010113_1111112067032220000_01631031000000d0.root");
+    SafelyOpenRootfile(MCRebin1);
 
     /**
      * Histogram from the MC simulation which contains the only the true Pi0s
@@ -143,7 +143,7 @@ TH1D* BackgroundAdding(int i){
 
 
   hBack                 = (TH1D*) CorrBkgFile->Get(Form("hCorrBkgNoRebinBin%02d",i));
-  hBack->Rebin(fBinsPi013TeVEMCPtRebin[i-1]);
+  hBack->Rebin(fBinsPi013TeVEMCPtRebin[i]);
 
   // comment *out* if you want fit without original bin!
   // list->Add(hBack);
@@ -153,7 +153,7 @@ TH1D* BackgroundAdding(int i){
   for(int m = k; m >= j; m--){
     if(m != i){
       aBackStackup[k-m] = (TH1D*) CorrBkgFile->Get(Form("hCorrBkgNoRebinBin%02d",m));
-      aBackStackup[k-m]->Rebin(fBinsPi013TeVEMCPtRebin[i-1]);
+      aBackStackup[k-m]->Rebin(fBinsPi013TeVEMCPtRebin[i]);
 
       ////////////////////////////////////////////////////////////////////////////
       // fit function
@@ -162,13 +162,14 @@ TH1D* BackgroundAdding(int i){
       }
       hBackStackup = NULL;
       hBackStackup = (TH1D*) (aBackStackup[k-m])->Clone("hBackStackup");
+      Int_t NFitPoints = hBackStackup->FindBin(0.3) - hBackStackup->FindBin(0.1);
       TF1* fit = new TF1("fit", &funcCorrBackFitting, 0.0 ,0.3, 1);
       fit->SetNpx(ndrawpoints);
       fit->SetParameter(0, 1.);
-      // fit->SetNumberFitPoints(numberbins);
+      fit->SetNumberFitPoints(NFitPoints);
       fit->SetLineColor(kRed);
       fit->SetLineWidth(3);
-      hBack->Fit("fit", "M0P","", 0.0, 0.3);
+      hBack->Fit("fit", "QM0P","", 0.1, 0.3);
       aBackStackup[k-m]->Scale(fit->GetParameter(0));
 
       aBackStackup[k-m]->SetMarkerStyle(1);
@@ -213,6 +214,7 @@ TH1D* BackgroundAdding(int i){
 
   fPol0        = new TF1(Form("fPol0_bin%02d",i), "[0]", 0.0, 0.3);
   fPol0->SetParLimits(0, 0.0, 5.0);
+  fPol0->SetParLimits(0, 0., 100.);
 
   for (int t = 1; t < hRatio->GetNbinsX(); t++) {
     if(hRatio->GetBinError(t) > 40 || fabs(hRatio->GetBinContent(t)) > 40){
@@ -287,16 +289,16 @@ TH1D* BackGround3to8(int i){
   TF1*  fPol0           = NULL;
   TList *list = new TList;
   hBack                 = (TH1D*) CorrBkgFile->Get(Form("hCorrBkgNoRebinBin%02d",i));
-  hBack->Rebin(fBinsPi013TeVEMCPtRebin[i-1]);
-  hMinv_pT_ratio->RebinX(fBinsPi013TeVEMCPtRebin[i-1]);
+  hBack->Rebin(fBinsPi013TeVEMCPtRebin[i]);
+  hMinv_pT_ratio->RebinX(fBinsPi013TeVEMCPtRebin[i]);
   // needs rescaling since it is 8 histos merged and also for the rebinnig
-  hMinv_pT_ratio->Scale(1./(8.*fBinsPi013TeVEMCPtRebin[i-1]));
+  hMinv_pT_ratio->Scale(1./(8.*fBinsPi013TeVEMCPtRebin[i]));
 
   for(int m = k; m >= j; m--){
     if(m != i){
 
       aBackStackup[k-m] = (TH1D*) CorrBkgFile->Get(Form("hCorrBkgNoRebinBin%02d",m));
-      aBackStackup[k-m]->Rebin(fBinsPi013TeVEMCPtRebin[i-1]);
+      aBackStackup[k-m]->Rebin(fBinsPi013TeVEMCPtRebin[i]);
       for (int w = 1; w < aBackStackup[k-m]->FindBin(0.3); w++) {
         if(fabs(hMinv_pT_ratio->GetBinContent(w, m+1)) >= 1.e-2){
           aBackStackup[k-m]->SetBinContent(w, aBackStackup[k-m]->GetBinContent(w) * 1./hMinv_pT_ratio->GetBinContent(w, m+1));
@@ -323,7 +325,7 @@ TH1D* BackGround3to8(int i){
 
   Double_t sum = 0;
   Double_t OAC_scaling = 0;
-  for (int b = 1; b <= (800/fBinsPi013TeVEMCPtRebin[i-1])*3./8.+1; b++) {
+  for (int b = 1; b <= (800/fBinsPi013TeVEMCPtRebin[i])*3./8.+1; b++) {
     sum = 0;
     // for (int c = 3; c <= 8; c++) {
     //   if(i == c){

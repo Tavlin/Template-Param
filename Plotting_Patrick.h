@@ -502,7 +502,7 @@ TCanvas *makeCanvas(TObjArray *histArray, TObjArray *ratioArray,const char *cont
     TString yTitle(hist->GetYaxis()->GetTitle());
     if (yTitle.Contains("#frac")){
       titleOffsetY = 2.6;
-      leftMargin = 0.2;
+      leftMargin = 0.23;
     }
   }
 

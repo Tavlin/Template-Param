@@ -273,7 +273,7 @@ TFile* SafelyOpenRootfile(const std::string filename)
   if (ffile && ffile->IsOpen()) return ffile;
 
   ffile = TFile::Open(filename.data()); // gives root error and returns 0x0 on fail.
-  if (!ffile) printf(Form("SafelyOpenRootfile(): file '%s' not found.", filename.data()));
+  // if (!ffile) printf(Form("SafelyOpenRootfile(): file '%s' not found.", filename.data()));
 
   // change to previous path again, so that it will be possible to close the file later without crash.
   // otherwise heap based objects will be created in memory that will be freed when the file is closed.
@@ -284,6 +284,7 @@ TFile* SafelyOpenRootfile(const std::string filename)
 
   return ffile;
 }
+
 
 /**
  * DataTree Class used for the Toy MC aswell.

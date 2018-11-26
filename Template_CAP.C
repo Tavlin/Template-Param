@@ -300,7 +300,7 @@ void Template_CAP(std::string current_path, int templatemethod){
     vInIntRangePercent.push_back(InIntRangePercent);
 
     if(templatemethod == 5){
-      // hPeak_MC = (TH1D*) hInvMass_MC->Clone("hPeak_MC");
+      hPeak_MC = (TH1D*) hInvMass_MC->Clone("hPeak_MC");
     }
 
     /**
