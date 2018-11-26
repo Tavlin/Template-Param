@@ -182,7 +182,7 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
   lGammaCalo_data        = (TList*) ESDFile_data->Get("GammaCalo_503");
   lCutNumber_data        = (TList*) lGammaCalo_data->FindObject("Cut Number 00010113_1111112067032220000_01631031000000d0");
   lESD_data              = (TList*) lCutNumber_data->FindObject("00010113_1111112067032220000_01631031000000d0 ESD histograms");
-  NEvents_data           = (TH1D*)  lESD_data->FindObject("NEvents");
+  hNEvents_data           = (TH1D*)  lESD_data->FindObject("NEvents");
 
   Double_t NEvents_data  = hNEvents_data->GetBinContent(1);   // retrieve NEents MinBias
   ESDFile_data->Close();
