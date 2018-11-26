@@ -278,7 +278,7 @@ void Template_CAP(std::string current_path, int templatemethod){
       hCorrBkg    = NULL;
       hCorrBkg    = (TH1D*) CorrBkgFile->Get(Form("hCorrBkgNoRebinBin%02d", k));
       hCorrBkg->Rebin(fBinsPi013TeVEMCPtRebin[k-1]);
-      hPeak_MC = (TH1D*) hInvMass_MC->Clone("hPeak_MC");
+      // hPeak_MC = (TH1D*) hInvMass_MC->Clone("hPeak_MC");
     }
     else{
       std::cerr << "templatemethod not found!" << '\n';
@@ -298,6 +298,10 @@ void Template_CAP(std::string current_path, int templatemethod){
                                                      hMC_Pi0InAcc_Pt->FindBin(fBinsPi013TeVEMCPt[k+1])-1);
 
     vInIntRangePercent.push_back(InIntRangePercent);
+
+    if(templatemethod == 5){
+      // hPeak_MC = (TH1D*) hInvMass_MC->Clone("hPeak_MC");
+    }
 
     /**
      * little fix for the string which contains the pT intervall comming from
