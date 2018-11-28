@@ -13,8 +13,8 @@
  *                         only useable AFTER 3 to 8 root file was created!
  */
 void Template_CAP(std::string current_path, int templatemethod, std::string ESD_MC,
-                  std::string ESD_data, std::string MC, std::string Data,
-                  std::string CorrectedData, std::string Correction, std::string MCRebin1){
+                 std::string ESD_data, std::string MC, std::string Data,
+                 std::string CorrectedData, std::string Correction, std::string MCRebin1){
 
 
   TString safePath = gDirectory->GetPath();            // retrieve neutral path
@@ -158,7 +158,7 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
    * 1st. the Doublecounting Histogram
    * 2nd. the MC Histogram of Pi0 in acceptance as a function of pT
    */
-  ESDFile_MC    = SafelyOpenRootfile("./../Daten/" + ESD_MC + ".root");;
+  ESDFile_MC    = SafelyOpenRootfile("./../Daten/" + ESD_MC + ".root");
   if (ESDFile_MC->IsOpen() ) printf("ESDFile_MC opened successfully\n");
 
   lGammaCalo_MC          = (TList*) ESDFile_MC->Get("GammaCalo_503");
@@ -182,7 +182,7 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
   lGammaCalo_data        = (TList*) ESDFile_data->Get("GammaCalo_503");
   lCutNumber_data        = (TList*) lGammaCalo_data->FindObject("Cut Number 00010113_1111112067032220000_01631031000000d0");
   lESD_data              = (TList*) lCutNumber_data->FindObject("00010113_1111112067032220000_01631031000000d0 ESD histograms");
-  hNEvents_data           = (TH1D*)  lESD_data->FindObject("NEvents");
+  hNEvents_data          = (TH1D*)  lESD_data->FindObject("NEvents");
 
   Double_t NEvents_data  = hNEvents_data->GetBinContent(1);   // retrieve NEents MinBias
   ESDFile_data->Close();
@@ -271,14 +271,13 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
       CorrBkgFile = SafelyOpenRootfile("CorrBkgFileNoRebin.root");
       hCorrBkg    = NULL;
       hCorrBkg    = (TH1D*) CorrBkgFile->Get(Form("hCorrBkgNoRebinBin%02d", k));
-      hCorrBkg->Rebin(fBinsPi013TeVEMCPtRebin[k-1]);
+      hCorrBkg->Rebin(fBinsPi013TeVEMCPtRebin[k]);
     }
     else if(templatemethod == 5){
       CorrBkgFile = SafelyOpenRootfile("CorrBkgFileNoRebin.root");
       hCorrBkg    = NULL;
       hCorrBkg    = (TH1D*) CorrBkgFile->Get(Form("hCorrBkgNoRebinBin%02d", k));
-      hCorrBkg->Rebin(fBinsPi013TeVEMCPtRebin[k-1]);
-      // hPeak_MC = (TH1D*) hInvMass_MC->Clone("hPeak_MC");
+      hCorrBkg->Rebin(fBinsPi013TeVEMCPtRebin[k]);
     }
     else{
       std::cerr << "templatemethod not found!" << '\n';
@@ -299,6 +298,11 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
 
     vInIntRangePercent.push_back(InIntRangePercent);
 
+    /**
+     * for the OneTemplate Method we only need the template containing bkg and
+     * Signal. Change to this Histo only AFTER efficiency is calculated, or else
+     * the efficiency will be wrong
+     */
     if(templatemethod == 5){
       hPeak_MC = (TH1D*) hInvMass_MC->Clone("hPeak_MC");
     }
@@ -333,8 +337,8 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
      * @param k                   current PT bin
      */
     hChi2Map[k-1] = Chi2MapFunction(hInvMass_Data, hPeak_MC, hCorrBkg, temp_chi2_dt,
-       signalAreaScaling, corrbackAreaScaling, x_min, y_min, ndf, templatemethod,
-       fBinsPi013TeVEMCPt[k], k, NEvents_data, NEvents_MC);
+      signalAreaScaling, corrbackAreaScaling, x_min, y_min, ndf, templatemethod,
+      fBinsPi013TeVEMCPt[k], k, NEvents_data, NEvents_MC);
 
     /**
      * Function from Sebastian to calculate the 1 sigma region around the min
@@ -465,9 +469,9 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
      * Then giving theses values into the uncorrected Yield histogram.
      */
     int_value = data_clone_for_int_dt_chi2map->
-    IntegralAndError(data_clone_for_int_dt_chi2map->GetXaxis()->
+    IntegralAndError(data_clone_for_int_dt_chi2map->
     FindBin(lowercountrange[k]),
-    data_clone_for_int_dt_chi2map->GetXaxis()->FindBin(uppercountrange),
+    data_clone_for_int_dt_chi2map->FindBin(uppercountrange),
     int_error);
 
     hYield_dt_chi2map_uncorr->SetBinContent(k+1, int_value);
@@ -548,49 +552,48 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
   hEfficiency->SetYTitle("#epsilon_{rek}");
   hEfficiency->SetXTitle("#it{p}_{T} (GeV/#it{c})");
 
-
   if(templatemethod == 5){
-      for (int k = 1; k < numberbins; ++k) {
-        hChi2Map_Chi2_pT->SetBinContent(k+1, vChi2_DT_Chi2Map[k-1]/vNDF_DT_Chi2Map[k-1]);
-        hChi2Map_Chi2_pT->SetBinError(k+1, sqrt(2./vNDF_DT_Chi2Map[k-1]));
-        hSignalAreaScaling->SetBinContent(k, vSignalAreaScaling[k-1]);
-        hCorrbackAreaScaling->SetBinContent(k, vCorrbackAreaScaling[k-1]);
-        h_x_min->SetBinContent(k+1, v_x_min[k-1]);
-        h_y_min->SetBinContent(k+1, v_x_min[k-1]);
-        hErrXlow->SetBinContent(k+1, vsigma_dt[k-1][0]);
-        hErrXhigh->SetBinContent(k+1, vsigma_dt[k-1][1]);
-        hErrYlow->SetBinContent(k+1, vsigma_dt[k-1][0]);
-        hErrYhigh->SetBinContent(k+1, vsigma_dt[k-1][1]);
-        h_x_min->SetBinError(k+1,
-        max(hErrXhigh->GetBinContent(k+1)-h_x_min->GetBinContent(k+1),
-        h_x_min->GetBinContent(k+1) - hErrXlow->GetBinContent(k+1)));
-        h_y_min->SetBinError(k+1,
-        max(hErrYhigh->GetBinContent(k+1) - h_y_min->GetBinContent(k+1),
-        h_y_min->GetBinContent(k+1) - hErrYlow->GetBinContent(k+1)));
-        hEfficiency->SetBinContent(k+1, vInIntRangePercent[k-1]);
-      }
+    for (int k = 1; k < numberbins; ++k) {
+      hChi2Map_Chi2_pT->SetBinContent(k+1, vChi2_DT_Chi2Map[k-1]/vNDF_DT_Chi2Map[k-1]);
+      hChi2Map_Chi2_pT->SetBinError(k+1, sqrt(2./vNDF_DT_Chi2Map[k-1]));
+      hSignalAreaScaling->SetBinContent(k, vSignalAreaScaling[k-1]);
+      hCorrbackAreaScaling->SetBinContent(k, vCorrbackAreaScaling[k-1]);
+      h_x_min->SetBinContent(k+1, v_x_min[k-1]);
+      h_y_min->SetBinContent(k+1, v_x_min[k-1]);
+      hErrXlow->SetBinContent(k+1, vsigma_dt[k-1][0]);
+      hErrXhigh->SetBinContent(k+1, vsigma_dt[k-1][1]);
+      hErrYlow->SetBinContent(k+1, vsigma_dt[k-1][0]);
+      hErrYhigh->SetBinContent(k+1, vsigma_dt[k-1][1]);
+      h_x_min->SetBinError(k+1,
+      max(hErrXhigh->GetBinContent(k+1)-h_x_min->GetBinContent(k+1),
+      h_x_min->GetBinContent(k+1) - hErrXlow->GetBinContent(k+1)));
+      h_y_min->SetBinError(k+1,
+      max(hErrYhigh->GetBinContent(k+1) - h_y_min->GetBinContent(k+1),
+      h_y_min->GetBinContent(k+1) - hErrYlow->GetBinContent(k+1)));
+      hEfficiency->SetBinContent(k+1, vInIntRangePercent[k-1]);
     }
-    else{
-      for (int k = 1; k < numberbins; ++k) {
-        hChi2Map_Chi2_pT->SetBinContent(k+1, vChi2_DT_Chi2Map[k-1]/vNDF_DT_Chi2Map[k-1]);
-        hChi2Map_Chi2_pT->SetBinError(k+1, sqrt(2./vNDF_DT_Chi2Map[k-1]));
-        hSignalAreaScaling->SetBinContent(k, vSignalAreaScaling[k-1]);
-        hCorrbackAreaScaling->SetBinContent(k, vCorrbackAreaScaling[k-1]);
-        h_x_min->SetBinContent(k+1, v_x_min[k-1]);
-        h_y_min->SetBinContent(k+1, v_y_min[k-1]);
-        hErrXlow->SetBinContent(k+1, vsigma_dt[k-1][0]);
-        hErrXhigh->SetBinContent(k+1, vsigma_dt[k-1][1]);
-        hErrYlow->SetBinContent(k+1, vsigma_dt[k-1][2]);
-        hErrYhigh->SetBinContent(k+1, vsigma_dt[k-1][3]);
-        h_x_min->SetBinError(k+1,
-        max(hErrXhigh->GetBinContent(k+1)-h_x_min->GetBinContent(k+1),
-        h_x_min->GetBinContent(k+1) - hErrXlow->GetBinContent(k+1)));
-        h_y_min->SetBinError(k+1,
-        max(hErrYhigh->GetBinContent(k+1) - h_y_min->GetBinContent(k+1),
-        h_y_min->GetBinContent(k+1) - hErrYlow->GetBinContent(k+1)));
-        hEfficiency->SetBinContent(k+1, vInIntRangePercent[k-1]);
-      }
+  }
+  else{
+    for (int k = 1; k < numberbins; ++k) {
+      hChi2Map_Chi2_pT->SetBinContent(k+1, vChi2_DT_Chi2Map[k-1]/vNDF_DT_Chi2Map[k-1]);
+      hChi2Map_Chi2_pT->SetBinError(k+1, sqrt(2./vNDF_DT_Chi2Map[k-1]));
+      hSignalAreaScaling->SetBinContent(k, vSignalAreaScaling[k-1]);
+      hCorrbackAreaScaling->SetBinContent(k, vCorrbackAreaScaling[k-1]);
+      h_x_min->SetBinContent(k+1, v_x_min[k-1]);
+      h_y_min->SetBinContent(k+1, v_y_min[k-1]);
+      hErrXlow->SetBinContent(k+1, vsigma_dt[k-1][0]);
+      hErrXhigh->SetBinContent(k+1, vsigma_dt[k-1][1]);
+      hErrYlow->SetBinContent(k+1, vsigma_dt[k-1][2]);
+      hErrYhigh->SetBinContent(k+1, vsigma_dt[k-1][3]);
+      h_x_min->SetBinError(k+1,
+      max(hErrXhigh->GetBinContent(k+1)-h_x_min->GetBinContent(k+1),
+      h_x_min->GetBinContent(k+1) - hErrXlow->GetBinContent(k+1)));
+      h_y_min->SetBinError(k+1,
+      max(hErrYhigh->GetBinContent(k+1) - h_y_min->GetBinContent(k+1),
+      h_y_min->GetBinContent(k+1) - hErrYlow->GetBinContent(k+1)));
+      hEfficiency->SetBinContent(k+1, vInIntRangePercent[k-1]);
     }
+  }
 
   /**
    * reopening the new root file(s) to safe all the related histograms in it.
@@ -638,7 +641,7 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
   TH1D* hAcc    = (TH1D*) CorrectionFile->Get(Form("fMCMesonAccepPt"));
   TH1D* hEffi   = (TH1D*) CorrectionFile->Get(Form("TrueMesonEffiPt"));
 
-  // correction for 2pi, BR, NEvents, Y, Binwidth
+  // correction for 2pi, BR, NEvents_data, Y, Binwidth
   /**
    * Correction for the number of Events
    * 2*Pi
@@ -662,7 +665,6 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
   TH1D* hYield_framework = (TH1D*) DataFile->Get(Form("histoYieldMeson"));
   TH1D* histoChi2_0 = (TH1D*) DataFile->Get(Form("histoChi2_0"));
   SetHistoStandardSettings(histoChi2_0);
-  std::cout << "I AM AFTER OPENING OF ALL 3 FILES" << '\n';
 
   /**
    * correcting the uncorrected framework yield with the efficiency.
@@ -696,8 +698,8 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
   for (int i = 2; i <= numberbins; i++) {
     hYield_dt_chi2map_corrected->SetBinContent(i,hYield_dt_chi2map_acceptance_corrected->GetBinContent(i)/vInIntRangePercent[i-2]);
     hYield_dt_chi2map_corrected->SetBinError(i,hYield_dt_chi2map_acceptance_corrected->GetBinError(i)/vInIntRangePercent[i-2]);
-    // hYield_dt_chi2map_corrected->SetBinContent(i,hYield_dt_chi2map_acceptance_corrected->GetBinContent(i)/hEffi->GetBinContent(i-1));
-    // hYield_dt_chi2map_corrected->SetBinError(i,hYield_dt_chi2map_acceptance_corrected->GetBinError(i)/hEffi->GetBinContent(i-1));
+    // hYield_dt_chi2map_corrected->SetBinContent(i,hYield_dt_chi2map_acceptance_corrected->GetBinContent(i)/hEffi[i-1]);
+    // hYield_dt_chi2map_corrected->SetBinError(i,hYield_dt_chi2map_acceptance_corrected->GetBinError(i)/hEffi[i-1]);
   }
 
   hYield_dt_chi2map_corrected->SetYTitle(strCorrectedYield);

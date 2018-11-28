@@ -45,9 +45,9 @@ for i in {1..5..1}
 #
 # time root -l -q -b TemplatePlotting.C++\(\"$a\",\"$b\"\,\"$f\",\"$SaveAppendix\"\)
 
-rm -r Yields
-mkdir Yields
-time root -l -q -b Yields.C++\(\"$b\",\"$SaveAppendix\"\)
+# rm -r Yields
+# mkdir Yields
+# time root -l -q -b Yields.C++\(\"$b\",\"$SaveAppendix\"\)
 
 
 # rm -r Untergrund
