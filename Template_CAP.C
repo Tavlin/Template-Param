@@ -259,12 +259,12 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
      */
     if(templatemethod == 1 || templatemethod == 3){
       hCorrBkg = NULL;
-      hCorrBkg = BackGround3to8(k);
+      hCorrBkg = BackGround3to8(k);   	             // from BackGroundFitting.h
     }
 
     else if(templatemethod == 2){
       hCorrBkg = NULL;
-      hCorrBkg = BackgroundAdding(k);
+      hCorrBkg = BackgroundAdding(k);                // from BackGroundFitting.h
     }
     else if(templatemethod == 4){
 
@@ -669,7 +669,7 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
   /**
    * correcting the uncorrected framework yield with the efficiency.
    */
-  hYield_framework->Divide(hEffi);
+  hYield_framework->Scale(1./(NEvents_data*2*M_PI*1.6*0.98798), "");
 
   /**
    * correcting the yields with division by pT (bincenter)
