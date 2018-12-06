@@ -81,7 +81,7 @@ Double_t lowerparamrange[38] = {0.0395, 0.0395, 0.0395, 0.0395, 0.0395,
                                 //  0.0595, 0.0605, 0.0625, 0.0645, 0.0675,
                                 //  0.0715, 0.0755, 0.0795, 0.0835, 0.0895,
                                 //  0.1015, 0.1175, 0.1365};
-const Double_t upperparamrange  = 0.23;
+const Double_t upperparamrange  = 0.25;
 
 
 Double_t lowercountrange[38] = {0.0395, 0.0395, 0.0395, 0.0395, 0.0395,
@@ -101,7 +101,7 @@ Double_t lowercountrange[38] = {0.0395, 0.0395, 0.0395, 0.0395, 0.0395,
 //                                 0.1, 0.1, 0.1, 0.1, 0.1,
 //                                 0.1, 0.1, 0.1, 0.1, 0.1,
 //                                 0.1, 0.1, 0.1};
-const Double_t uppercountrange  = 0.23;
+const Double_t uppercountrange  = 0.25;
 
 const Int_t kMaxHit             = 2000;
 const int numberbins            = 39;           // number of actual used pT Bins

@@ -89,7 +89,10 @@ void Yields(TString PicFormat = "png", TString SaveAppendix = ""){
     hCorrectedYieldNormEff_StatError      = (TH1D*) Normal->Get("hCorrectedYieldNormEff_StatError");
     SetHistogramProperties(hCorrectedYieldNormEff_StatError, "pt", StatUn_Str, 5, 1.4, 12.);
 
-    hCorrectedYieldNormEff                = (TH1D*) Normal->Get("hCorrectedYieldNormEff");
+    /**
+     * CHANGED for MC CLosure test purposes
+     */
+    hCorrectedYieldNormEff                = (TH1D*) Normal->Get("MC_Meson_genPt"); //hCorrectedYieldNormEff
     SetHistogramProperties(hCorrectedYieldNormEff, "pt", strCorrectedYield, 5, 1.4, 12.);
 
     // hCorrYieldME_NormalWC                 = (TH1D*) NormalWC->Get("hYield_dt_chi2map_corrected");
@@ -145,27 +148,27 @@ void Yields(TString PicFormat = "png", TString SaveAppendix = ""){
     legYields->AddEntry(hCorrYieldME_BetterBkgPulse, "Templates (Pulsefunktion)", "p");
     legYields->AddEntry(hCorrYieldME_BetterBkgNN, "Templates (naechste Nachbarn)", "p");
 
-    TLegend* legYieldNN = new TLegend(0.21, 0.01, 0.47, 0.25);
+    TLegend* legYieldNN = new TLegend(0.22, 0.01, 0.47, 0.25);
     legYieldNN->SetHeader("Methode:");
     legYieldNN->AddEntry(hCorrectedYieldNormEff, "Funktionsparametrisierung", "p");
     legYieldNN->AddEntry(hCorrYieldME_BetterBkgNN, "Templates (naechste Nachbarn)", "p");
 
-    TLegend* legYield3to8 = new TLegend(0.21, 0.01, 0.47, 0.25);
+    TLegend* legYield3to8 = new TLegend(0.22, 0.01, 0.47, 0.25);
     legYield3to8->SetHeader("Methode:");
     legYield3to8->AddEntry(hCorrectedYieldNormEff, "Funktionsparametrisierung", "p");
     legYield3to8->AddEntry(hCorrYieldME_BetterBkg3to8, "Templates (3 bis 8)", "p");
 
-    TLegend* legYieldPulse = new TLegend(0.21, 0.01, 0.47, 0.25);
+    TLegend* legYieldPulse = new TLegend(0.22, 0.01, 0.47, 0.25);
     legYieldPulse->SetHeader("Methode:");
     legYieldPulse->AddEntry(hCorrectedYieldNormEff, "Funktionsparametrisierung", "p");
     legYieldPulse->AddEntry(hCorrYieldME_BetterBkgPulse, "Templates (Pulsefunktion)", "p");
 
-    TLegend* legYieldNormal = new TLegend(0.21, 0.01, 0.47, 0.25);
+    TLegend* legYieldNormal = new TLegend(0.22, 0.01, 0.47, 0.25);
     legYieldNormal->SetHeader("Methode:");
     legYieldNormal->AddEntry(hCorrectedYieldNormEff, "Funktionsparametrisierung", "p");
     legYieldNormal->AddEntry(hCorrYieldME_Normal, "Templates (normal)", "p");
 
-    TLegend* legYieldOneTemplate = new TLegend(0.21, 0.01, 0.47, 0.25);
+    TLegend* legYieldOneTemplate = new TLegend(0.22, 0.01, 0.47, 0.25);
     legYieldOneTemplate->SetHeader("Methode:");
     legYieldOneTemplate->AddEntry(hCorrectedYieldNormEff, "Funktionsparametrisierung", "p");
     legYieldOneTemplate->AddEntry(hCorrYieldME_OneTemplate, " einzelnes Template", "p");
@@ -300,7 +303,7 @@ void Yields(TString PicFormat = "png", TString SaveAppendix = ""){
     OAhists->Clear();
     OAratios->Clear();
 
-    hCorrectedYieldNormEff_StatError->GetYaxis()->SetRangeUser(0.0, 6.05);
+    // hCorrectedYieldNormEff_StatError->GetYaxis()->SetRangeUser(0.0, 6.05);
 
     OAhists->Add(hCorrectedYieldNormEff_StatError);
     OAhists->Add(hCorrYieldME_StatError_BetterBkg3to8);

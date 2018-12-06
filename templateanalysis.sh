@@ -8,6 +8,7 @@
 # $g == CorrectedData
 # $h == Correction
 # $x == MCRebin1
+# $y == CorrectedMC
 # $SaveAppendix
 
 source Files.txt
@@ -27,7 +28,7 @@ for i in {1..5..1}
     echo ""
     echo "Start templatemethod number $i analysis"
     echo ""
-    time root -l -q -b Template_CAP.C++\(\"$DIR\",$i,\"$c\",\"$d\",\"$e\",\"$f\",\"$g\",\"$h\",\"$x\"\)
+    time root -l -q -b Template_CAP.C++\(\"$DIR\",$i,\"$c\",\"$d\",\"$e\",\"$f\",\"$g\",\"$h\",\"$x\",\"$y\"\)
   done
 
 # time root -l -q -b Template_CAP.C++\(\"$DIR\",3,\"$c\",\"$d\",\"$e\",\"$f\,\"$g\",\"$h\",\"$x\"\)
@@ -45,9 +46,9 @@ for i in {1..5..1}
 #
 # time root -l -q -b TemplatePlotting.C++\(\"$a\",\"$b\"\,\"$f\",\"$SaveAppendix\"\)
 
-# rm -r Yields
-# mkdir Yields
-# time root -l -q -b Yields.C++\(\"$b\",\"$SaveAppendix\"\)
+rm -r Yields
+mkdir Yields
+time root -l -q -b Yields.C++\(\"$b\",\"$SaveAppendix\"\)
 
 
 # rm -r Untergrund
