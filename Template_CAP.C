@@ -14,7 +14,8 @@
  */
 void Template_CAP(std::string current_path, int templatemethod, std::string ESD_MC,
                  std::string ESD_data, std::string MC, std::string Data,
-                 std::string CorrectedData, std::string Correction, std::string MCRebin1){
+                 std::string CorrectedData, std::string Correction, std::string MCRebin1,
+                 std::string CorrectedMC){
 
 
   TString safePath = gDirectory->GetPath();            // retrieve neutral path
@@ -31,7 +32,12 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
 
   const Int_t ndrawpoints      = 1.e5;              // # points for TF1 drawing
 
-  std::vector<Double_t> vInIntRangePercent;         // vector containig needed
+  std::vector<Double_t> vMyEffi;                    // vector containig needed
+                                                    // correction for the
+                                                    // efficiency cuz of integral
+                                                    // boundaries
+
+  std::vector<Double_t> vMyEffiUncer;               // vector containig needed
                                                     // correction for the
                                                     // efficiency cuz of integral
                                                     // boundaries
@@ -152,6 +158,25 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
   TH1D* hMC_Pi0InAcc_Pt           = NULL; // acceptance histo
   TH2D* hTrueDoubleCounting_Pi0   = NULL; // 2D Histo including Doublecounting
   TH1D* CorrectedYieldNormEff     = NULL; // Corrected Yield from the Framwork
+
+  TH1D* hYieldMC                  = new TH1D("hYieldMC",
+                                            "", numberbins, fBinsPi013TeVEMCPt);
+                                          // Yield if we only count the signal
+                                          // template not data-corr_back
+                                          //
+  TH1D* hYieldMC_acc_corr        = NULL;
+  TH1D* hYieldMC_effi_corr       = NULL;
+  TH1D* hPi0_gen                 = NULL;
+
+  /**
+   * Open the MC file which contains the correction histograms for efficiency and
+   * acceptance. Obtaining those two directly afterwards.
+   */
+  CorrectionFile = SafelyOpenRootfile(Correction);
+  if (CorrectionFile->IsOpen() ) printf("CorrectionFile opened successfully\n");
+
+  TH1D* hAcc    = (TH1D*) CorrectionFile->Get(Form("fMCMesonAccepPt"));
+  TH1D* hEffi   = (TH1D*) CorrectionFile->Get(Form("TrueMesonEffiPt"));
 
   /**
    * Access the ESD File form the MC simulation for two Histograms:
@@ -290,13 +315,35 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
      * hit the Detector (here: EMCal)
      * This is the value of our efficiency in the corresponding pT interval
      */
-    Double_t InIntRangePercent = (Double_t)hPeak_MC->Integral(hPeak_MC->FindBin(lowercountrange[k]),
-                                                   hPeak_MC->FindBin(uppercountrange))/
-                                                   (Double_t)hMC_Pi0InAcc_Pt->Integral(
-                                                     hMC_Pi0InAcc_Pt->FindBin(fBinsPi013TeVEMCPt[k]),
-                                                     hMC_Pi0InAcc_Pt->FindBin(fBinsPi013TeVEMCPt[k+1])-1);
 
-    vInIntRangePercent.push_back(InIntRangePercent);
+    Int_t lowerEffirange = hPeak_MC->FindBin(lowercountrange[k]);
+    Int_t upperEffirange = hPeak_MC->FindBin(uppercountrange);
+    Double_t IntInRangeError  = 0;
+    Double_t IntInRange       = hPeak_MC->IntegralAndError(lowerEffirange, upperEffirange, IntInRangeError);
+    Double_t IntAcceptedError = 0;
+    Double_t IntAccepted      = hMC_Pi0InAcc_Pt->IntegralAndError(
+      hMC_Pi0InAcc_Pt->FindBin(fBinsPi013TeVEMCPt[k]),
+      hMC_Pi0InAcc_Pt->FindBin(fBinsPi013TeVEMCPt[k+1]) - 1,
+      IntAcceptedError
+    );
+    Double_t myEffi = IntInRange/IntAccepted;
+    Double_t myEffi_Uncer = sqrt(
+      pow(IntInRangeError/IntAccepted, 2.) +
+      pow((IntInRange*IntAcceptedError)/pow(IntAccepted, 2.) , 2.)
+    );
+    // Int_t lowerEffirange = hPeak_MC->FindBin(lowercountrange[k]);
+    // Int_t upperEffirange = hPeak_MC->FindBin(uppercountrange);
+    // Double_t IntInRangeError = 0;
+    // Double_t IntInRange = hPeak_MC->IntegralAndError(lowerEffirange, upperEffirange, IntInRangeError);
+    // Double_t IntCompleteError = 0;
+    // Double_t IntComplete = hPeak_MC->IntegralAndError(1, hPeak_MC->GetNbinsX(), IntCompleteError);
+    //
+    // Double_t myEffi = (IntInRange*hEffi->GetBinContent(k+1))/IntComplete;
+    //
+    // Double_t myEffi_Uncer = hEffi->GetBinError(k+1);
+
+    vMyEffi.push_back(myEffi);
+    vMyEffiUncer.push_back(myEffi_Uncer);
 
     /**
      * for the OneTemplate Method we only need the template containing bkg and
@@ -428,7 +475,7 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
     hCorrBkg->            Write(Form("hCorrBack_bin%02d",k));
     OutputFile->Close();
 
-    gDirectory->Cd(safePath.Data()); // resetting directory again.
+    gDirectory->cd(safePath.Data()); // resetting directory again.
 
     if(templatemethod == 5){
       for(int bin = 1; bin <= hCorrBkg->GetNbinsX(); bin++){
@@ -468,14 +515,28 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
      * current pT bin.
      * Then giving theses values into the uncorrected Yield histogram.
      */
-    int_value = data_clone_for_int_dt_chi2map->
-    IntegralAndError(data_clone_for_int_dt_chi2map->
-    FindBin(lowercountrange[k]),
-    data_clone_for_int_dt_chi2map->FindBin(uppercountrange),
-    int_error);
+    int_value = data_clone_for_int_dt_chi2map->IntegralAndError(
+      data_clone_for_int_dt_chi2map->FindBin(lowercountrange[k]),
+      data_clone_for_int_dt_chi2map->FindBin(uppercountrange),
+      int_error
+    );
 
     hYield_dt_chi2map_uncorr->SetBinContent(k+1, int_value);
     hYield_dt_chi2map_uncorr->SetBinError(k+1, int_error);
+
+    /*
+    resetting the Signal Tempalte for the MC Raw Yield for this method
+     */
+    if(templatemethod == 5){
+      hPeak_MC = (TH1D*) MCFile->Get(Form("Mapping_TrueFullMeson_InvMass_in_Pt_Bin%02d",k));
+    }
+
+    hYieldMC->SetBinContent(
+      k+1, hPeak_MC->Integral(
+        hPeak_MC->FindBin(lowercountrange[k]),
+        hPeak_MC->FindBin(uppercountrange)
+      )
+    );
 
     /**
      * Garbage collection part 1.
@@ -570,7 +631,8 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
       h_y_min->SetBinError(k+1,
       max(hErrYhigh->GetBinContent(k+1) - h_y_min->GetBinContent(k+1),
       h_y_min->GetBinContent(k+1) - hErrYlow->GetBinContent(k+1)));
-      hEfficiency->SetBinContent(k+1, vInIntRangePercent[k-1]);
+      hEfficiency->SetBinContent(k+1, vMyEffi[k-1]);
+      hEfficiency->SetBinError(k+1, vMyEffiUncer[k-1]);
     }
   }
   else{
@@ -591,7 +653,8 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
       h_y_min->SetBinError(k+1,
       max(hErrYhigh->GetBinContent(k+1) - h_y_min->GetBinContent(k+1),
       h_y_min->GetBinContent(k+1) - hErrYlow->GetBinContent(k+1)));
-      hEfficiency->SetBinContent(k+1, vInIntRangePercent[k-1]);
+      hEfficiency->SetBinContent(k+1, vMyEffi[k-1]);
+      hEfficiency->SetBinError(k+1, vMyEffiUncer[k-1]);
     }
   }
 
@@ -626,33 +689,10 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
   TFile* FData_corrected = SafelyOpenRootfile(CorrectedData);
   if (FData_corrected->IsOpen() ) printf("FData_corrected opened successfully\n");
 
+  TFile* FCorrectedMC = SafelyOpenRootfile(CorrectedMC);
+  hPi0_gen = (TH1D*) FCorrectedMC->Get(Form("MC_Meson_genPt"));
+
   CorrectedYieldNormEff = (TH1D*) FData_corrected->Get(Form("CorrectedYieldNormEff"));
-
-
-  /**
-  * Open the MC file which contains the correction histograms for efficiency and
-  * acceptance. Obtaining those two directly afterwards.
-   */
-  CorrectionFile = SafelyOpenRootfile(Correction);
-  if (CorrectionFile->IsOpen() ) printf("CorrectionFile opened successfully\n");
-
-
-
-  TH1D* hAcc    = (TH1D*) CorrectionFile->Get(Form("fMCMesonAccepPt"));
-  TH1D* hEffi   = (TH1D*) CorrectionFile->Get(Form("TrueMesonEffiPt"));
-
-  // correction for 2pi, BR, NEvents_data, Y, Binwidth
-  /**
-   * Correction for the number of Events
-   * 2*Pi
-   * the rapidity
-   * the branching ratio for pi0 to decay into two photons
-   * the bin width
-   */
-  hYield_dt_chi2map_uncorr->Scale(1./(NEvents_data*2*M_PI*1.6*0.98798),"width");
-  hYield_dt_chi2map_uncorr->SetYTitle(rawyield);
-  hYield_dt_chi2map_uncorr->SetXTitle(pt_str);
-
 
   /**
   * Open the data file which contains the uncorrected Yield aswell as the Chi^2
@@ -666,10 +706,14 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
   TH1D* histoChi2_0 = (TH1D*) DataFile->Get(Form("histoChi2_0"));
   SetHistoStandardSettings(histoChi2_0);
 
+<<<<<<< HEAD
+
+=======
   /**
    * correcting the uncorrected framework yield with the efficiency.
    */
   hYield_framework->Scale(1./(NEvents_data*2*M_PI*1.6*0.98798), "");
+>>>>>>> 2a4e0ed5963a469ea95b448b905c3cbe15bdee7c
 
   /**
    * correcting the yields with division by pT (bincenter)
@@ -682,27 +726,66 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
     hYield_dt_chi2map_uncorr->SetBinError(i,hYield_dt_chi2map_uncorr->GetBinError(i)/hYield_dt_chi2map_uncorr->GetBinCenter(i));
     hYield_framework->SetBinContent(i,hYield_framework->GetBinContent(i)/hYield_framework->GetBinCenter(i));
     hYield_framework->SetBinError(i,hYield_framework->GetBinError(i)/hYield_framework->GetBinCenter(i));
+    hYieldMC->SetBinContent(i,hYieldMC->GetBinContent(i)/hYieldMC->GetBinCenter(i));
+    hYieldMC->SetBinError(i,hYieldMC->GetBinError(i)/hYieldMC->GetBinCenter(i));
+    hPi0_gen->SetBinContent(i,hPi0_gen->GetBinContent(i)/hPi0_gen->GetBinCenter(i));
+    hPi0_gen->SetBinError(i,hPi0_gen->GetBinError(i)/hPi0_gen->GetBinCenter(i));
   }
+
+  // correction for 2pi, BR, NEvents_data, Y, Binwidth
+  /**
+   * Correction for the number of Events
+   * 2*Pi
+   * the rapidity
+   * the branching ratio for pi0 to decay into two photons
+   * the bin width
+   */
+  hYield_dt_chi2map_uncorr->Scale(1./(NEvents_data*2*M_PI*1.6*0.98798),"width");
+  hYield_dt_chi2map_uncorr->SetYTitle(rawyield);
+  hYield_dt_chi2map_uncorr->SetXTitle(pt_str);
+
+  /**
+   * normalize the uncorrected framework yield.
+   */
+  hYield_framework->Scale(1./(NEvents_data*2*M_PI*1.6*0.98798));
+  hPi0_gen->Scale(1./(NEvents_data*2*M_PI*1.6*0.98798));
+  hYieldMC->Scale(1./(NEvents_data*2*M_PI*1.6*0.98798), "width");
+  hYieldMC->SetYTitle(rawyield);
+  hYieldMC->SetXTitle(pt_str);
+
 
   /**
    * correcting Yields with the acceptance.
    */
   TH1D * hYield_dt_chi2map_acceptance_corrected =  (TH1D*) hYield_dt_chi2map_uncorr->Clone("hYield_dt_chi2map_acceptance_corrected");
-  hYield_dt_chi2map_acceptance_corrected->Divide(hAcc);
+  hYield_dt_chi2map_acceptance_corrected->Divide(hYield_dt_chi2map_uncorr, hAcc, 1, 1);
+  hYieldMC_acc_corr = (TH1D*) hYieldMC->Clone("hYieldMC_acc_corr");
+  hYieldMC_acc_corr->Divide(hYieldMC, hAcc, 1, 1);
 
   /**
    * correcting Yields with the efficiency.
    */
   TH1D * hYield_dt_chi2map_corrected =  (TH1D*) hYield_dt_chi2map_acceptance_corrected->Clone("hYield_dt_chi2map_corrected");
+  hYieldMC_effi_corr = (TH1D*) hYieldMC_acc_corr->Clone("hYieldMC_acc_corr");
 
-  for (int i = 2; i <= numberbins; i++) {
-    hYield_dt_chi2map_corrected->SetBinContent(i,hYield_dt_chi2map_acceptance_corrected->GetBinContent(i)/vInIntRangePercent[i-2]);
-    hYield_dt_chi2map_corrected->SetBinError(i,hYield_dt_chi2map_acceptance_corrected->GetBinError(i)/vInIntRangePercent[i-2]);
-    // hYield_dt_chi2map_corrected->SetBinContent(i,hYield_dt_chi2map_acceptance_corrected->GetBinContent(i)/hEffi[i-1]);
-    // hYield_dt_chi2map_corrected->SetBinError(i,hYield_dt_chi2map_acceptance_corrected->GetBinError(i)/hEffi[i-1]);
-  }
+  hYield_dt_chi2map_corrected->Divide(hYield_dt_chi2map_acceptance_corrected, hEfficiency, 1, 1);
+  hYieldMC_effi_corr->Divide(hYield_dt_chi2map_acceptance_corrected, hEfficiency, 1 , 1);
+  // for (int i = 2; i <= numberbins; i++) {
+  //   hYield_dt_chi2map_corrected->SetBinContent(
+  //     i,hYield_dt_chi2map_acceptance_corrected->GetBinContent(i)/hEfficiency->GetBinContent(i)
+  //   );
+  //   hYield_dt_chi2map_corrected->
+  //   SetBinError(i,
+  //     sqrt(
+  //       pow(hYield_dt_chi2map_acceptance_corrected->GetBinError(i)/hEfficiency->GetBinContent(i), 2.) +
+  //       pow(hYield_dt_chi2map_acceptance_corrected->GetBinContent(i)*hEfficiency->GetBinError(i)/
+  //       pow(hEfficiency->GetBinContent(i),  2.), 2.)));
+  //   hYieldMC_effi_corr->SetBinContent(i,hYieldMC_effi_corr->GetBinContent(i)/hEfficiency->GetBinContent(i));
+  // }
 
   hYield_dt_chi2map_corrected->SetYTitle(strCorrectedYield);
+
+  std::cout << "2nd bin ratio:" <<  hYield_dt_chi2map_corrected->GetBinContent(3)/CorrectedYieldNormEff->GetBinContent(3) << '\n';
 
 
   /**
@@ -714,6 +797,9 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
   hYield_dt_chi2map_corrected->           Write("hYield_dt_chi2map_corrected");
   hYield_framework->                      Write("hYield_framework");
   CorrectedYieldNormEff->                 Write("hCorrectedYieldNormEff");
+  hYieldMC->                              Write("hYieldMC");
+  hYieldMC_acc_corr->                     Write("hYieldMC_acc_corr");
+  hYieldMC_effi_corr->                    Write("hYieldMC_effi_corr");
   hChi2Map_Chi2_pT->                      Write("hChi2Map_Chi2_pT");
   hSignalAreaScaling->                    Write("hSignalAreaScaling");
   hCorrbackAreaScaling->                  Write("hCorrbackAreaScaling");
@@ -727,6 +813,7 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
   hEfficiency->                           Write("hEfficiency");
   hEffi->                                 Write("TrueMesonEffiPt");
   hAcc->                                  Write("hAcc");
+  hPi0_gen->                              Write("MC_Meson_genPt");
 
   /**
    * Garbage collection part 2.
@@ -749,7 +836,8 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
   /**
    * clearing all the vectors and freeing memory. Maybe not needed. I dunno
    */
-  vInIntRangePercent.clear();
+  vMyEffi.clear();
+  vMyEffiUncer.clear();
   vChi2_DT_Chi2Map.clear();
   vNDF_DT_Chi2Map.clear();
   vSignalAreaScaling.clear();
