@@ -31,7 +31,9 @@ void systematics(int templatemethod, TFile* OutputFile){
   TH1D* hCorrYieldME_StatError            = NULL;
   TH1D* hCorrectedYieldNormEff_StatError  = NULL;
   TH1D* hCorrectedYieldNormEff            = NULL;
+  TH1D* hCorrectedYieldNormEff_Ratio      = NULL;
   TH1D* hCorrYieldME_Ratio                = NULL;
+  TH1D* hPi0_gen                          = NULL;
   // TH1D* hCorrYield_count0d06to0d225      = NULL;
   // TH1D* hCorrYield_count0d1to0d225       = NULL;
   // TH1D* hCorrYield_count0d02to0d185      = NULL;
@@ -61,10 +63,10 @@ void systematics(int templatemethod, TFile* OutputFile){
   fitBylikin13TeV_3to8->SetLineColor(kBlue+2);
 
   TF1 *ftsallis13TeV = new TF1("ftsallis13TeV", "[0]/(2*3.1415) * ( ([1]-1) * ([1]-2) )/( [1]*[2] *( [1]*[2] + [3] *([1]-2)) )* pow(( 1 + ( ( pow(([3]*[3]+x*x),0.5) -[3]) /( [1]*[2] ) ) ), -[1])", 1.4, 12.);
-  ftsallis13TeV->SetParameter(0, 9.4); // A
-  ftsallis13TeV->SetParameter(1, 7.169); // n
-  ftsallis13TeV->SetParameter(2, 0.159); // T
-  ftsallis13TeV->FixParameter(3, 0.1349766); // M
+  ftsallis13TeV->SetParameter(0, 9.4);           // A
+  ftsallis13TeV->SetParameter(1, 7.169);         // n
+  ftsallis13TeV->SetParameter(2, 0.159);         // T
+  ftsallis13TeV->FixParameter(3, 0.1349766);     // M
   ftsallis13TeV->SetLineWidth(3);
   ftsallis13TeV->SetLineColor(kBlack);
 
@@ -76,12 +78,19 @@ void systematics(int templatemethod, TFile* OutputFile){
 
   // TFile* JoshuasFile      = SafelyOpenRootfile("Pi0_data_GammaConvV1Correction_00010113_1111112067032220000_01631031000000d0.root");
 
-  hCorrYieldME            = (TH1D*) InputFile->Get("hYield_dt_chi2map_corrected");
+  hCorrYieldME                  = (TH1D*) InputFile->Get("hYield_dt_chi2map_corrected");
+  hPi0_gen                      = (TH1D*) InputFile->Get("MC_Meson_genPt");
+  hCorrectedYieldNormEff        = (TH1D*) InputFile->Get("hCorrectedYieldNormEff");
 
-  hCorrectedYieldNormEff  = (TH1D*) InputFile->Get("hCorrectedYieldNormEff");
+  /**
+   * CHANGED
+   * for MC we want ratio to generated, else we want ratio to FW Yield
+   */
+  hCorrYieldME_Ratio            = (TH1D*) hCorrYieldME->Clone("hCorrYieldME_Ratio");
+  hCorrYieldME_Ratio->          Divide(hCorrYieldME_Ratio,      hCorrectedYieldNormEff, 1, 1, "B");
 
-  hCorrYieldME_Ratio = (TH1D*) hCorrYieldME->Clone("hCorrYieldME_Ratio");
-  hCorrYieldME_Ratio->Divide(hCorrYieldME_Ratio, hCorrectedYieldNormEff, 1, 1, "B");
+  hCorrectedYieldNormEff_Ratio  = (TH1D*) hCorrectedYieldNormEff->Clone("hCorrectedYieldNormEff_Ratio");
+  hCorrectedYieldNormEff_Ratio->Divide(hCorrectedYieldNormEff,  hPi0_gen, 1, 1, "B");
 
 
   hCorrYieldME_StatError            = (TH1D*) hCorrYieldME->Clone("hCorrYieldME_StatError");
@@ -114,6 +123,7 @@ void systematics(int templatemethod, TFile* OutputFile){
   hCorrYieldME_Ratio->              Write("hCorrYieldME_Ratio");
   hCorrYieldME_StatError->          Write("hCorrYieldME_StatError");
   hCorrectedYieldNormEff_StatError->Write("hCorrectedYieldNormEff_StatError");
+  hCorrectedYieldNormEff_Ratio->    Write("hCorrectedYieldNormEff_Ratio");
 
   // hCorrYield_syserror           = (TH1D*) hCorrYieldME->Clone("hCorrYield_syserror");
   // hCorrYield_countsyserror      = (TH1D*) hCorrYieldME->Clone("hCorrYield_countsyserror");

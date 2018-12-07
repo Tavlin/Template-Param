@@ -194,7 +194,12 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
   hMC_Pi0InAcc_Pt         = (TH1D*)  lMC_MC->FindObject("MC_Pi0InAcc_Pt");
   hTrueDoubleCounting_Pi0 = (TH2D*)  lTrue_MC->FindObject("ESD_TrueDoubleCountPi0_InvMass_Pt");
   hNEvents_MC             = (TH1D*)  lESD_MC->FindObject("NEvents");
-  Double_t NEvents_MC  = hNEvents_MC->GetBinContent(1);
+  Double_t NEvents_MC  =
+  hNEvents_MC->GetBinContent(1) +(
+    hNEvents_MC->GetBinContent(1)/(
+      hNEvents_MC->GetBinContent(1)+hNEvents_MC->GetBinContent(5)
+    )
+  )*hNEvents_MC->GetBinContent(6);
   ESDFile_MC->Close();
 
   /**
@@ -209,7 +214,12 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
   lESD_data              = (TList*) lCutNumber_data->FindObject("00010113_1111112067032220000_01631031000000d0 ESD histograms");
   hNEvents_data          = (TH1D*)  lESD_data->FindObject("NEvents");
 
-  Double_t NEvents_data  = hNEvents_data->GetBinContent(1);   // retrieve NEents MinBias
+  Double_t NEvents_data  = //hNEvents_data->GetBinContent(1);   // retrieve NEents MinBias
+  hNEvents_data->GetBinContent(1) +(
+    hNEvents_data->GetBinContent(1)/(
+      hNEvents_data->GetBinContent(1)+hNEvents_data->GetBinContent(5)
+    )
+  )*hNEvents_data->GetBinContent(6);
   ESDFile_data->Close();
 
   gDirectory->Cd(safePath.Data());                  // for saftey resetting path
@@ -706,15 +716,6 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
   TH1D* histoChi2_0 = (TH1D*) DataFile->Get(Form("histoChi2_0"));
   SetHistoStandardSettings(histoChi2_0);
 
-<<<<<<< HEAD
-
-=======
-  /**
-   * correcting the uncorrected framework yield with the efficiency.
-   */
-  hYield_framework->Scale(1./(NEvents_data*2*M_PI*1.6*0.98798), "");
->>>>>>> 2a4e0ed5963a469ea95b448b905c3cbe15bdee7c
-
   /**
    * correcting the yields with division by pT (bincenter)
    * then correcting Yields with the acceptance
@@ -748,7 +749,7 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
    * normalize the uncorrected framework yield.
    */
   hYield_framework->Scale(1./(NEvents_data*2*M_PI*1.6*0.98798));
-  hPi0_gen->Scale(1./(NEvents_data*2*M_PI*1.6*0.98798));
+  hPi0_gen->Scale(1./(NEvents_MC*2*M_PI*1.6*0.98798));
   hYieldMC->Scale(1./(NEvents_data*2*M_PI*1.6*0.98798), "width");
   hYieldMC->SetYTitle(rawyield);
   hYieldMC->SetXTitle(pt_str);
