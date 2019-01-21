@@ -5,13 +5,17 @@
 
 void systematics(int templatemethod, TFile* OutputFile){
 
-  TFile* InputFile = NULL;
+  TFile* InputFile      = NULL;
+  TFile* NNMethodFile   = NULL;
+  TFile* SingleBkgFile  = NULL;
 
   if(templatemethod == 2){
     InputFile      = SafelyOpenRootfile("OutputFileBetterBkgNN.root");
   }
   else if(templatemethod == 1){
     InputFile      = SafelyOpenRootfile("OutputFileBetterBkg3to8.root");
+    NNMethodFile   = SafelyOpenRootfile("OutputFileBetterBkgNN.root");
+    SingleBkgFile  = SafelyOpenRootfile("OutputFileNormal.root");
   }
   else if(templatemethod == 3){
     InputFile      = SafelyOpenRootfile("OutputFileBetterBkgPulse.root");
@@ -34,23 +38,22 @@ void systematics(int templatemethod, TFile* OutputFile){
   TH1D* hCorrectedYieldNormEff_Ratio      = NULL;
   TH1D* hCorrYieldME_Ratio                = NULL;
   TH1D* hPi0_gen                          = NULL;
-  // TH1D* hCorrYield_count0d06to0d225      = NULL;
-  // TH1D* hCorrYield_count0d1to0d225       = NULL;
-  // TH1D* hCorrYield_count0d02to0d185      = NULL;
-  // TH1D* hCorrYield_count0d02to0d285      = NULL;
-  // TH1D* hCorrYield_countsyserror         = NULL;
-  // TH1D* hCorrYield_param0d06to0d225      = NULL;
-  // TH1D* hCorrYield_param0d1to0d225       = NULL;
-  // TH1D* hCorrYield_param0d02to0d185      = NULL;
-  // TH1D* hCorrYield_param0d02to0d285      = NULL;
-  // TH1D* hCorrYield_paramsyserror         = NULL;
-  // TH1D* hCorrYield_BGFitRange0d25        = NULL;
-  // TH1D* hCorrYield_BGFitRange0d29        = NULL;
-  // TH1D* hCorrYield_BGLeft                = NULL;
-  // TH1D* hCorrYield_BGFitsyserror         = NULL;
-  // TH1D* hCorrYield_syserror              = NULL;
-  // TH1D* hCorrYield_RelativSyserror       = NULL;
-  // TFile* FStatUnc                        = NULL;
+  TH1D* hCorrYield_HigherInt              = NULL;
+  TH1D* hCorrYield_SmallInt               = NULL;
+  TH1D* hCorrYield_IntSysError            = NULL;
+  TH1D* hCorrYield_HigherFit              = NULL;
+  TH1D* hCorrYield_SmallFit               = NULL;
+  TH1D* hCorrYield_FitSysErrro            = NULL;
+  TH1D* hCorrYield_LowerRebinning         = NULL;
+  TH1D* hCorrYield_HigherRebinning        = NULL;
+  TH1D* hCorrYield_RebinningSysError      = NULL;
+  TH1D* hCorrYield_SysError               = NULL;
+  TH1D* hCorrYield_RelativSyserror        = NULL;
+  TH1D* hCorrYield_SyserrorRatio          = NULL;
+  TH1D* hCorrYield_NNMethod               = NULL;
+  TH1D* hCorrYield_SingleBkg              = NULL;
+  TH1D* hCorrYield_CorrBkgSysError        = NULL;
+  TFile* FStatUnc                         = NULL;
 
   TF1* fitBylikin13TeV = new TF1("fitBylikin13TeV", "[0]*exp(-(sqrt(x^(2)+0.135^(2))-0.135)/[1])+[2]/((1+x*x/[3])^([4]))", 1.4, 12.);
   fitBylikin13TeV->SetParameters(13, 0.1, 2, 0.7, 2.9);
@@ -75,12 +78,19 @@ void systematics(int templatemethod, TFile* OutputFile){
   std::vector<Double_t> vParamSys;
   std::vector<Double_t> vBGFitSys;
   std::vector<Double_t> vFinalSys;
+  std::vector<Double_t> vCorrBkgSys;
 
   // TFile* JoshuasFile      = SafelyOpenRootfile("Pi0_data_GammaConvV1Correction_00010113_1111112067032220000_01631031000000d0.root");
 
   hCorrYieldME                  = (TH1D*) InputFile->Get("hYield_dt_chi2map_corrected");
   hPi0_gen                      = (TH1D*) InputFile->Get("MC_Meson_genPt");
   hCorrectedYieldNormEff        = (TH1D*) InputFile->Get("hCorrectedYieldNormEff");
+
+  if(templatemethod ==1){
+
+  hCorrYield_NNMethod           = (TH1D*) NNMethodFile->  Get("hYield_dt_chi2map_corrected");
+  hCorrYield_SingleBkg          = (TH1D*) SingleBkgFile-> Get("hYield_dt_chi2map_corrected");
+  }
 
   /**
    * CHANGED
@@ -119,147 +129,186 @@ void systematics(int templatemethod, TFile* OutputFile){
   fBylikinRatio->SetLineWidth(3);
   fBylikinRatio->SetLineColor(kBlue+2);
 
+
+  hCorrYield_SysError           = (TH1D*) hCorrYieldME->Clone("hCorrYield_SysError");
+  hCorrYield_CorrBkgSysError    = (TH1D*) hCorrYieldME->Clone("hCorrYield_CorrBkgSysError");
+  hCorrYield_IntSysError        = (TH1D*) hCorrYieldME->Clone("hCorrYield_IntSysError");
+  hCorrYield_FitSysErrro        = (TH1D*) hCorrYieldME->Clone("hCorrYield_FitSysErrro");
+  hCorrYield_RebinningSysError  = (TH1D*) hCorrYieldME->Clone("hCorrYield_RebinningSysError");
+
+  //////////////////////////////////////////////////////////////////////////////
+  // First the counting range variation:
+  TFile* OutputFileBetterBkg3to8_HigherInt  = SafelyOpenRootfile("OutputFileBetterBkg3to8_HigherInt.root");
+  if (OutputFileBetterBkg3to8_HigherInt->    IsOpen() ) printf("OutputFileBetterBkg3to8_HigherInt opened successfully\n");
+
+  hCorrYield_HigherInt                      = (TH1D*) OutputFileBetterBkg3to8_HigherInt->Get("hYield_dt_chi2map_corrected");
+
+
+  TFile* OutputFileBetterBkg3to8_SmallInt   = SafelyOpenRootfile("OutputFileBetterBkg3to8_SmallInt.root");
+  if (OutputFileBetterBkg3to8_SmallInt->    IsOpen() ) printf("OutputFileBetterBkg3to8_SmallInt opened successfully\n");
+
+  hCorrYield_SmallInt                       = (TH1D*) OutputFileBetterBkg3to8_SmallInt->Get("hYield_dt_chi2map_corrected");
+
+  //////////////////////////////////////////////////////////////////////////////
+  // 2nd the param range variation:
+  TFile* OutputFileBetterBkg3to8_HigherFit  = SafelyOpenRootfile("OutputFileBetterBkg3to8_HigherFit.root");
+  if (OutputFileBetterBkg3to8_HigherFit->   IsOpen() ) printf("OutputFileBetterBkg3to8_HigherFit successfully\n");
+
+  hCorrYield_HigherFit                      = (TH1D*) OutputFileBetterBkg3to8_HigherFit->Get("hYield_dt_chi2map_corrected");
+
+  TFile* OutputFileBetterBkg3to8_SmallFit   = SafelyOpenRootfile("OutputFileBetterBkg3to8_SmallFit.root");
+  if (OutputFileBetterBkg3to8_SmallFit->      IsOpen() ) printf("OutputFileBetterBkg3to8_SmallFit successfully\n");
+
+  hCorrYield_SmallFit                       = (TH1D*) OutputFileBetterBkg3to8_SmallFit->Get("hYield_dt_chi2map_corrected");
+
+
+
+  //////////////////////////////////////////////////////////////////////////////
+  // 3rd the Rebinning  variation
+  //
+  TFile* OutputFileBetterBkg3to8_LowerRebinning   = SafelyOpenRootfile("OutputFileBetterBkg3to8_LowerRebinning.root");
+  if (OutputFileBetterBkg3to8_LowerRebinning->    IsOpen() ) printf("OutputFileBetterBkg3to8_LowerRebinning successfully\n");
+
+  hCorrYield_LowerRebinning                       = (TH1D*) OutputFileBetterBkg3to8_LowerRebinning->Get("hYield_dt_chi2map_corrected");
+
+  TFile* OutputFileBetterBkg3to8_HigherRebinning  = SafelyOpenRootfile("OutputFileBetterBkg3to8_HigherRebinning.root");
+  if (OutputFileBetterBkg3to8_HigherRebinning->   IsOpen() ) printf("OutputFileBetterBkg3to8_HigherRebinning opened successfully\n");
+
+  hCorrYield_HigherRebinning                      = (TH1D*) OutputFileBetterBkg3to8_HigherRebinning->Get("hYield_dt_chi2map_corrected");
+
+
+  if(templatemethod == 1){
+    Double_t temp = 0;
+    for (int i = 2; i < numberbins; i++) {
+
+      temp = 0;
+      // check for biggest diff. in param vari
+      // if(fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_HigherFit->GetBinContent(i)) > temp){
+      temp += fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_HigherFit->GetBinContent(i));
+      // }
+      // if(fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_SmallFit->GetBinContent(i)) > temp){
+      temp += fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_SmallFit->GetBinContent(i));
+      // }
+      // pushing biggest difference back
+      temp = temp/2.;
+      vParamSys.push_back(temp);
+    }
+    for (int i = 2; i < numberbins; i++) {
+      // resetting temp
+      temp = 0;
+
+      // chech for biggest diff. in count vari
+      // if(fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_HigherInt->GetBinContent(i)) > temp){
+      temp += fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_HigherInt->GetBinContent(i));
+      // }
+      // if(fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_SmallInt->GetBinContent(i)) > temp){
+      temp += fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_SmallInt->GetBinContent(i));
+      // }
+      temp = temp/2.;
+      // pushing biggest difference back
+      vCountSys.push_back(temp);
+    }
+    for (int i = 2; i < numberbins; i++) {
+      temp = 0;
+
+      // chech for biggest diff. in BGGit vari
+      // if(fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_LowerRebinning->GetBinContent(i)) > temp){
+      temp += fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_LowerRebinning->GetBinContent(i));
+      // }
+      // if(fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_HigherRebinning->GetBinContent(i)) > temp){
+      temp += fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_HigherRebinning->GetBinContent(i));
+      // }
+
+      temp = temp/2.;
+      // pushing biggest difference back
+      vBGFitSys.push_back(temp);
+    }
+
+    //////////////////////////////////////////////////////////////////////////////
+    // different corr. bkg templates
+    for (int i = 2; i < numberbins; i++) {
+      temp = 0;
+
+      // chech for biggest diff. in BGGit vari
+      // if(fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_NNMethod->GetBinContent(i)) > temp){
+      temp += fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_NNMethod->GetBinContent(i));
+      // }
+      // if(fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_SingleBkg->GetBinContent(i)) > temp){
+      temp += fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_SingleBkg->GetBinContent(i));
+      // }
+
+      temp = temp/2.;
+      // pushing biggest difference back
+      vCorrBkgSys.push_back(temp);
+    }
+
+
+    for (int i = 2; i < numberbins; i++) {
+      temp = sqrt(1./4.*(pow(vParamSys[i-2], 2.) + pow(vCountSys[i-2], 2.) + pow(vBGFitSys[i-2], 2.)+ pow(vCorrBkgSys[i-2], 2.)));
+      vFinalSys.push_back(temp);
+      hCorrYield_SysError->         SetBinError(i, vFinalSys[i-2]);
+      hCorrYield_IntSysError->      SetBinError(i, vCountSys[i-2]);
+      hCorrYield_FitSysErrro->      SetBinError(i, vParamSys[i-2]);
+      hCorrYield_RebinningSysError->SetBinError(i, vBGFitSys[i-2]);
+      hCorrYield_CorrBkgSysError->  SetBinError(i, vCorrBkgSys[i-2]);
+      temp = 0;
+    }
+
+    hCorrYield_RelativSyserror            = (TH1D*) hCorrYield_SysError->Clone("hCorrYield_RelativSyserror");
+    hCorrYield_RelativSyserror->SetXTitle(pt_str);
+    hCorrYield_RelativSyserror->SetYTitle("relative sys. Unsicherheit (%)");
+
+    hCorrYield_IntSysError->SetXTitle(pt_str);
+    hCorrYield_IntSysError->SetYTitle("relative sys. Unsicherheit (%)");
+
+    hCorrYield_FitSysErrro->SetXTitle(pt_str);
+    hCorrYield_FitSysErrro->SetYTitle("relative sys. Unsicherheit (%)");
+
+    hCorrYield_RebinningSysError->SetXTitle(pt_str);
+    hCorrYield_RebinningSysError->SetYTitle("relative sys. Unsicherheit (%)");
+
+    hCorrYield_CorrBkgSysError->SetXTitle(pt_str);
+    hCorrYield_CorrBkgSysError->SetYTitle("relative sys. Unsicherheit (%)");
+
+
+    for(int k = 2; k < numberbins; k++){
+      hCorrYield_RelativSyserror->SetBinContent(k, hCorrYield_RelativSyserror->GetBinError(k)/(Double_t)hCorrYield_RelativSyserror->GetBinContent(k)*100.);
+      hCorrYield_RelativSyserror->SetBinError(k,0.);
+
+      hCorrYield_IntSysError->SetBinContent(k, hCorrYield_IntSysError->GetBinError(k)/(Double_t)hCorrYield_IntSysError->GetBinContent(k)*100.);
+      hCorrYield_IntSysError->SetBinError(k,0.);
+
+      hCorrYield_FitSysErrro->SetBinContent(k, hCorrYield_FitSysErrro->GetBinError(k)/(Double_t)hCorrYield_FitSysErrro->GetBinContent(k)*100.);
+      hCorrYield_FitSysErrro->SetBinError(k,0.);
+
+      hCorrYield_RebinningSysError->SetBinContent(k, hCorrYield_RebinningSysError->GetBinError(k)/(Double_t)hCorrYield_RebinningSysError->GetBinContent(k)*100.);
+      hCorrYield_RebinningSysError->SetBinError(k,0.);
+
+      hCorrYield_CorrBkgSysError->SetBinContent(k, hCorrYield_CorrBkgSysError->GetBinError(k)/(Double_t)hCorrYield_CorrBkgSysError->GetBinContent(k)*100.);
+      hCorrYield_CorrBkgSysError->SetBinError(k,0.);
+
+    }
+
+    hCorrYield_SyserrorRatio            = (TH1D*) hCorrYield_SysError->Clone("hCorrYield_SyserrorRatio");
+    hCorrYield_SyserrorRatio->          Divide(hCorrYield_SyserrorRatio, hCorrectedYieldNormEff, 1, 1, "B");
+  }
+
+
   gDirectory = OutputFile;          // changing directory to the output file
   hCorrYieldME_Ratio->              Write("hCorrYieldME_Ratio");
   hCorrYieldME_StatError->          Write("hCorrYieldME_StatError");
   hCorrectedYieldNormEff_StatError->Write("hCorrectedYieldNormEff_StatError");
   hCorrectedYieldNormEff_Ratio->    Write("hCorrectedYieldNormEff_Ratio");
+  if(templatemethod == 1){
+    hCorrYield_SysError->             Write("hCorrYield_SysError");
+    hCorrYield_IntSysError->          Write("hCorrYield_IntSysError");
+    hCorrYield_FitSysErrro->          Write("hCorrYield_FitSysErrro");
+    hCorrYield_RebinningSysError->    Write("hCorrYield_RebinningSysError");
+    hCorrYield_RelativSyserror->      Write("hCorrYield_RelativSyserror");
+    hCorrYield_SyserrorRatio->        Write("hCorrYield_SyserrorRatio");
+    hCorrYield_CorrBkgSysError->      Write("hCorrYield_CorrBkgSysError");
+  }
 
-  // hCorrYield_syserror           = (TH1D*) hCorrYieldME->Clone("hCorrYield_syserror");
-  // hCorrYield_countsyserror      = (TH1D*) hCorrYieldME->Clone("hCorrYield_countsyserror");
-  // hCorrYield_paramsyserror      = (TH1D*) hCorrYieldME->Clone("hCorrYield_paramsyserror");
-  // hCorrYield_BGFitsyserror      = (TH1D*) hCorrYieldME->Clone("hCorrYield_BGFitsyserror");
-  //
-  // //////////////////////////////////////////////////////////////////////////////
-  // // First the counting range variation:
-  // TFile* IterTemp_count0d06to0d225 = SafelyOpenRootfile("IterTemp_count0d06to0d225.root");
-  // if (IterTemp_count0d06to0d225->IsOpen() ) printf("IterTemp_count0d06to0d225 opened successfully\n");
-  //
-  // hCorrYield_count0d06to0d225 = (TH1D*) IterTemp_count0d06to0d225->Get("hYield_dt_chi2map_corrected");
-  //
-  // TFile* IterTemp_count0d1to0d225 = SafelyOpenRootfile("IterTemp_count0d1to0d225.root");
-  // if (IterTemp_count0d1to0d225->IsOpen() ) printf("IterTemp_count0d1to0d225 opened successfully\n");
-  //
-  // hCorrYield_count0d1to0d225 = (TH1D*) IterTemp_count0d1to0d225->Get("hYield_dt_chi2map_corrected");
-  //
-  // TFile* IterTemp_count0d02to0d185 = SafelyOpenRootfile("IterTemp_count0d02to0d185.root");
-  // if (IterTemp_count0d02to0d185->IsOpen() ) printf("IterTemp_count0d02to0d185 opened successfully\n");
-  //
-  // hCorrYield_count0d02to0d185 = (TH1D*) IterTemp_count0d02to0d185->Get("hYield_dt_chi2map_corrected");
-  //
-  // TFile* IterTemp_count0d02to0d285 = SafelyOpenRootfile("IterTemp_count0d02to0d285.root");
-  // if (IterTemp_count0d02to0d285->IsOpen() ) printf("IterTemp_count0d02to0d285 opened successfully\n");
-  //
-  // hCorrYield_count0d02to0d285 = (TH1D*) IterTemp_count0d02to0d285->Get("hYield_dt_chi2map_corrected");
-  //
-  //
-  //
-  //
-  // //////////////////////////////////////////////////////////////////////////////
-  // // 2nd the param range variation:
-  // TFile* IterTemp_param0d06to0d225 = SafelyOpenRootfile("IterTemp_param0d06to0d225.root");
-  // if (IterTemp_param0d06to0d225->IsOpen() ) printf("IterTemp_param0d06to0d225 opened successfully\n");
-  //
-  // hCorrYield_param0d06to0d225 = (TH1D*) IterTemp_param0d06to0d225->Get("hYield_dt_chi2map_corrected");
-  //
-  // TFile* IterTemp_param0d1to0d225 = SafelyOpenRootfile("IterTemp_param0d1to0d225.root");
-  // if (IterTemp_param0d1to0d225->IsOpen() ) printf("IterTemp_param0d1to0d225 opened successfully\n");
-  //
-  // hCorrYield_param0d1to0d225 = (TH1D*) IterTemp_param0d1to0d225->Get("hYield_dt_chi2map_corrected");
-  //
-  // TFile* IterTemp_param0d02to0d185 = SafelyOpenRootfile("IterTemp_param0d02to0d185.root");
-  // if (IterTemp_param0d02to0d185->IsOpen() ) printf("IterTemp_param0d02to0d185 opened successfully\n");
-  //
-  // hCorrYield_param0d02to0d185 = (TH1D*) IterTemp_param0d02to0d185->Get("hYield_dt_chi2map_corrected");
-  //
-  // TFile* IterTemp_param0d02to0d285 = SafelyOpenRootfile("IterTemp_param0d02to0d285.root");
-  // if (IterTemp_param0d02to0d285->IsOpen() ) printf("IterTemp_param0d02to0d285 opened successfully\n");
-  //
-  // hCorrYield_param0d02to0d285 = (TH1D*) IterTemp_param0d02to0d285->Get("hYield_dt_chi2map_corrected");
-  //
-  //
-  //
-  // //////////////////////////////////////////////////////////////////////////////
-  // // 3rd the bg fitting variation
-  // TFile* IterTemp_BGFitRange0d25 = SafelyOpenRootfile("IterTemp_BGFitRange0d25.root");
-  // if (IterTemp_BGFitRange0d25->IsOpen() ) printf("IterTemp_BGFitRange0d25 opened successfully\n");
-  //
-  // hCorrYield_BGFitRange0d25 = (TH1D*) IterTemp_BGFitRange0d25->Get("hYield_dt_chi2map_corrected");
-  //
-  // TFile* IterTemp_BGLeft = SafelyOpenRootfile("IterTemp_BGLeft.root");
-  // if (IterTemp_BGLeft->IsOpen() ) printf("IterTemp_BGLeft opened successfully\n");
-  //
-  // hCorrYield_BGLeft = (TH1D*) IterTemp_BGFitRange0d25->Get("hYield_dt_chi2map_corrected");
-  //
-  // TFile* IterTemp_BGFitRange0d29 = SafelyOpenRootfile("IterTemp_BGFitRange0d29.root");
-  // if (IterTemp_BGFitRange0d29->IsOpen() ) printf("IterTemp_BGFitRange0d29 opened successfully\n");
-  //
-  // hCorrYield_BGFitRange0d29 = (TH1D*) IterTemp_BGFitRange0d29->Get("hYield_dt_chi2map_corrected");
-  //
-  //
-  // Double_t temp = 0;
-  // for (int i = 2; i < numberbins; i++) {
-  //
-  //   temp = 0;
-  //   // check for biggest diff. in param vari
-  //   if(fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_param0d02to0d285->GetBinContent(i)) > temp){
-  //     temp = fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_param0d02to0d285->GetBinContent(i));
-  //   }
-  //   if(fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_param0d06to0d225->GetBinContent(i)) > temp){
-  //     temp = fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_param0d06to0d225->GetBinContent(i));
-  //   }
-  //   if(fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_param0d1to0d225->GetBinContent(i)) > temp){
-  //     temp = fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_param0d1to0d225->GetBinContent(i));
-  //   }
-  //   if(fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_param0d02to0d185->GetBinContent(i)) > temp){
-  //     temp = fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_param0d02to0d185->GetBinContent(i));
-  //   }
-  //   // pushing biggest difference back
-  //   vParamSys.push_back(temp);
-  //
-  //   // resetting temp
-  //   temp = 0;
-  //
-  //   // chech for biggest diff. in count vari
-  //   if(fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_count0d06to0d225->GetBinContent(i)) > temp){
-  //     temp = fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_count0d06to0d225->GetBinContent(i));
-  //   }
-  //   if(fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_count0d1to0d225->GetBinContent(i)) > temp){
-  //     temp = fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_count0d1to0d225->GetBinContent(i));
-  //   }
-  //   if(fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_count0d02to0d185->GetBinContent(i)) > temp){
-  //     temp = fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_count0d02to0d185->GetBinContent(i));
-  //   }
-  //   if(fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_count0d02to0d285->GetBinContent(i)) > temp){
-  //     temp = fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_count0d02to0d285->GetBinContent(i));
-  //   }
-  //   // pushing biggest difference back
-  //   vCountSys.push_back(temp);
-  //
-  //   // chech for biggest diff. in BGGit vari
-  //
-  //   if(fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_BGFitRange0d25->GetBinContent(i)) > temp){
-  //     temp = fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_BGFitRange0d25->GetBinContent(i));
-  //   }
-  //   if(fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_BGLeft->GetBinContent(i)) > temp){
-  //     temp = fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_BGLeft->GetBinContent(i));
-  //   }
-  //   // if(fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_BGFitRange0d29->GetBinContent(i)) > temp){
-  //   //   temp = fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_BGFitRange0d29->GetBinContent(i));
-  //   // }
-  //
-  //   // pushing biggest difference back
-  //   vBGFitSys.push_back(temp);
-  //
-  //   temp = sqrt(pow(vParamSys[i-2], 2.) + pow(vCountSys[i-2], 2.) + pow(vBGFitSys[i-2], 2.));
-  //   vFinalSys.push_back(temp);
-  //   hCorrYield_syserror->SetBinError(i, vFinalSys[i-2]);
-  //   hCorrYield_countsyserror->SetBinError(i, vCountSys[i-2]);
-  //   hCorrYield_paramsyserror->SetBinError(i, vParamSys[i-2]);
-  //   hCorrYield_BGFitsyserror->SetBinError(i, vBGFitSys[i-2]);
-  //   temp = 0;
-  // }
-  //
 
 
 delete fitBylikin13TeV;
@@ -268,7 +317,16 @@ delete ftsallis13TeV;
 delete fBylikinRatio;
 
 InputFile->Close();
-
+OutputFileBetterBkg3to8_HigherInt->Close();
+OutputFileBetterBkg3to8_SmallInt->Close();
+OutputFileBetterBkg3to8_HigherFit->Close();
+OutputFileBetterBkg3to8_SmallFit->Close();
+OutputFileBetterBkg3to8_LowerRebinning->Close();
+OutputFileBetterBkg3to8_HigherRebinning->Close();
+if(templatemethod == 1){
+  NNMethodFile->Close();
+  SingleBkgFile->Close();
+}
 
 
 }

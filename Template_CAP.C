@@ -319,41 +319,6 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
       exit(2);
     }
 
-    /**
-     * Calculating the % of how many Pi0s are in the True Histo from the MC in
-     * the current pT range, divided by the amount of produced Pi0s which should
-     * hit the Detector (here: EMCal)
-     * This is the value of our efficiency in the corresponding pT interval
-     */
-
-    Int_t lowerEffirange = hPeak_MC->FindBin(lowercountrange[k]);
-    Int_t upperEffirange = hPeak_MC->FindBin(uppercountrange);
-    Double_t IntInRangeError  = 0;
-    Double_t IntInRange       = hPeak_MC->IntegralAndError(lowerEffirange, upperEffirange, IntInRangeError);
-    Double_t IntAcceptedError = 0;
-    Double_t IntAccepted      = hMC_Pi0InAcc_Pt->IntegralAndError(
-      hMC_Pi0InAcc_Pt->FindBin(fBinsPi013TeVEMCPt[k]),
-      hMC_Pi0InAcc_Pt->FindBin(fBinsPi013TeVEMCPt[k+1]) - 1,
-      IntAcceptedError
-    );
-    Double_t myEffi = IntInRange/IntAccepted;
-    Double_t myEffi_Uncer = sqrt(
-      pow(IntInRangeError/IntAccepted, 2.) +
-      pow((IntInRange*IntAcceptedError)/pow(IntAccepted, 2.) , 2.)
-    );
-    // Int_t lowerEffirange = hPeak_MC->FindBin(lowercountrange[k]);
-    // Int_t upperEffirange = hPeak_MC->FindBin(uppercountrange);
-    // Double_t IntInRangeError = 0;
-    // Double_t IntInRange = hPeak_MC->IntegralAndError(lowerEffirange, upperEffirange, IntInRangeError);
-    // Double_t IntCompleteError = 0;
-    // Double_t IntComplete = hPeak_MC->IntegralAndError(1, hPeak_MC->GetNbinsX(), IntCompleteError);
-    //
-    // Double_t myEffi = (IntInRange*hEffi->GetBinContent(k+1))/IntComplete;
-    //
-    // Double_t myEffi_Uncer = hEffi->GetBinError(k+1);
-
-    vMyEffi.push_back(myEffi);
-    vMyEffiUncer.push_back(myEffi_Uncer);
 
     /**
      * for the OneTemplate Method we only need the template containing bkg and
@@ -504,6 +469,44 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
                                         y_min - vsigma_dt[k-1][2])*corrbackAreaScaling,2.)));
       }
     }
+
+    /**
+     * Calculating the % of how many Pi0s are in the True Histo from the MC in
+     * the current pT range, divided by the amount of produced Pi0s which should
+     * hit the Detector (here: EMCal)
+     * This is the value of our efficiency in the corresponding pT interval
+     */
+
+    Int_t lowerEffirange = hPeak_MC->FindBin(lowercountrange[k]);
+    Int_t upperEffirange = hPeak_MC->FindBin(uppercountrange);
+    Double_t IntInRangeError  = 0;
+    Double_t IntInRange       = hPeak_MC->IntegralAndError(lowerEffirange, upperEffirange, IntInRangeError);
+    Double_t IntAcceptedError = 0;
+    Double_t IntAccepted      = hMC_Pi0InAcc_Pt->IntegralAndError(
+      hMC_Pi0InAcc_Pt->FindBin(fBinsPi013TeVEMCPt[k]),
+      hMC_Pi0InAcc_Pt->FindBin(fBinsPi013TeVEMCPt[k+1]) - 1,
+      IntAcceptedError
+    );
+    Double_t myEffi = (IntInRange)/(IntAccepted);
+    Double_t myEffi_Uncer = sqrt(
+      pow(IntInRangeError/IntAccepted, 2.) +
+      pow((IntInRange*IntAcceptedError)/pow(IntAccepted, 2.) , 2.)
+    );
+    // Int_t lowerEffirange = hPeak_MC->FindBin(lowercountrange[k]);
+    // Int_t upperEffirange = hPeak_MC->FindBin(uppercountrange);
+    // Double_t IntInRangeError = 0;
+    // Double_t IntInRange = hPeak_MC->IntegralAndError(lowerEffirange, upperEffirange, IntInRangeError);
+    // Double_t IntCompleteError = 0;
+    // Double_t IntComplete = hPeak_MC->IntegralAndError(1, hPeak_MC->GetNbinsX(), IntCompleteError);
+    //
+    // Double_t myEffi = (IntInRange*hEffi->GetBinContent(k+1))/IntComplete;
+    //
+    // Double_t myEffi_Uncer = hEffi->GetBinError(k+1);
+
+    vMyEffi.push_back(myEffi);
+    vMyEffiUncer.push_back(myEffi_Uncer);
+
+
 
     /**
      * Data histogram clone which will be integrated to get the uncorrected Yield

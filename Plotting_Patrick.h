@@ -37,7 +37,7 @@ void SetRatioRange(TObjArray *ratioArray = 0);
 
 Int_t GetNiceColor(Int_t i)
 {//
-  Int_t niceColors[] = {kRed+1, kGreen-3, kBlue+1, kViolet-4, kOrange-3, kBlack, kCyan-2, kGray+2, kOrange+2, kBlack, kYellow+3};
+  Int_t niceColors[] = {kRed+1, kGreen+2, kBlue+1, kViolet-4, kOrange-3, kBlack, kCyan-2, kGray+2, kOrange+2, kBlack, kYellow+3};
   return niceColors[i%11];
 }
 
@@ -128,6 +128,33 @@ void PlotArray(TObjArray *arraytoplot, const char *controlstring ,Short_t *color
           hist->DrawCopy("SAME HIST");
           hist->SetMarkerStyle(20);
           hist->SetMarkerSize(1.5);
+        }
+      }else if(control.Contains("Systematics")||control.Contains("systematics")){
+        cout<<"|         - Systematics"<<endl;
+        if(arraytoplot->At(hh)->InheritsFrom("TH1")){
+          if(hh == 0) {
+            hist->SetFillColorAlpha(GetNiceColor(1), 0.50);
+            hist->SetFillStyle(1001);
+            hist->SetMarkerStyle(1);
+            hist->SetMarkerSize(1);
+            hist->SetMarkerColor(GetNiceColor(1));
+            hist->SetLineColor(GetNiceColor(1));
+            hist->DrawCopy("E2");
+          }
+          // else if(hh%2 == 0) {
+          //   hist->SetFillColor(GetNiceColor(hh/2));
+          //   hist->SetFillStyle(3003);
+          //   hist->SetMarkerColor(GetNiceColor(hh/2));
+          //   hist->SetLineColor(GetNiceColor(hh/2));
+          //   hist->DrawCopy("SAME E3");
+          // }
+          else{
+            hist->SetMarkerColor(GetNiceColor(hh));
+            hist->SetMarkerStyle(20);
+            hist->SetMarkerSize(1);
+            hist->SetLineColor(GetNiceColor(hh));
+            hist->DrawCopy("SAME PE1");
+          }
         }
       }else if(control.Contains("Hist")||control.Contains("hist")){
         cout<<"|         - Lines No errors"<<endl;
@@ -521,10 +548,24 @@ TCanvas *makeCanvas(TObjArray *histArray, TObjArray *ratioArray,const char *cont
     if(!histArray->At(0)) return nullptr;
     if (!histArray->At(0)->InheritsFrom("TH1")){cout<<"|ERROR: First entry has to be an Histogram"<<endl; return nullptr;}
     TH1D *hist0 = (TH1D*) histArray->At(0);
-    if(!hist0){cout<<"| ERROR: Histogram empty"<<endl; return nullptr;}
 
+    if(!hist0){cout<<"| ERROR: Histogram empty"<<endl; return nullptr;}
     Double_t xMin = hist0->GetXaxis()->GetBinLowEdge(hist0->GetXaxis()->GetFirst())+0.0000001;
     Double_t xMax = hist0->GetXaxis()->GetBinUpEdge(hist0->GetXaxis()->GetLast())-0.0000001;
+
+        for(int iHisto = 1; iHisto < nHist; iHisto++){
+          if(histArray->At(iHisto)->InheritsFrom("TH1")){
+            TH1D *histI = (TH1D*) histArray->At(iHisto);
+            if(xMin > histI->GetXaxis()->GetBinLowEdge(histI->GetXaxis()->GetFirst())+0.0000001){
+              xMin = histI->GetXaxis()->GetBinLowEdge(histI->GetXaxis()->GetFirst())+0.0000001;
+            }
+            if(xMax < histI->GetXaxis()->GetBinUpEdge(histI->GetXaxis()->GetLast())-0.0000001){
+              xMax = histI->GetXaxis()->GetBinUpEdge(histI->GetXaxis()->GetLast())-0.0000001;
+            }
+            else {/*do nothing*/}
+          }
+          else{/*do nothing*/}
+        }
     cout<<"| - Axis range: "<<xMin<<"-"<<xMax<<endl;
     hist0->GetYaxis()->CenterTitle(0);
     if(control.Contains("CenterTitle")||control.Contains("centertitle")) hist0->GetYaxis()->CenterTitle(1);

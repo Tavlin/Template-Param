@@ -30,9 +30,9 @@ for i in {1..5..1}
     echo ""
     time root -l -q -b Template_CAP.C++\(\"$DIR\",$i,\"$c\",\"$d\",\"$e\",\"$f\",\"$g\",\"$h\",\"$x\",\"$y\"\)
   done
-
-# time root -l -q -b Template_CAP.C++\(\"$DIR\",3,\"$c\",\"$d\",\"$e\",\"$f\,\"$g\",\"$h\",\"$x\"\)
-
+#
+# # time root -l -q -b Template_CAP.C++\(\"$DIR\",3,\"$c\",\"$d\",\"$e\",\"$f\,\"$g\",\"$h\",\"$x\"\)
+#
 # rm -r BetterBkgNN
 # mkdir BetterBkgNN
 # rm -r BetterBkg3to8

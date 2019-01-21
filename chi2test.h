@@ -32,8 +32,10 @@ Double_t Chi2Calc(TH1D* h1, TH1D* h2, TH1D* h3, Double_t &ndf, Double_t a,
     if(h1->GetBinContent(j) != 0 && h1->GetBinError(j) != 0
       && h2->GetBinError(j) != 0 && h2->GetBinContent(j) != 0){
 
-        temp_error = sqrt(pow(a*h1->GetBinError(j), 2.)
-        +pow(b*h2->GetBinError(j), 2.));
+        temp_error = sqrt(
+          pow(a*h1->GetBinError(j), 2.)
+          +pow(b*h2->GetBinError(j), 2.)
+        );
 
         chi2 += pow(a*h1->GetBinContent(j) + b*h2->GetBinContent(j)
         -h3->GetBinContent(j),2.)
@@ -47,6 +49,9 @@ Double_t Chi2Calc(TH1D* h1, TH1D* h2, TH1D* h3, Double_t &ndf, Double_t a,
 
   if(templatemethod == 3){
     chi2 += pow(b-fPulse_eval, 2.)/pow(sigma_cons, 2.); // 3 to 8 method
+  }
+  else if(templatemethod == 4){
+    // chi2 += pow(b-1.4, 2.)/pow(0.2, 2.); // Normal method
   }
 
   // else if(templatemethod == 2){
@@ -180,7 +185,8 @@ TH2D* Chi2MapFunction(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi
   x_min = (1./10.)*(NEvents_data/NEvents_MC);
   y_min = (1./10.)*(NEvents_data/NEvents_MC);
   TH2D* hChi2map      = NULL;
-  for(int nIterationsChi2Fit = 1; nIterationsChi2Fit < 4; nIterationsChi2Fit++){
+  int MAXnIterationsChi2Fit  = 2;
+  for(int nIterationsChi2Fit = 1; nIterationsChi2Fit <= MAXnIterationsChi2Fit; nIterationsChi2Fit++){
 
     hChi2map      = NULL;
     if(corrbackAreaScaling == 1. && signalAreaScaling == 1.){
@@ -344,7 +350,7 @@ TH2D* Chi2MapFunction(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi
 
     // delete hint;
     // delete fPulse;
-    if(nIterationsChi2Fit < 3){
+    if(nIterationsChi2Fit < MAXnIterationsChi2Fit){
       delete hChi2map;
     }
     if(templatemethod == 3){
