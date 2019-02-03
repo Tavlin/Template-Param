@@ -59,6 +59,44 @@ void Yields(TString PicFormat = "png", TString SaveAppendix = ""){
     TH1D*hCorrYield_RelativSyserror             = NULL;
     TH1D*hCorrYield_SyserrorRatio               = NULL;
 
+    TH1D* hCorrYield_HigherFitSysUncertainty        = NULL;
+    TH1D* hCorrYield_SmallFitSysUncertainty         = NULL;
+    TH1D* hCorrYield_HigherIntSysUncertainty        = NULL;
+    TH1D* hCorrYield_SmallIntSysUncertainty         = NULL;
+    TH1D* hCorrYield_LowerRebinningSysUncertainty   = NULL;
+    TH1D* hCorrYield_HigherRebinningSysUncertainty  = NULL;
+    TH1D* hCorrYield_NNMethodSysUncertainty         = NULL;
+    TH1D* hCorrYield_SingleBkgSysUncertainty        = NULL;
+
+    TLegend* legSystem = new TLegend(0.1, 0.94, 0.7, 0.98);
+    legSystem->AddEntry((TObject*) 0x0, "ALICE, pp bei #sqrt{#it{s}} = 13 TeV, #pi^{0} #rightarrow #gamma#gamma mit EMCal", "");
+
+
+    hCorrYield_HigherFitSysUncertainty        = (TH1D*) BetterBkg3to8->Get("hCorrYield_HigherFitSysUncertainty");
+    SetHistogramProperties(hCorrYield_HigherFitSysUncertainty, "pt", "relative sys. Unsicherheit (%)", 3, 1.4, 12.);
+
+    hCorrYield_SmallFitSysUncertainty         = (TH1D*) BetterBkg3to8->Get("hCorrYield_SmallFitSysUncertainty");
+    SetHistogramProperties(hCorrYield_SmallFitSysUncertainty, "pt", "relative sys. Unsicherheit (%)", 2, 1.4, 12.);
+
+    hCorrYield_HigherIntSysUncertainty        = (TH1D*) BetterBkg3to8->Get("hCorrYield_HigherIntSysUncertainty");
+    SetHistogramProperties(hCorrYield_HigherIntSysUncertainty, "pt", "relative sys. Unsicherheit (%)", 3, 1.4, 12.);
+
+    hCorrYield_SmallIntSysUncertainty         = (TH1D*) BetterBkg3to8->Get("hCorrYield_SmallIntSysUncertainty");
+    SetHistogramProperties(hCorrYield_SmallIntSysUncertainty, "pt", "relative sys. Unsicherheit (%)", 2, 1.4, 12.);
+
+    hCorrYield_LowerRebinningSysUncertainty   = (TH1D*) BetterBkg3to8->Get("hCorrYield_LowerRebinningSysUncertainty");
+    SetHistogramProperties(hCorrYield_LowerRebinningSysUncertainty, "pt", "relative sys. Unsicherheit (%)", 2, 1.4, 12.);
+
+    hCorrYield_HigherRebinningSysUncertainty  = (TH1D*) BetterBkg3to8->Get("hCorrYield_HigherRebinningSysUncertainty");
+    SetHistogramProperties(hCorrYield_HigherRebinningSysUncertainty, "pt", "relative sys. Unsicherheit (%)", 3, 1.4, 12.);
+
+    hCorrYield_NNMethodSysUncertainty         = (TH1D*) BetterBkg3to8->Get("hCorrYield_NNMethodSysUncertainty");
+    SetHistogramProperties(hCorrYield_NNMethodSysUncertainty, "pt", "relative sys. Unsicherheit (%)", 3, 1.4, 12.);
+
+    hCorrYield_SingleBkgSysUncertainty        = (TH1D*) BetterBkg3to8->Get("hCorrYield_SingleBkgSysUncertainty");
+    SetHistogramProperties(hCorrYield_SingleBkgSysUncertainty, "pt", "relative sys. Unsicherheit (%)", 2, 1.4, 12.);
+
+
     TCanvas* c1                                 = NULL;
 
     /**
@@ -251,6 +289,7 @@ void Yields(TString PicFormat = "png", TString SaveAppendix = ""){
     OAhists->Add(hCorrYieldME_BetterBkgPulse);
     OAhists->Add(hCorrYieldME_BetterBkgNN);
     OAhists->Add(hCorrectedYieldNormEff);
+    OAhists->Add(legSystem);
     // OAhists->Add(hPi0_gen);
     OAhists->Add(legYields);
 
@@ -277,6 +316,7 @@ void Yields(TString PicFormat = "png", TString SaveAppendix = ""){
     OAhists->Add(hCorrYieldME_BetterBkgNN);
     OAhists->Add(hCorrectedYieldNormEff);
     OAhists->Add(legYieldNN);
+    OAhists->Add(legSystem);
 
     OAratios->Add(hCorrYieldME_Ratio_BetterBkgNN);
     OAratios->Add(lOne);
@@ -296,6 +336,7 @@ void Yields(TString PicFormat = "png", TString SaveAppendix = ""){
     OAhists->Add(hCorrYieldME_BetterBkg3to8);
     OAhists->Add(hCorrectedYieldNormEff);
     OAhists->Add(legYield3to8);
+    OAhists->Add(legSystem);
 
     OAratios->Add(hCorrYieldME_Ratio_BetterBkg3to8);
     OAratios->Add(lOne);
@@ -315,6 +356,7 @@ void Yields(TString PicFormat = "png", TString SaveAppendix = ""){
     OAhists->Add(hCorrYieldME_BetterBkgPulse);
     OAhists->Add(hCorrectedYieldNormEff);
     OAhists->Add(legYieldPulse);
+    OAhists->Add(legSystem);
 
     OAratios->Add(hCorrYieldME_Ratio_BetterBkgPulse);
     OAratios->Add(lOne);
@@ -335,6 +377,7 @@ void Yields(TString PicFormat = "png", TString SaveAppendix = ""){
     OAhists->Add(hCorrYieldME_Normal);
     OAhists->Add(hCorrectedYieldNormEff);
     OAhists->Add(legYieldNormal);
+    OAhists->Add(legSystem);
 
     OAratios->Add(hCorrYieldME_Ratio_Normal);
     OAratios->Add(lOne);
@@ -354,6 +397,8 @@ void Yields(TString PicFormat = "png", TString SaveAppendix = ""){
     OAhists->Add(hCorrYieldME_OneTemplate);
     OAhists->Add(hCorrectedYieldNormEff);
     OAhists->Add(legYieldOneTemplate);
+    OAhists->Add(legSystem);
+
 
     OAratios->Add(hCorrYieldME_Ratio_OneTemplate);
     OAratios->Add(lOne);
@@ -379,6 +424,8 @@ void Yields(TString PicFormat = "png", TString SaveAppendix = ""){
     OAhists->Add(hCorrYieldME_StatError_OneTemplate);
     OAhists->Add(hCorrYieldME_StatError_BetterBkgNN);
     OAhists->Add(legYieldStatUncer);
+    OAhists->Add(legSystem);
+
 
     c1->Clear();
     c1 = NULL;
@@ -405,6 +452,8 @@ void Yields(TString PicFormat = "png", TString SaveAppendix = ""){
     OAhists->Add(Chi2_pT_BetterBkgPulse);
     OAhists->Add(Chi2_pT_BetterBkgNN);
     OAhists->Add(legChi2);
+    OAhists->Add(legSystem);
+
 
     c1->Clear();
     c1 = NULL;
@@ -418,6 +467,8 @@ void Yields(TString PicFormat = "png", TString SaveAppendix = ""){
     OAhists->Add(UncorrYieldRatio);
     OAhists->Add(EffiRatio);
     OAhists->Add(legUncorrYieldAndEffiRatio);
+    OAhists->Add(legSystem);
+
 
     c1->Clear();
     c1 = NULL;
@@ -432,7 +483,7 @@ void Yields(TString PicFormat = "png", TString SaveAppendix = ""){
     OAhists->Add(hCorrYieldME_BetterBkg3to8);
     OAhists->Add(hCorrectedYieldNormEff);
     OAhists->Add(legYield3to8);
-
+    OAhists->Add(legSystem);
     OAratios->Add(hCorrYield_SyserrorRatio);
     OAratios->Add(hCorrYieldME_Ratio_BetterBkg3to8);
     OAratios->Add(lOne);
@@ -448,6 +499,8 @@ void Yields(TString PicFormat = "png", TString SaveAppendix = ""){
 
 
     OAhists->Add(hCorrYield_RelativSyserror);
+    OAhists->Add(legSystem);
+
 
     c1->Clear();
     c1 = NULL;
@@ -459,10 +512,102 @@ void Yields(TString PicFormat = "png", TString SaveAppendix = ""){
     OAratios->Clear();
 
 
+    /*
+    Draw the relative systematic uncertainty for the different Variations
+     */
+
+     TLegend* legFitSysUncertainty = new TLegend(0.3, 0.2, 0.7, 0.4);
+     legFitSysUncertainty->AddEntry((TObject*) 0x0, "Parametrisierungsbereich:", "p");
+     legFitSysUncertainty->AddEntry(hCorrYield_HigherFitSysUncertainty, "breite Grenzen", "p");
+     legFitSysUncertainty->AddEntry(hCorrYield_SmallFitSysUncertainty, "schmale Grenzen", "p");
+
+     OAhists->Add(hCorrYield_HigherFitSysUncertainty);
+     OAhists->Add(hCorrYield_SmallFitSysUncertainty);
+     OAhists->Add(legSystem);
+     OAhists->Add(legFitSysUncertainty);
+
+     c1->Clear();
+     c1 = NULL;
+     c1 = makeCanvas(OAhists, 0, "notimethickHorizontal", 0, 0);
+     c1->SaveAs("Yields/YieldsSysUncerFitRange" + SaveAppendix + "." + PicFormat);
+     c1->SaveAs("Yields/YieldsSysUncerFitRange" + SaveAppendix + ".root");
+
+     OAhists->Clear();
+
+     /*************************************************************************/
+
+     TLegend* legIntSysUncertainty = new TLegend(0.3, 0.2, 0.7, 0.4);
+     legIntSysUncertainty->AddEntry((TObject*) 0x0, "Zählbereich:", "p");
+     legIntSysUncertainty->AddEntry(hCorrYield_HigherIntSysUncertainty, "breite Grenzen", "p");
+     legIntSysUncertainty->AddEntry(hCorrYield_SmallIntSysUncertainty, "schmale Grenzen", "p");
+
+     OAhists->Add(hCorrYield_HigherIntSysUncertainty);
+     OAhists->Add(hCorrYield_SmallIntSysUncertainty);
+     OAhists->Add(legSystem);
+     OAhists->Add(legIntSysUncertainty);
 
 
+     c1->Clear();
+     c1 = NULL;
+     c1 = makeCanvas(OAhists, 0, "notimethickHorizontal", 0, 0);
+     c1->SaveAs("Yields/YieldsSysUncerIntRange" + SaveAppendix + "." + PicFormat);
+     c1->SaveAs("Yields/YieldsSysUncerIntRange" + SaveAppendix + ".root");
 
-    delete OAhists;
-    delete OAratios;
+     OAhists->Clear();
+
+     /*************************************************************************/
+
+     TLegend* legRebinningSysUncertainty = new TLegend(0.3, 0.2, 0.7, 0.4);
+     legRebinningSysUncertainty->AddEntry((TObject*) 0x0, "Intervallbreite:", "p");
+     legRebinningSysUncertainty->AddEntry(hCorrYield_LowerRebinningSysUncertainty, "verkleinert", "p");
+     legRebinningSysUncertainty->AddEntry(hCorrYield_HigherRebinningSysUncertainty, "vergrößert", "p");
+
+     OAhists->Add(hCorrYield_LowerRebinningSysUncertainty);
+     OAhists->Add(hCorrYield_HigherRebinningSysUncertainty);
+     OAhists->Add(legSystem);
+     OAhists->Add(legRebinningSysUncertainty);
+
+     c1->Clear();
+     c1 = NULL;
+     c1 = makeCanvas(OAhists, 0, "notimethickHorizontal", 0, 0);
+     c1->SaveAs("Yields/YieldsSysUncerRebinning" + SaveAppendix + "." + PicFormat);
+     c1->SaveAs("Yields/YieldsSysUncerRebinning" + SaveAppendix + ".root");
+
+     OAhists->Clear();
+
+     /*************************************************************************/
+
+     TLegend* legBkgVariationSysUncertainty = new TLegend(0.3, 0.2, 0.7, 0.4);
+     legBkgVariationSysUncertainty->AddEntry((TObject*) 0x0, "Templates des korrelierten Untergrund:", "p");
+     legBkgVariationSysUncertainty->AddEntry(hCorrYield_NNMethodSysUncertainty, "nächste Nachbarn", "p");
+     legBkgVariationSysUncertainty->AddEntry(hCorrYield_SingleBkgSysUncertainty, "einzelne", "p");
+
+     OAhists->Add(hCorrYield_NNMethodSysUncertainty);
+     OAhists->Add(hCorrYield_SingleBkgSysUncertainty);
+     OAhists->Add(legSystem);
+     OAhists->Add(legBkgVariationSysUncertainty);
+
+
+     c1->Clear();
+     c1 = NULL;
+     c1 = makeCanvas(OAhists, 0, "notimethickHorizontal", 0, 0);
+     c1->SaveAs("Yields/YieldsSysUncerBkgVariation" + SaveAppendix + "." + PicFormat);
+     c1->SaveAs("Yields/YieldsSysUncerBkgVariation" + SaveAppendix + ".root");
+
+     OAhists->Clear();
+
+     /**************************************************************************
+     ***************************************************************************
+     **************************************************************************/
+
+     delete legFitSysUncertainty;
+     delete legIntSysUncertainty;
+     delete legRebinningSysUncertainty;
+     delete legBkgVariationSysUncertainty;
+     delete legSystem;
+
+
+     delete OAhists;
+     delete OAratios;
 
 }
