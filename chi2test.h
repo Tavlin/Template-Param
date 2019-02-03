@@ -185,7 +185,7 @@ TH2D* Chi2MapFunction(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi
   x_min = (1./10.)*(NEvents_data/NEvents_MC);
   y_min = (1./10.)*(NEvents_data/NEvents_MC);
   TH2D* hChi2map      = NULL;
-  int MAXnIterationsChi2Fit  = 2;
+  int MAXnIterationsChi2Fit  = 3;
   for(int nIterationsChi2Fit = 1; nIterationsChi2Fit <= MAXnIterationsChi2Fit; nIterationsChi2Fit++){
 
     hChi2map      = NULL;
@@ -308,7 +308,7 @@ TH2D* Chi2MapFunction(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi
       }
     for (int ix = 0; ix < numbersteps; ix++) {
       for (int iy = 0; iy < numbersteps; iy++) {
-        ndf = upperfitrange-lowerfitrange-3;
+        ndf = upperfitrange-lowerfitrange-2;
         chi2 = 0;
         if(templatemethod == 5){
           chi2 = Chi2Calc1D(hSignal_clone, hData_clone, ndf,

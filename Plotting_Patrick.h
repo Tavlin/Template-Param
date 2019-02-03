@@ -129,33 +129,6 @@ void PlotArray(TObjArray *arraytoplot, const char *controlstring ,Short_t *color
           hist->SetMarkerStyle(20);
           hist->SetMarkerSize(1.5);
         }
-      }else if(control.Contains("Systematics")||control.Contains("systematics")){
-        cout<<"|         - Systematics"<<endl;
-        if(arraytoplot->At(hh)->InheritsFrom("TH1")){
-          if(hh == 0) {
-            hist->SetFillColorAlpha(GetNiceColor(1), 0.50);
-            hist->SetFillStyle(1001);
-            hist->SetMarkerStyle(1);
-            hist->SetMarkerSize(1);
-            hist->SetMarkerColor(GetNiceColor(1));
-            hist->SetLineColor(GetNiceColor(1));
-            hist->DrawCopy("E2");
-          }
-          // else if(hh%2 == 0) {
-          //   hist->SetFillColor(GetNiceColor(hh/2));
-          //   hist->SetFillStyle(3003);
-          //   hist->SetMarkerColor(GetNiceColor(hh/2));
-          //   hist->SetLineColor(GetNiceColor(hh/2));
-          //   hist->DrawCopy("SAME E3");
-          // }
-          else{
-            hist->SetMarkerColor(GetNiceColor(hh));
-            hist->SetMarkerStyle(20);
-            hist->SetMarkerSize(1);
-            hist->SetLineColor(GetNiceColor(hh));
-            hist->DrawCopy("SAME PE1");
-          }
-        }
       }else if(control.Contains("Hist")||control.Contains("hist")){
         cout<<"|         - Lines No errors"<<endl;
         if(markerArray){ hist->SetLineStyle(1);}
@@ -198,6 +171,12 @@ void PlotArray(TObjArray *arraytoplot, const char *controlstring ,Short_t *color
       hist2->GetYaxis()->SetLabelFont(lableFont);
       hist2->GetYaxis()->SetTitleFont(titleFont);
       hist2->GetYaxis()->SetTitleOffset(titleOffsetY);
+
+      hist2->GetZaxis()->SetLabelSize(lableSize*relativeTextSize);
+      hist2->GetZaxis()->SetTitleSize(titleSize*relativeTextSize);
+      hist2->GetZaxis()->SetLabelFont(lableFont);
+      hist2->GetZaxis()->SetTitleFont(titleFont);
+      hist2->GetZaxis()->SetTitleOffset(titleOffsetY*1.5);
       hist2->SetTitle("");
 
       hist2->SetAxisRange(xMin,xMax,"X");
@@ -240,10 +219,10 @@ void PlotArray(TObjArray *arraytoplot, const char *controlstring ,Short_t *color
       pt->Draw();
     }else if (arraytoplot->At(hh)->InheritsFrom("TLegend")){
       cout<<"| Drawing a Legend "<<hh<<endl;
-      cout<<"| Rel. text size: "<<relativeTextSize<<endl;
+      cout<<"| Rel. text size: "<<1.2*relativeTextSize<<endl;
       TLegend *leghh = (TLegend*) arraytoplot->At(hh);
       leghh->SetTextFont(titleFont);
-      leghh->SetTextSize(relativeTextSize);
+      leghh->SetTextSize(1.2*relativeTextSize);
       leghh->SetFillColor(kWhite);
       leghh->SetFillStyle(0);
       leghh->SetBorderSize(0);
@@ -286,12 +265,13 @@ void PlotArray(TObjArray *arraytoplot, const char *controlstring ,Short_t *color
       }
     }else if (arraytoplot->At(hh)->InheritsFrom("TF1")){
       cout<<"| Drawing a TF1 "<<hh<<endl;
+      cout<<"| colorArray[hh] "<<colorArray[hh]<<endl;
       TF1 *fun = (TF1*) arraytoplot->At(hh);
-      fun->SetLineColor(colorArray[hh]);
+      fun->SetLineColor(GetNiceColor(hh));
       if (markerArray[hh]< 10){
-        fun->SetLineStyle(markerArray[hh]);
+        fun->SetLineStyle(1);
       }else{
-        fun->SetLineStyle(3);
+        fun->SetLineStyle(1);
       }
       if(control.Contains("Thick")||control.Contains("thick")){
         fun->SetLineWidth(4);
@@ -400,7 +380,7 @@ TCanvas *makeCanvas(TObjArray *histArray, TObjArray *ratioArray,const char *cont
   if(ratioArray){SetRatioRange(ratioArray);}
   TString control(controlstring);
 
-  //   Short_t colorArray[]={kRed,kOrange-3,kGreen-3,kGreen+3,kCyan+3,kBlue};
+    // Short_t colorArray[]={kRed,kOrange-3,kGreen-3,kGreen+3,kCyan+3,kBlue};
     Short_t defaultColorArray[14] = {0};
   if(!colorArray) {
       Short_t copyArray[14]={kBlue-7,kRed+1,kGreen-3,6,8,9,11,12,13,14,15,16,17,18};
@@ -411,7 +391,8 @@ TCanvas *makeCanvas(TObjArray *histArray, TObjArray *ratioArray,const char *cont
   } /// \remark If no colors are specified, use default: blue, red, green, magenta, wierd green, wierd blue and various grey
     Short_t defaultMarkerArray[14] = {0};
   if(!markerArray) {
-      Short_t copyArray[14]={20,21,22,23,24,25,26,27,28,29,30,20,20,20};
+      // Short_t copyArray[14]={20,21,22,23,24,25,26,27,28,29,30,20,20,20};
+      Short_t copyArray[14]={20,21,33,34,22,23,24,25,27,28,26,32,29,30};
       for (int i =0; i<14; ++i) {
           defaultMarkerArray[i] = copyArray[i];
       }
@@ -448,11 +429,11 @@ TCanvas *makeCanvas(TObjArray *histArray, TObjArray *ratioArray,const char *cont
     canvasHeight=700;
     padFraction = 0.5;
     titleOffsetY=1.4;
-    titleOffsetX=1.5;
+    titleOffsetX=1.2;
     leftMargin=0.12;
-    rightMargin = leftMargin;
+    rightMargin = leftMargin+0.08;
     topMargin=leftMargin-0.05;
-    lowMargin=leftMargin+0.05;
+    lowMargin=leftMargin-0.02;//+0.05;
     if(ratioArray){
       textSizeFactor =0.5 * 12000;
       leftMargin=0.13;
@@ -461,6 +442,16 @@ TCanvas *makeCanvas(TObjArray *histArray, TObjArray *ratioArray,const char *cont
       lowMargin = leftMargin/(padFraction)+0.05;
       titleOffsetY=1.4;
       titleOffsetX=2.8;
+    }
+    else if(histArray->At(0)->InheritsFrom("TH2")){
+      TH2D* hist = (TH2D*) histArray->At(0);
+      if( ((TString) hist->GetXaxis()->GetTitle()).Contains("#frac")){
+        titleOffsetX=1.5;
+        lowMargin=leftMargin+0.05;
+      }
+      else{
+        //emtpy statement
+      }
     }
   }else if (control.Contains("horizontal")||control.Contains("Horizontal")||control.Contains("HORIZONTAL")){
     cout<<"| - Horizontal Canvas"<<endl;
@@ -477,6 +468,19 @@ TCanvas *makeCanvas(TObjArray *histArray, TObjArray *ratioArray,const char *cont
       titleOffsetY=1.05;
       titleOffsetX=2.1;
       lowMargin=0.19;
+    }
+    if (histArray->At(0)->InheritsFrom("TH1")){
+      TH1D* hist = (TH1D*) histArray->At(0);
+      TString yTitle(hist->GetYaxis()->GetTitle());
+
+      if(yTitle.Contains("#frac")){
+        titleOffsetY=1.1;
+        titleOffsetX=1.1;
+        leftMargin = 0.12*1.414213562;
+        rightMargin = 0.05;
+        topMargin=0.06;
+        lowMargin=0.12;
+      }
     }
     if(ratioArray){
     }

@@ -68,6 +68,13 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
     TLine* fitrange2                  = NULL;
     TLine* line_0                     = NULL;
     TLine* line_one                   = NULL;
+    TLine* lChi2MinX                  = NULL;
+    TLine* lChi2MinY                  = NULL;
+
+    TLegend* legpT                    = NULL;
+    TLegend* legTemplat               = NULL;
+    TLegend* legTemplatChi2           = NULL;
+    TLegend* legTemplateYield         = NULL;
 
     Double_t line_y = 0;
 
@@ -77,6 +84,33 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
     TFile* BackFileNN   = NULL;
     TFile* BackFile3to8 = NULL;
     TFile* CorrBkgFile  = NULL;
+
+    /*
+      TLegend which displays most important info as header!
+     */
+    TLegend* legSystem = new TLegend(0.1, 0.94, 0.7, 0.98);
+    legSystem->AddEntry((TObject*) 0x0, "ALICE, pp bei #sqrt{#it{s}} = 13 TeV, #pi^{0} #rightarrow #gamma#gamma mit EMCal", "");
+
+    TLegend* legSystemChi2Map = new TLegend(0.03, 0.94, 0.6, 0.98);
+    legSystemChi2Map->AddEntry((TObject*) 0x0, "ALICE, pp bei #sqrt{#it{s}} = 13 TeV, #pi^{0} #rightarrow #gamma#gamma mit EMCal", "");
+
+    legTemplat = new TLegend(0.09, 0.6, 0.38, 0.8);
+    legTemplat->AddEntry((TObject*) 0x0, "Templates:", "");
+    legTemplat->AddEntry((TObject*) 0x0, "PYTHIA 8", "");
+    legTemplat->AddEntry((TObject*) 0x0, "Monash 2013", "");
+    legTemplat->AddEntry((TObject*) 0x0, "GEANT 3", "");
+
+    legTemplatChi2 = new TLegend(0.2, 0.6, 0.6, 0.8);
+    legTemplatChi2->AddEntry((TObject*) 0x0, "Templates:", "");
+    legTemplatChi2->AddEntry((TObject*) 0x0, "PYTHIA 8", "");
+    legTemplatChi2->AddEntry((TObject*) 0x0, "Monash 2013", "");
+    legTemplatChi2->AddEntry((TObject*) 0x0, "GEANT 3", "");
+
+    legTemplateYield = new TLegend(0.5, 0.6, 0.8, 0.8);
+    legTemplateYield->AddEntry((TObject*) 0x0, "Templates:", "");
+    legTemplateYield->AddEntry((TObject*) 0x0, "PYTHIA 8", "");
+    legTemplateYield->AddEntry((TObject*) 0x0, "Monash 2013", "");
+    legTemplateYield->AddEntry((TObject*) 0x0, "GEANT 3", "");
 
     CorrBkgFile       = SafelyOpenRootfile("CorrBkgFileNoRebin.root");
     if (CorrBkgFile->IsOpen() ) printf("CorrBkgFile opened successfully\n");
@@ -202,14 +236,14 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
       if(binnumber <=  0 || binnumber > numberbins){
 
 
-        // hGG                      = (TH1D*) MCWithOutFile->Get(Form("Mapping_TrueMesonCaloPhoton_InvMass_in_Pt_Bin%02d", k));
-        // SetHistogramProperties(hGG, "minv", count_str, 2, 0.0, 0.3);
-        //
-        // hGC                      = (TH1D*) MCWithOutFile->Get(Form("Mapping_TrueMesonMixedCaloConvPhoton_InvMass_in_Pt_Bin%02d", k));
-        // SetHistogramProperties(hGC, "minv", count_str, 4, 0.0, 0.3);
-        //
-        // hCC                      = (TH1D*) MCWithOutFile->Get(Form("Mapping_TrueMesonCaloConvPhoton_InvMass_in_Pt_Bin%02d", k));
-        // SetHistogramProperties(hCC, "minv", count_str, 7, 0.0, 0.3);
+        hGG                      = (TH1D*) MCWithOutFile->Get(Form("Mapping_TrueMesonCaloPhoton_InvMass_in_Pt_Bin%02d", k));
+        SetHistogramProperties(hGG, "minv", count_str, 2, 0.0, 0.3);
+
+        hGC                      = (TH1D*) MCWithOutFile->Get(Form("Mapping_TrueMesonMixedCaloConvPhoton_InvMass_in_Pt_Bin%02d", k));
+        SetHistogramProperties(hGC, "minv", count_str, 4, 0.0, 0.3);
+
+        hCC                      = (TH1D*) MCWithOutFile->Get(Form("Mapping_TrueMesonCaloConvPhoton_InvMass_in_Pt_Bin%02d", k));
+        SetHistogramProperties(hCC, "minv", count_str, 7, 0.0, 0.3);
 
 
         hInvMass_MC              = (TH1D*) MCWithOutFile->Get(Form("fHistoMappingSignalInvMass_in_Pt_Bin%02d", k));
@@ -259,6 +293,13 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
         hAdded->              Add(hCorrBack_scaled);
         SetHistogramProperties(hAdded, "minv", count_str, 8, 0.0, 0.3);
 
+        /*
+        Setting up the pT Legend!
+         */
+        str = Form("%.1lf #leq #it{p}_{T} /(GeV/#it{c}) < %.1lf", fBinsPi013TeVEMCPt[k], fBinsPi013TeVEMCPt[k+1]);
+        legpT = new TLegend(0.09, 0.8, 0.38, 0.86);
+        legpT->AddEntry((TObject*) 0x0, str, "");
+
         /**
          * Getting the two histograms which show the Ratio of the corr. bkg Template
          * of the normal method and the NN/3to8 method
@@ -298,10 +339,13 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
             OAhists->Add(hCorrBack);
           }
           OAhists->Add(legCorrBkgComp);
+          OAhists->Add(legSystem);
+          OAhists->Add(legpT);
+          OAhists->Add(legTemplat);
           OAratios->Add(hRatio_Bkg);
           OAratios->Add(fPol0);
 
-          c2 = makeCanvas(OAhists, OAratios, "notimeThickHorizontal", 0, 0);
+          c2 = makeCanvas(OAhists, OAratios, "notimeThickSquare", 0, 0);
 
           c2->Update();
           c2->SaveAs(Form("BetterBkgNN/BackgroundWithRatio%02d" + SaveAppendix + "." + PicFormat,k));
@@ -321,14 +365,16 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
           hRatio_Bkg = (TH1D*) BackFile3to8->Get(Form("hRatio_Bin%02d", k));
           fPol0      = (TF1*)  BackFile3to8->Get(Form("fPol0_Bin%02d", k));
 
-          SetHistogramProperties(hCorrBackNoRebin, "minv", count_str, 1, 0.0, 0.3);
-          SetHistogramProperties(hRatio_Bkg, "minv", "ratio", 5, 0.0, 0.3);
+          SetHistogramProperties(hCorrBackNoRebin, "minv", count_str, 3, 0.0, 0.3);
+          SetHistogramProperties(hCorrBack, "minv", count_str, 8, 0.0, 0.3);
+          SetHistogramProperties(hRatio_Bkg, "minv", "einzeln/kombiniert", 5, 0.0, 0.3);
           hRatio_Bkg->GetYaxis()->SetRangeUser(fPol0->GetParameter(0)-1.5, fPol0->GetParameter(0)+1.5);
+          fPol0->SetLineStyle(1);
 
           OAhists->Clear();
           OAratios->Clear();
 
-          TLegend* legCorrBkgComp = new TLegend(0.4, 0.8, 0.8, 0.95);
+          TLegend* legCorrBkgComp = new TLegend(0.15, 0.02, 0.3, 0.3);
           legCorrBkgComp->SetHeader("Template");
           legCorrBkgComp->AddEntry(hCorrBack, "korr. Untergrund (kombiniert)", "p");
           legCorrBkgComp->AddEntry(hCorrBackNoRebin, "korr. Untergrund (einzeln)", "p");
@@ -341,12 +387,15 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
             OAhists->Add(hCorrBackNoRebin);
             OAhists->Add(hCorrBack);
           }
+          OAhists->Add(legSystem);
           OAhists->Add(legCorrBkgComp);
+          OAhists->Add(legpT);
+          OAhists->Add(legTemplat);
 
           OAratios->Add(hRatio_Bkg);
           OAratios->Add(fPol0);
 
-          c2 = makeCanvas(OAhists, OAratios, "notimeThick", 0, 0);
+          c2 = makeCanvas(OAhists, OAratios, "notimeThickSquare", 0, 0);
 
 
           c2->Update();
@@ -366,27 +415,47 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
           ////////////////////////////////////////////////////////////////////////
           // Drawing Chi2 maps
 
-          TLegend* lChi2Map = new TLegend(0.4,0.85,0.7,0.9);
-          lChi2Map->SetTextColor(kWhite);
-          lChi2Map->AddEntry((TObject*) 0x0, str, ""),
+          TGaxis::SetMaxDigits(1);
 
           hChi2_2D->SetXTitle("SF_{Signal}");
           hChi2_2D->SetYTitle("SF_{korr. Untergrund}");
           hChi2_2D->SetZTitle("#chi^{2}");
+          // hChi2_2D->GetZaxis()->SetRangeUser(6.e1, 1.1e2);
 
           OAhists->Clear();
           OAhists->Add(hChi2_2D);
-          OAhists->Add(lChi2Map);
+          OAhists->Add(legSystemChi2Map);
+          legpT->SetTextColor(kWhite);
+          OAhists->Add(legpT);
+          legTemplat->SetTextColor(kWhite);
+          OAhists->Add(legTemplat);
 
           cChi2Map = NULL;
-          cChi2Map = makeCanvas(OAhists, 0, "colznotimethicksquarelogz", 0, 0);
+          lChi2MinY = new TLine(h_x_min->GetBinContent(k+1),
+                                h_y_min->GetBinContent(k+1)-0.001,
+                                h_x_min->GetBinContent(k+1),
+                                h_y_min->GetBinContent(k+1)+0.001);
+
+          lChi2MinY->SetLineWidth(5);
+          lChi2MinY->SetLineColor(kBlack);
+
+          lChi2MinX = new TLine(h_x_min->GetBinContent(k+1)-0.001,
+                                h_y_min->GetBinContent(k+1),
+                                h_x_min->GetBinContent(k+1)+0.001,
+                                h_y_min->GetBinContent(k+1));
+          lChi2MinX->SetLineWidth(5);
+          lChi2MinX->SetLineColor(kBlack);
+          cChi2Map = makeCanvas(OAhists, 0, "colznotimesquare", 0, 0);
           cChi2Map->cd();
           cChi2Map->Update();
           hChi2_2D_sigma->SetLineColor(kWhite);
           hChi2_2D_sigma->SetLineWidth(2);
           hChi2_2D_sigma->SetContour(2, somelist);
           hChi2_2D_sigma->Draw("SAME CONT3");
-          cChi2Map->SetLogz(1);
+          lChi2MinX->Draw("SAME");
+          lChi2MinY->Draw("SAME");
+          // cChi2Map->SetLogz(1);
+          TGaxis::SetMaxDigits(1);
           cChi2Map->Update();
 
           cChi2Map->Update();
@@ -406,7 +475,11 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
             cChi2Map->SaveAs(Form("OneTemplate/Chi2Map%02d" + SaveAppendix + "." + PicFormat,k));
           }
           cChi2Map->Clear();
+          TGaxis::SetMaxDigits(3);
+          delete lChi2MinX;
+          delete lChi2MinY;
         }
+
 
         /**
          * Drawing of the parametrization result using templates
@@ -419,16 +492,22 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
           OAhists->Add(hData);
           OAhists->Add(hSignal_scaled);
           OAhists->Add(hCorrBack_scaled);
+          OAhists->Add(legSystem);
+          legpT->SetTextColor(kBlack);
+          OAhists->Add(legpT);
+          legTemplat->SetTextColor(kBlack);
+          OAhists->Add(legTemplat);
 
           c1 = makeCanvas(OAhists, 0, "notimethickhorizontal", 0, 0);
           c1->cd();
           c1->Update();
 
-          TLegend* lParamResultParts = new TLegend(0.58,0.45,0.8,0.63);
-          lParamResultParts->   AddEntry(hData, "Signal ohne komb. Untegrund", "l");
+          TLegend* lParamResultParts = new TLegend(0.5,0.42,0.9,0.8);
+          lParamResultParts->   AddEntry(hData, "Signal", "p");
+          lParamResultParts->   AddEntry((TObject*) 0x0, "+ korr. Untergrund:", "");
           lParamResultParts->   AddEntry((TObject*) 0x0, "Template:", "");
-          lParamResultParts->   AddEntry(hSignal_scaled,   "Signal",      "l");
-          lParamResultParts->   AddEntry(hCorrBack_scaled, "korr. Untergrund.",  "l");
+          lParamResultParts->   AddEntry(hSignal_scaled,   "Signal",      "p");
+          lParamResultParts->   AddEntry(hCorrBack_scaled, "korr. Untergrund.",  "p");
 
 
           double line_y = gPad->GetUymax()*0.995;
@@ -444,8 +523,11 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
           OAhists->Add(hCorrBack_scaled);
           OAhists->Add(lParamResultParts);
           OAhists->Add(paramrange);
+          OAhists->Add(legSystem);
+          OAhists->Add(legpT);
+          OAhists->Add(legTemplat);
 
-          c1 = makeCanvas(OAhists, 0, "notimethickhorizontalhistlabel", 0, 0);
+          c1 = makeCanvas(OAhists, 0, "notimethickhorizontal", 0, 0);
 
           // DrawLabelALICE(0.6, 0.9, 0.02, 40, str);
 
@@ -468,10 +550,11 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
             c1->SaveAs(Form("OneTemplate/ParamResultParts_Bin%02d" + SaveAppendix + "." + PicFormat,k));
           }
           c1->Clear();
-          TLegend* lParamResult = new TLegend(0.58,0.45,0.8,0.63);
-          lParamResult->AddEntry(hData, "Signal ohne komb. Untegrund", "l");
+          TLegend* lParamResult = new TLegend(0.63,0.45,0.8,0.8);
+          lParamResult->AddEntry(hData, "Signal", "p");
+          lParamResult->AddEntry((TObject*) 0x0, "+ korr. Untegrund:", "");
           lParamResult->AddEntry((TObject*) 0x0, "Parametrisierung:", "");
-          lParamResult->AddEntry(hAdded, "Template", "l");
+          lParamResult->AddEntry(hAdded, "Templates", "p");
           lParamResult->AddEntry(paramrange, "Bereich",  "l");
 
           OAhists->Clear();
@@ -480,8 +563,11 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
           OAhists->Add(paramrange);
           OAhists->Add(lParamResult);
           OAhists->Add(paramrange);
+          OAhists->Add(legSystem);
+          OAhists->Add(legpT);
+          OAhists->Add(legTemplat);
 
-          c1 = makeCanvas(OAhists, 0, "notimethickhorizontalhistlabel", 0, 0);
+          c1 = makeCanvas(OAhists, 0, "notimethickhorizontal", 0, 0);
 
           c1->Update();
 
@@ -510,45 +596,53 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
           delete lParamResult;
           delete paramrange;
 
-          // if(templatemethod == 4){
-          //   TLegend* lGammas = new TLegend(0.2,0.7,0.4,0.9);
-          //   lGammas->AddEntry(hSignal, "Summe reko. #pi^{0}", "p");
-          //   lGammas->AddEntry(hGG, "#gamma#gamma", "p");
-          //   lGammas->AddEntry(hGC, "#gamma#gamma_{conv}", "p");
-          //   lGammas->AddEntry(hCC, "#gamma_{conv}#gamma_{conv}",  "p");
-          //
-          //   OAhists->Clear();
-          //   OAhists->Add(hSignal);
-          //   OAhists->Add(hGG);
-          //   OAhists->Add(hGC);
-          //   OAhists->Add(hCC);
-          //   OAhists->Add(lGammas);
-          //
-          //   c1 = makeCanvas(OAhists, 0, "notimethickhorizontallabel", 0, 0);
-          //
-          //   c1->Update();
-          //   // DrawLabelALICE(0.6, 0.9, 0.02, 40, str);
-          //   c1->Update();
-          //
-          //   c1->SaveAs(Form("BetterBkg3to8/PeakTemplateMotivation%02d" + SaveAppendix + "." + PicFormat,k));
-          // }
+          if(templatemethod == 4){
+            TLegend* lGammas = new TLegend(0.63,0.45,0.8,0.8);
+            lGammas->AddEntry(hSignal, "Summe reko. #pi^{0}", "p");
+            lGammas->AddEntry(hGG, "#gamma#gamma", "p");
+            lGammas->AddEntry(hGC, "#gamma#gamma_{conv}", "p");
+            lGammas->AddEntry(hCC, "#gamma_{conv}#gamma_{conv}",  "p");
+
+            OAhists->Clear();
+            OAhists->Add(hSignal);
+            OAhists->Add(hGG);
+            OAhists->Add(hGC);
+            OAhists->Add(hCC);
+            OAhists->Add(lGammas);
+            OAhists->Add(legSystem);
+            OAhists->Add(legpT);
+            OAhists->Add(legTemplat);
+
+            c1 = makeCanvas(OAhists, 0, "notimethickhorizontal", 0, 0);
+
+            c1->Update();
+            // DrawLabelALICE(0.6, 0.9, 0.02, 40, str);
+            c1->Update();
+
+            c1->SaveAs(Form("BetterBkg3to8/PeakTemplateMotivation%02d" + SaveAppendix + "." + PicFormat,k));
+
+          }
 
           if(templatemethod == 4){
             c1->Clear();
 
-            TLegend* lTemplates = new TLegend(0.58,0.45,0.8,0.6);
-            lTemplates->AddEntry(hInvMass_MC, "MC Signal", "l");
-            lTemplates->AddEntry((TObject*) 0x0, "ohne komb. Untegrund", "");
-            lTemplates->AddEntry(hSignal, "Signal Template", "l");
-            lTemplates->AddEntry(hCorrBack, "korr. Untergrund Template", "l");
+            TLegend* lTemplates = new TLegend(0.63,0.45,0.8,0.8);
+            lTemplates->AddEntry(hInvMass_MC, "MC-Signal", "p");
+            lTemplates->AddEntry((TObject*) 0x0, "+ korr. Untegrund", "");
+            lTemplates->AddEntry((TObject*) 0x0, "Template:" , "");
+            lTemplates->AddEntry(hSignal, "Signal", "p");
+            lTemplates->AddEntry(hCorrBack, "korr. Untergrund ", "p");
 
             OAhists->Clear();
             OAhists->Add(hInvMass_MC);
             OAhists->Add(hSignal);
             OAhists->Add(hCorrBack);
             OAhists->Add(lTemplates);
+            OAhists->Add(legSystem);
+            OAhists->Add(legpT);
+            OAhists->Add(legTemplat);
 
-            c1 = makeCanvas(OAhists, 0, "notimethickhorizontalhistlabel", 0, 0);
+            c1 = makeCanvas(OAhists, 0, "notimethorizontal", 0, 0);
 
             c1->Update();
             // DrawLabelALICE(0.6, 0.9, 0.025, 40, str);
@@ -560,6 +654,7 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
 
         }
       }
+      delete legpT;
     }
 
     /**
@@ -573,7 +668,7 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
       leg2->AddEntry(hChi2Map_Chi2_pT, "Template", "l");
       leg2->AddEntry(histoChi2_0, "Funktionen", "l");
 
-      hChi2Map_Chi2_pT->GetYaxis()->SetRangeUser(0.0, 4.0);
+      // hChi2Map_Chi2_pT->GetYaxis()->SetRangeUser(0.0, 4.0);
 
 
 
@@ -581,6 +676,8 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
       OAhists->Add(hChi2Map_Chi2_pT);
       OAhists->Add(histoChi2_0);
       OAhists->Add(leg2);
+      OAhists->Add(legSystem);
+      OAhists->Add(legTemplat);
 
       c1 = makeCanvas(OAhists, 0, "notimethickhorizontalLines", 0, 0);
       // DrawLabelALICE(0.6, 0.9, 0.03, 40);
@@ -605,6 +702,31 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
       c1->Clear();
       c1->SetLogx(0);
 
+      OAhists->Clear();
+      OAhists->Add(hChi2Map_Chi2_pT);
+      OAhists->Add(legSystem);
+      OAhists->Add(legTemplatChi2);
+
+      c1 = makeCanvas(OAhists, 0, "notimethickhorizontalLines", 0, 0);
+
+      c1->Update();
+      if(templatemethod == 2){
+        c1->SaveAs(Form("BetterBkgNN/Chi2NoComp" + SaveAppendix + "." + PicFormat));
+      }
+      if(templatemethod == 1){
+        c1->SaveAs(Form("BetterBkg3to8/Chi2NoComp" + SaveAppendix + "." + PicFormat));
+      }
+      if(templatemethod == 3){
+        c1->SaveAs(Form("BetterBkg3to8Pulse/Chi2NoComp" + SaveAppendix + "." + PicFormat));
+      }
+      if(templatemethod == 4){
+        c1->SaveAs(Form("Normal/Chi2NoComp" + SaveAppendix + "." + PicFormat));
+      }
+      if(templatemethod == 5){
+        c1->SaveAs(Form("OneTemplate/Chi2NoComp" + SaveAppendix + "." + PicFormat));
+      }
+      c1->Clear();
+
       delete leg2;
     }
 
@@ -618,8 +740,10 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
 
       OAhists->Clear();
       OAhists->Add(hYield_dt_chi2map_uncorr);
+      OAhists->Add(legSystem);
+      OAhists->Add(legTemplateYield);
 
-      c1 = makeCanvas(OAhists, 0, "notimethickhorizontallogylabel", 0, 0);
+      c1 = makeCanvas(OAhists, 0, "notimeThickHorizontalogy", 0, 0);
 
       // DrawLabelALICE(0.55, 0.9, 0.018, 40);
       c1->Update();
@@ -657,6 +781,8 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
 
       OAhists->Clear();
       OAhists->Add(h_y_min);
+      OAhists->Add(legSystem);
+      OAhists->Add(legTemplat);
 
       c1 = makeCanvas(OAhists, 0, "notimethickhorizontal", 0, 0);
 
@@ -697,6 +823,8 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
         OAhists->Add(fPulse);
         OAhists->Add(hConvInter);
         OAhists->Add(leg);
+        OAhists->Add(legSystem);
+        OAhists->Add(legTemplat);
 
         c1 = makeCanvas(OAhists, 0, "notimethickhorizontal", 0, 0);
         c1->Update();
@@ -711,7 +839,7 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
       SetHistogramProperties(h_x_min, "", "SF_{Signal}", 2, 1.4, 12.);
       SetHistogramProperties(h_y_min, "", "SF_{korr. Untergrund}", 4, 1.4, 12.);
 
-      TLegend* SFLegend = new TLegend(0.6,0.75,0.9,0.9);
+      TLegend* SFLegend = new TLegend(0.6,0.75,0.85,0.9);
       SFLegend->SetHeader("Skalierungsfaktor:");
       SFLegend->AddEntry(h_y_min, "korr. Untergrund", "p");
       SFLegend->AddEntry(h_x_min, "Signal", "p");
@@ -722,6 +850,8 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
       OAhists->Add(h_y_min);
       OAhists->Add(h_x_min);
       OAhists->Add(SFLegend);
+      OAhists->Add(legSystem);
+      OAhists->Add(legTemplat);
       OAratios->Clear();
       OAratios->Add(SFratio);
 
@@ -745,6 +875,37 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
       }
       c1->Clear();
 
+      h_y_min->SetYTitle("Skalierungsfaktor");
+      h_y_min->SetXTitle("#it{p}_{T} (GeV/#it{c}^{2})");
+
+      OAhists->Clear();
+      OAhists->Add(h_y_min);
+      OAhists->Add(h_x_min);
+      OAhists->Add(SFLegend);
+      OAhists->Add(legSystem);
+      OAhists->Add(legTemplatChi2);
+      OAratios->Clear();
+
+      c1 = makeCanvas(OAhists, 0, "notimeThickHorizontal", 0, 0);
+
+      c1->Update();
+      if(templatemethod == 2){
+        c1->SaveAs(Form("BetterBkgNN/SF" + SaveAppendix + "." + PicFormat));
+      }
+      if(templatemethod == 1){
+        c1->SaveAs(Form("BetterBkg3to8/SF" + SaveAppendix + "." + PicFormat));
+      }
+      if(templatemethod == 3){
+        c1->SaveAs(Form("BetterBkg3to8Pulse/SF" + SaveAppendix + "." + PicFormat));
+      }
+      if(templatemethod == 4){
+        c1->SaveAs(Form("Normal/SF" + SaveAppendix + "." + PicFormat));
+      }
+      if(templatemethod == 5){
+        c1->SaveAs(Form("OneTemplate/SF" + SaveAppendix + "." + PicFormat));
+      }
+      c1->Clear();
+
       SetHistogramProperties(h_x_min, "pt", "SF_{Signal}", 2, 1.4, 12.);
       SetHistogramProperties(h_y_min, "pt", "SF_{korr. Untergrund}", 4, 1.4, 12.);
 
@@ -756,6 +917,7 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
       OAhists->Add(hEfficiency);
       OAhists->Add(hAcc);
       OAhists->Add(lCorrection);
+      OAhists->Add(legSystem);
 
       c1 = makeCanvas(OAhists, 0, "notimethickhorizontal", 0, 0);
       c1->Update();

@@ -120,19 +120,31 @@ TH1D* BackgroundAdding(int i){
   TFile* CorrBkgFile    = SafelyOpenRootfile("./CorrBkgFileNoRebin.root");
 
   // setting j and k right depending on the binning
-  const int b = 6;
-  int j = i-(b/2);
-  int k = i+(b/2);
-  if(k >= numberbins){
-    k = numberbins-1;
+  const double b = 4.;
+  int j = i;
+  int k = i+1;
+  while(fBinsPi013TeVEMCPt[k]-fBinsPi013TeVEMCPt[j] < b){
+    if(j < 2){
+      j = 1;
+      k++;
+    }
+    else if(k >= numberbins-2){
+      k = numberbins-2;
+      j--;
+    }
+    else{
+      k++;
+      j--;
+    }
   }
-  if(j <= 0){
-    j = 1;
+  if(i >= 38){
+    k = 38;
+    j = 37;
   }
+  std::cout << fBinsPi013TeVEMCPt[k]-fBinsPi013TeVEMCPt[j] << '\n';
+  std::cout << "k and j are " << k <<  "and" << j << '\n';
   int scalefactor = k-j;
-  if(i == 1 || i == numberbins-1){
-    scalefactor = 3;
-  }
+
   TH1D* (aBackStackup[k-j]);
   TFile* BackFile;
   TH1D* hBack           = NULL;
@@ -146,9 +158,9 @@ TH1D* BackgroundAdding(int i){
   hBack->Rebin(fBinsPi013TeVEMCPtRebin[i]);
 
   // comment *out* if you want fit without original bin!
-  // list->Add(hBack);
+  list->Add(hBack);
   // comment *in* if you want fit without original bin!
-  scalefactor -= 1;
+  // scalefactor -= 1;
 
   for(int m = k; m >= j; m--){
     if(m != i){
@@ -170,17 +182,22 @@ TH1D* BackgroundAdding(int i){
       fit->SetLineColor(kRed);
       fit->SetLineWidth(3);
       hBack->Fit("fit", "QM0P","", 0.1, 0.3);
+      // std::cout << "after fit" << '\n';
       aBackStackup[k-m]->Scale(fit->GetParameter(0));
 
       aBackStackup[k-m]->SetMarkerStyle(1);
       list->Add(aBackStackup[k-m]);
+      // std::cout << "before delete" << '\n';
       delete fit;
+      // std::cout << "after delete of fit" << '\n';
     }
     else{
       continue;
     }
   }
+  // std::cout << "outside the loop" << '\n';
 
+  // std::cout << "before upper and lower ranges" << '\n';
   TH1D* hUpperBkg     = (TH1D*) hBack->Clone("hUpperBkg");
   TH1D* hLowerBkg     = (TH1D*) hBack->Clone("hLowerBkg");
   TH1D* hPilledUpBack = (TH1D*) hBack->Clone("hPilledUpBack");
@@ -197,6 +214,7 @@ TH1D* BackgroundAdding(int i){
         }
       }
     }
+    // std::cout << "in between upper and lower ranges" << '\n';
     hUpperBkg->SetBinContent(o,tempup);
     hUpperBkg->SetBinError(o, 0.0);
     hLowerBkg->SetBinContent(o, templow);
@@ -204,17 +222,20 @@ TH1D* BackgroundAdding(int i){
     tempup = -1.e10;
     templow = 1.e10;
   }
+  // std::cout << "after upper and lower ranges" << '\n';
 
+  // std::cout << "before merge" << '\n';
   hPilledUpBack->Reset();
   hPilledUpBack->Merge(list);
   hPilledUpBack->Scale(1./(Double_t)scalefactor);
+
+  // std::cout << "after merge" << '\n';
 
   hRatio      = (TH1D*) hBack->Clone();
   hRatio->Divide(hBack, hPilledUpBack, 1, 1);
 
   fPol0        = new TF1(Form("fPol0_bin%02d",i), "[0]", 0.0, 0.3);
-  fPol0->SetParLimits(0, 0.0, 5.0);
-  fPol0->SetParLimits(0, 0., 100.);
+  fPol0->SetParLimits(0, -1., 100.);
 
   for (int t = 1; t < hRatio->GetNbinsX(); t++) {
     if(hRatio->GetBinError(t) > 40 || fabs(hRatio->GetBinContent(t)) > 40){
@@ -224,13 +245,14 @@ TH1D* BackgroundAdding(int i){
   }
   hRatio->Fit(fPol0,"QM0P", "",  0.1, 0.2);
 
-
+  // std::cout << "before making outputfile" << '\n';
   if(i == 1){
     BackFile      = new TFile("BackFileNN.root", "RECREATE");
   }
   else{
     BackFile      = new TFile("BackFileNN.root", "UPDATE");
   }
+  // std::cout << "after making outputfile" << '\n';
 
   // hPilledUpBack->Write(Form("hPilledUpBack_Bin%02d_with%02d_bins", i, b));
   // hUpperBkg->Write(Form("hUpperBkg_Bin%02d_with%02d_bins", i, b));
