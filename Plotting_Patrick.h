@@ -129,6 +129,33 @@ void PlotArray(TObjArray *arraytoplot, const char *controlstring ,Short_t *color
           hist->SetMarkerStyle(20);
           hist->SetMarkerSize(1.5);
         }
+      }else if(control.Contains("Systematics")||control.Contains("systematics")){
+        cout<<"|         - Systematics"<<endl;
+        if(arraytoplot->At(hh)->InheritsFrom("TH1")){
+          if(hh == 0) {
+            hist->SetFillColorAlpha(GetNiceColor(1), 0.50);
+            hist->SetFillStyle(1001);
+            hist->SetMarkerStyle(1);
+            hist->SetMarkerSize(1);
+            hist->SetMarkerColor(GetNiceColor(1));
+            hist->SetLineColor(GetNiceColor(1));
+            hist->DrawCopy("E2");
+          }
+          // else if(hh%2 == 0) {
+          //   hist->SetFillColor(GetNiceColor(hh/2));
+          //   hist->SetFillStyle(3003);
+          //   hist->SetMarkerColor(GetNiceColor(hh/2));
+          //   hist->SetLineColor(GetNiceColor(hh/2));
+          //   hist->DrawCopy("SAME E3");
+          // }
+          else{
+            hist->SetMarkerColor(GetNiceColor(hh));
+            hist->SetMarkerStyle(20);
+            hist->SetMarkerSize(1);
+            hist->SetLineColor(GetNiceColor(hh));
+            hist->DrawCopy("SAME PE1");
+          }
+        }
       }else if(control.Contains("Hist")||control.Contains("hist")){
         cout<<"|         - Lines No errors"<<endl;
         if(markerArray){ hist->SetLineStyle(1);}
@@ -146,6 +173,13 @@ void PlotArray(TObjArray *arraytoplot, const char *controlstring ,Short_t *color
           hist->DrawCopy("SAME EP");
           hist->SetMarkerStyle(20);
           hist->SetMarkerSize(1.5);
+        }
+      }else if(control.Contains("Points")||control.Contains("points")){
+        if(hh==0) {
+          hist->DrawCopy("EP");
+        }
+        else{
+          hist->DrawCopy("SAME EP");
         }
       }else if(markerArray[hh]==999){
         hist->SetFillColor(kGray);
@@ -176,7 +210,7 @@ void PlotArray(TObjArray *arraytoplot, const char *controlstring ,Short_t *color
       hist2->GetZaxis()->SetTitleSize(titleSize*relativeTextSize);
       hist2->GetZaxis()->SetLabelFont(lableFont);
       hist2->GetZaxis()->SetTitleFont(titleFont);
-      hist2->GetZaxis()->SetTitleOffset(titleOffsetY*1.5);
+      hist2->GetZaxis()->SetTitleOffset(titleOffsetY*1.8);
       hist2->SetTitle("");
 
       hist2->SetAxisRange(xMin,xMax,"X");
@@ -437,9 +471,9 @@ TCanvas *makeCanvas(TObjArray *histArray, TObjArray *ratioArray,const char *cont
     if(ratioArray){
       textSizeFactor =0.5 * 12000;
       leftMargin=0.13;
-      rightMargin = leftMargin;
-      topMargin = leftMargin/(padFraction)-0.05;
-      lowMargin = leftMargin/(padFraction)+0.05;
+      rightMargin = leftMargin-0.08;
+      topMargin = leftMargin/(padFraction)-0.18;
+      lowMargin = leftMargin/(padFraction);
       titleOffsetY=1.4;
       titleOffsetX=2.8;
     }
@@ -474,9 +508,9 @@ TCanvas *makeCanvas(TObjArray *histArray, TObjArray *ratioArray,const char *cont
       TString yTitle(hist->GetYaxis()->GetTitle());
 
       if(yTitle.Contains("#frac")){
-        titleOffsetY=1.1;
+        titleOffsetY=1.25;
         titleOffsetX=1.1;
-        leftMargin = 0.12*1.414213562;
+        leftMargin = 0.11*1.414213562;
         rightMargin = 0.05;
         topMargin=0.06;
         lowMargin=0.12;

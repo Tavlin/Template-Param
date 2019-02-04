@@ -75,6 +75,8 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
     TLegend* legTemplat               = NULL;
     TLegend* legTemplatChi2           = NULL;
     TLegend* legTemplateYield         = NULL;
+    TLegend* legTemplateRatio         = NULL;
+    TLegend* legpTRatio               = NULL;
 
     Double_t line_y = 0;
 
@@ -89,28 +91,28 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
       TLegend which displays most important info as header!
      */
     TLegend* legSystem = new TLegend(0.1, 0.94, 0.7, 0.98);
-    legSystem->AddEntry((TObject*) 0x0, "ALICE, pp bei #sqrt{#it{s}} = 13 TeV, #pi^{0} #rightarrow #gamma#gamma mit EMCal", "");
+    legSystem->AddEntry((TObject*) 0, "ALICE, pp bei #sqrt{#it{s}} = 13 TeV, #pi^{0} #rightarrow #gamma#gamma mit EMCal", "");
 
     TLegend* legSystemChi2Map = new TLegend(0.03, 0.94, 0.6, 0.98);
-    legSystemChi2Map->AddEntry((TObject*) 0x0, "ALICE, pp bei #sqrt{#it{s}} = 13 TeV, #pi^{0} #rightarrow #gamma#gamma mit EMCal", "");
+    legSystemChi2Map->AddEntry((TObject*) 0, "ALICE, pp bei #sqrt{#it{s}} = 13 TeV, #pi^{0} #rightarrow #gamma#gamma mit EMCal", "");
 
     legTemplat = new TLegend(0.09, 0.6, 0.38, 0.8);
-    legTemplat->AddEntry((TObject*) 0x0, "Templates:", "");
-    legTemplat->AddEntry((TObject*) 0x0, "PYTHIA 8", "");
-    legTemplat->AddEntry((TObject*) 0x0, "Monash 2013", "");
-    legTemplat->AddEntry((TObject*) 0x0, "GEANT 3", "");
+    legTemplat->AddEntry((TObject*) 0, "Templates:", "");
+    legTemplat->AddEntry((TObject*) 0, "PYTHIA 8", "");
+    legTemplat->AddEntry((TObject*) 0, "Monash 2013", "");
+    legTemplat->AddEntry((TObject*) 0, "GEANT 3", "");
 
     legTemplatChi2 = new TLegend(0.2, 0.6, 0.6, 0.8);
-    legTemplatChi2->AddEntry((TObject*) 0x0, "Templates:", "");
-    legTemplatChi2->AddEntry((TObject*) 0x0, "PYTHIA 8", "");
-    legTemplatChi2->AddEntry((TObject*) 0x0, "Monash 2013", "");
-    legTemplatChi2->AddEntry((TObject*) 0x0, "GEANT 3", "");
+    legTemplatChi2->AddEntry((TObject*) 0, "Templates:", "");
+    legTemplatChi2->AddEntry((TObject*) 0, "PYTHIA 8", "");
+    legTemplatChi2->AddEntry((TObject*) 0, "Monash 2013", "");
+    legTemplatChi2->AddEntry((TObject*) 0, "GEANT 3", "");
 
     legTemplateYield = new TLegend(0.5, 0.6, 0.8, 0.8);
-    legTemplateYield->AddEntry((TObject*) 0x0, "Templates:", "");
-    legTemplateYield->AddEntry((TObject*) 0x0, "PYTHIA 8", "");
-    legTemplateYield->AddEntry((TObject*) 0x0, "Monash 2013", "");
-    legTemplateYield->AddEntry((TObject*) 0x0, "GEANT 3", "");
+    legTemplateYield->AddEntry((TObject*) 0, "Templates:", "");
+    legTemplateYield->AddEntry((TObject*) 0, "PYTHIA 8", "");
+    legTemplateYield->AddEntry((TObject*) 0, "Monash 2013", "");
+    legTemplateYield->AddEntry((TObject*) 0, "GEANT 3", "");
 
     CorrBkgFile       = SafelyOpenRootfile("CorrBkgFileNoRebin.root");
     if (CorrBkgFile->IsOpen() ) printf("CorrBkgFile opened successfully\n");
@@ -298,7 +300,7 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
          */
         str = Form("%.1lf #leq #it{p}_{T} /(GeV/#it{c}) < %.1lf", fBinsPi013TeVEMCPt[k], fBinsPi013TeVEMCPt[k+1]);
         legpT = new TLegend(0.09, 0.8, 0.38, 0.86);
-        legpT->AddEntry((TObject*) 0x0, str, "");
+        legpT->AddEntry((TObject*) 0, str, "");
 
         /**
          * Getting the two histograms which show the Ratio of the corr. bkg Template
@@ -379,6 +381,15 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
           legCorrBkgComp->AddEntry(hCorrBack, "korr. Untergrund (kombiniert)", "p");
           legCorrBkgComp->AddEntry(hCorrBackNoRebin, "korr. Untergrund (einzeln)", "p");
 
+          legTemplateRatio = new TLegend(0.5, 0.5, 0.8, 0.7);
+          legTemplateRatio->AddEntry((TObject*) 0, "Templates:", "");
+          legTemplateRatio->AddEntry((TObject*) 0, "PYTHIA 8", "");
+          legTemplateRatio->AddEntry((TObject*) 0, "Monash 2013", "");
+          legTemplateRatio->AddEntry((TObject*) 0, "GEANT 3", "");
+
+          legpTRatio = new TLegend(0.5, 0.7, 0.8, 0.76);
+          legpTRatio->AddEntry((TObject*) 0, str, "");
+
           if(hCorrBack->GetMaximum() > hCorrBackNoRebin->GetMaximum()){
             OAhists->Add(hCorrBack);
             OAhists->Add(hCorrBackNoRebin);
@@ -387,10 +398,10 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
             OAhists->Add(hCorrBackNoRebin);
             OAhists->Add(hCorrBack);
           }
-          OAhists->Add(legSystem);
+          OAhists->Add(legSystemChi2Map);
           OAhists->Add(legCorrBkgComp);
-          OAhists->Add(legpT);
-          OAhists->Add(legTemplat);
+          OAhists->Add(legpTRatio);
+          OAhists->Add(legTemplateRatio);
 
           OAratios->Add(hRatio_Bkg);
           OAratios->Add(fPol0);
@@ -504,8 +515,8 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
 
           TLegend* lParamResultParts = new TLegend(0.5,0.42,0.9,0.8);
           lParamResultParts->   AddEntry(hData, "Signal", "p");
-          lParamResultParts->   AddEntry((TObject*) 0x0, "+ korr. Untergrund:", "");
-          lParamResultParts->   AddEntry((TObject*) 0x0, "Template:", "");
+          lParamResultParts->   AddEntry((TObject*) 0, "+ korr. Untergrund:", "");
+          lParamResultParts->   AddEntry((TObject*) 0, "Template:", "");
           lParamResultParts->   AddEntry(hSignal_scaled,   "Signal",      "p");
           lParamResultParts->   AddEntry(hCorrBack_scaled, "korr. Untergrund.",  "p");
 
@@ -552,8 +563,8 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
           c1->Clear();
           TLegend* lParamResult = new TLegend(0.63,0.45,0.8,0.8);
           lParamResult->AddEntry(hData, "Signal", "p");
-          lParamResult->AddEntry((TObject*) 0x0, "+ korr. Untegrund:", "");
-          lParamResult->AddEntry((TObject*) 0x0, "Parametrisierung:", "");
+          lParamResult->AddEntry((TObject*) 0, "+ korr. Untegrund:", "");
+          lParamResult->AddEntry((TObject*) 0, "Parametrisierung:", "");
           lParamResult->AddEntry(hAdded, "Templates", "p");
           lParamResult->AddEntry(paramrange, "Bereich",  "l");
 
@@ -628,8 +639,8 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
 
             TLegend* lTemplates = new TLegend(0.63,0.45,0.8,0.8);
             lTemplates->AddEntry(hInvMass_MC, "MC-Signal", "p");
-            lTemplates->AddEntry((TObject*) 0x0, "+ korr. Untegrund", "");
-            lTemplates->AddEntry((TObject*) 0x0, "Template:" , "");
+            lTemplates->AddEntry((TObject*) 0, "+ korr. Untegrund", "");
+            lTemplates->AddEntry((TObject*) 0, "Template:" , "");
             lTemplates->AddEntry(hSignal, "Signal", "p");
             lTemplates->AddEntry(hCorrBack, "korr. Untergrund ", "p");
 

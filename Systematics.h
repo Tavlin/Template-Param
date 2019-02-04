@@ -92,8 +92,10 @@ void systematics(int templatemethod, TFile* OutputFile){
     hCorrYield_SingleBkg          = (TH1D*) SingleBkgFile-> Get("hYield_dt_chi2map_corrected");
 
     hCorrYield_NNMethod->Add(hCorrYield_NNMethod, hCorrYieldME, 1, -1);
+    hCorrYield_NNMethod->Divide(hCorrYield_NNMethod, hCorrYieldME, 1, 1, "B");
 
     hCorrYield_SingleBkg->Add(hCorrYield_SingleBkg, hCorrYieldME, 1, -1);
+    hCorrYield_SingleBkg->Divide(hCorrYield_SingleBkg, hCorrYieldME, 1, 1, "B");
   }
 
   /**
@@ -147,6 +149,8 @@ void systematics(int templatemethod, TFile* OutputFile){
 
   hCorrYield_HigherInt                      = (TH1D*) OutputFileBetterBkg3to8_HigherInt->Get("hYield_dt_chi2map_corrected");
   hCorrYield_HigherInt->Add(hCorrYield_HigherInt, hCorrYieldME, 1, -1);
+  hCorrYield_HigherInt->Divide(hCorrYield_HigherInt, hCorrYieldME, 1, 1, "B");
+
 
 
   TFile* OutputFileBetterBkg3to8_SmallInt   = SafelyOpenRootfile("OutputFileBetterBkg3to8_SmallInt.root");
@@ -154,6 +158,8 @@ void systematics(int templatemethod, TFile* OutputFile){
 
   hCorrYield_SmallInt                       = (TH1D*) OutputFileBetterBkg3to8_SmallInt->Get("hYield_dt_chi2map_corrected");
   hCorrYield_SmallInt->Add(hCorrYield_SmallInt, hCorrYieldME, 1, -1);
+  hCorrYield_SmallInt->Divide(hCorrYield_SmallInt, hCorrYieldME, 1, 1, "B");
+
 
   //////////////////////////////////////////////////////////////////////////////
   // 2nd the param range variation:
@@ -162,12 +168,16 @@ void systematics(int templatemethod, TFile* OutputFile){
 
   hCorrYield_HigherFit                      = (TH1D*) OutputFileBetterBkg3to8_HigherFit->Get("hYield_dt_chi2map_corrected");
   hCorrYield_HigherFit->Add(hCorrYield_HigherFit, hCorrYieldME, 1, -1);
+  hCorrYield_HigherFit->Divide(hCorrYield_HigherFit, hCorrYieldME, 1, 1, "B");
+
 
   TFile* OutputFileBetterBkg3to8_SmallFit   = SafelyOpenRootfile("OutputFileBetterBkg3to8_SmallFit.root");
   if (OutputFileBetterBkg3to8_SmallFit->      IsOpen() ) printf("OutputFileBetterBkg3to8_SmallFit successfully\n");
 
   hCorrYield_SmallFit                       = (TH1D*) OutputFileBetterBkg3to8_SmallFit->Get("hYield_dt_chi2map_corrected");
   hCorrYield_SmallFit->Add(hCorrYield_SmallFit, hCorrYieldME, 1, -1);
+  hCorrYield_SmallFit->Divide(hCorrYield_SmallFit, hCorrYieldME, 1, 1, "B");
+
 
 
 
@@ -179,12 +189,16 @@ void systematics(int templatemethod, TFile* OutputFile){
 
   hCorrYield_LowerRebinning                       = (TH1D*) OutputFileBetterBkg3to8_LowerRebinning->Get("hYield_dt_chi2map_corrected");
   hCorrYield_LowerRebinning->Add(hCorrYield_LowerRebinning, hCorrYieldME, 1, -1);
+  hCorrYield_LowerRebinning->Divide(hCorrYield_LowerRebinning, hCorrYieldME, 1, 1, "B");
+
 
   TFile* OutputFileBetterBkg3to8_HigherRebinning  = SafelyOpenRootfile("OutputFileBetterBkg3to8_HigherRebinning.root");
   if (OutputFileBetterBkg3to8_HigherRebinning->   IsOpen() ) printf("OutputFileBetterBkg3to8_HigherRebinning opened successfully\n");
 
   hCorrYield_HigherRebinning                      = (TH1D*) OutputFileBetterBkg3to8_HigherRebinning->Get("hYield_dt_chi2map_corrected");
   hCorrYield_HigherRebinning->Add(hCorrYield_HigherRebinning, hCorrYieldME, 1, -1);
+  hCorrYield_HigherRebinning->Divide(hCorrYield_HigherRebinning, hCorrYieldME, 1, 1, "B");
+
 
 
   if(templatemethod == 1){
@@ -194,13 +208,14 @@ void systematics(int templatemethod, TFile* OutputFile){
       temp = 0;
       // check for biggest diff. in param vari
       // if(fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_HigherFit->GetBinContent(i)) > temp){
-      temp += fabs(hCorrYield_HigherFit->GetBinContent(i));
+      temp += pow(hCorrYield_HigherFit->GetBinContent(i), 2.);
       // }
       // if(fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_SmallFit->GetBinContent(i)) > temp){
-      temp += fabs(hCorrYield_SmallFit->GetBinContent(i));
+      temp += pow(hCorrYield_SmallFit->GetBinContent(i), 2.);
       // }
       // pushing biggest difference back
       temp = temp/2.;
+      temp = sqrt(temp);
       vParamSys.push_back(temp);
     }
 
@@ -210,12 +225,13 @@ void systematics(int templatemethod, TFile* OutputFile){
 
       // chech for biggest diff. in count vari
       // if(fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_HigherInt->GetBinContent(i)) > temp){
-      temp += fabs(hCorrYield_HigherInt->GetBinContent(i));
+      temp += pow(hCorrYield_HigherInt->GetBinContent(i), 2.);
       // }
       // if(fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_SmallInt->GetBinContent(i)) > temp){
-      temp += fabs(hCorrYield_SmallInt->GetBinContent(i));
+      temp += pow(hCorrYield_SmallInt->GetBinContent(i), 2.);
       // }
       temp = temp/2.;
+      temp = sqrt(temp);
       // pushing biggest difference back
       vCountSys.push_back(temp);
     }
@@ -225,13 +241,14 @@ void systematics(int templatemethod, TFile* OutputFile){
 
       // chech for biggest diff. in BGGit vari
       // if(fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_LowerRebinning->GetBinContent(i)) > temp){
-      temp += fabs(hCorrYield_LowerRebinning->GetBinContent(i));
+      temp += pow(hCorrYield_LowerRebinning->GetBinContent(i), 2.);
       // }
       // if(fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_HigherRebinning->GetBinContent(i)) > temp){
-      temp += fabs(hCorrYield_HigherRebinning->GetBinContent(i));
+      temp += pow(hCorrYield_HigherRebinning->GetBinContent(i), 2.);
       // }
 
       temp = temp/2.;
+      temp = sqrt(temp);
       // pushing biggest difference back
       vBGFitSys.push_back(temp);
     }
@@ -243,13 +260,14 @@ void systematics(int templatemethod, TFile* OutputFile){
 
       // chech for biggest diff. in BGGit vari
       // if(fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_NNMethod->GetBinContent(i)) > temp){
-      temp += fabs(hCorrYield_NNMethod->GetBinContent(i));
+      temp += pow(hCorrYield_NNMethod->GetBinContent(i), 2.);
       // }
       // if(fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_SingleBkg->GetBinContent(i)) > temp){
-      temp += fabs(hCorrYield_SingleBkg->GetBinContent(i));
+      temp += pow(hCorrYield_SingleBkg->GetBinContent(i), 2.);
       // }
 
       temp = temp/2.;
+      temp = sqrt(temp);
       // pushing biggest difference back
       vCorrBkgSys.push_back(temp);
     }
@@ -300,6 +318,15 @@ void systematics(int templatemethod, TFile* OutputFile){
       hCorrYield_CorrBkgSysError->SetBinContent(k, hCorrYield_CorrBkgSysError->GetBinError(k)/(Double_t)hCorrYield_CorrBkgSysError->GetBinContent(k)*100.);
       hCorrYield_CorrBkgSysError->SetBinError(k,0.);
 
+      hCorrYield_HigherInt->SetBinError(k, 0.001);
+      hCorrYield_SmallInt->SetBinError(k, 0.001);
+      hCorrYield_HigherFit->SetBinError(k, 0.001);
+      hCorrYield_SmallFit->SetBinError(k, 0.001);
+      hCorrYield_LowerRebinning->SetBinError(k, 0.001);
+      hCorrYield_HigherRebinning->SetBinError(k, 0.001);
+      hCorrYield_NNMethod->SetBinError(k, 0.001);
+      hCorrYield_SingleBkg->SetBinError(k, 0.001);
+
     }
 
     hCorrYield_SyserrorRatio            = (TH1D*) hCorrYield_SysError->Clone("hCorrYield_SyserrorRatio");
@@ -313,6 +340,15 @@ void systematics(int templatemethod, TFile* OutputFile){
   hCorrectedYieldNormEff_StatError->Write("hCorrectedYieldNormEff_StatError");
   hCorrectedYieldNormEff_Ratio->    Write("hCorrectedYieldNormEff_Ratio");
   if(templatemethod == 1){
+    hCorrYield_HigherInt->Scale(100);
+    hCorrYield_SmallInt->Scale(100);
+    hCorrYield_HigherFit->Scale(100);
+    hCorrYield_SmallFit->Scale(100);
+    hCorrYield_LowerRebinning->Scale(100);
+    hCorrYield_HigherRebinning->Scale(100);
+    hCorrYield_NNMethod->Scale(100);
+    hCorrYield_SingleBkg->Scale(100);
+
     hCorrYield_SysError->             Write("hCorrYield_SysError");
     hCorrYield_IntSysError->          Write("hCorrYield_IntSysError");
     hCorrYield_FitSysErrro->          Write("hCorrYield_FitSysErrro");
