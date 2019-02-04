@@ -398,7 +398,7 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
             OAhists->Add(hCorrBackNoRebin);
             OAhists->Add(hCorrBack);
           }
-          OAhists->Add(legSystemChi2Map);
+          OAhists->Add(legSystem);
           OAhists->Add(legCorrBkgComp);
           OAhists->Add(legpTRatio);
           OAhists->Add(legTemplateRatio);
