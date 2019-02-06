@@ -40,6 +40,8 @@ void systematics(int templatemethod, TFile* OutputFile){
   TH1D* hPi0_gen                          = NULL;
   TH1D* hCorrYield_HigherInt              = NULL;
   TH1D* hCorrYield_SmallInt               = NULL;
+  TH1D* hCorrYield_LeftBkgSmall           = NULL;
+  TH1D* hCorrYield_LeftBkgWide            = NULL;
   TH1D* hCorrYield_IntSysError            = NULL;
   TH1D* hCorrYield_HigherFit              = NULL;
   TH1D* hCorrYield_SmallFit               = NULL;
@@ -272,11 +274,13 @@ void systematics(int templatemethod, TFile* OutputFile){
       vCorrBkgSys.push_back(temp);
     }
 
-
+    hCorrYield_RelativSyserror            = (TH1D*) hCorrYield_SysError->Clone("hCorrYield_RelativSyserror");
     for (int i = 2; i < numberbins; i++) {
       temp = sqrt(1./4.*(pow(vParamSys[i-2], 2.) + pow(vCountSys[i-2], 2.) + pow(vBGFitSys[i-2], 2.)+ pow(vCorrBkgSys[i-2], 2.)));
       vFinalSys.push_back(temp);
-      hCorrYield_SysError->         SetBinError(i, vFinalSys[i-2]);
+      hCorrYield_SysError->         SetBinError(i, vFinalSys[i-2]*hCorrYield_SysError->GetBinContent(i));
+      hCorrYield_RelativSyserror->  SetBinContent(i, vFinalSys[i-2]*100);
+      hCorrYield_RelativSyserror->  SetBinError(i, 0.001);
       hCorrYield_IntSysError->      SetBinError(i, vCountSys[i-2]);
       hCorrYield_FitSysErrro->      SetBinError(i, vParamSys[i-2]);
       hCorrYield_RebinningSysError->SetBinError(i, vBGFitSys[i-2]);
@@ -285,7 +289,7 @@ void systematics(int templatemethod, TFile* OutputFile){
     }
 
 
-    hCorrYield_RelativSyserror            = (TH1D*) hCorrYield_SysError->Clone("hCorrYield_RelativSyserror");
+    // hCorrYield_RelativSyserror            = (TH1D*) hCorrYield_SysError->Clone("hCorrYield_RelativSyserror");
     hCorrYield_RelativSyserror->SetXTitle(pt_str);
     hCorrYield_RelativSyserror->SetYTitle("relative sys. Unsicherheit (%)");
 
@@ -303,8 +307,8 @@ void systematics(int templatemethod, TFile* OutputFile){
 
 
     for(int k = 2; k < numberbins; k++){
-      hCorrYield_RelativSyserror->SetBinContent(k, hCorrYield_RelativSyserror->GetBinError(k)/(Double_t)hCorrYield_RelativSyserror->GetBinContent(k)*100.);
-      hCorrYield_RelativSyserror->SetBinError(k,0.);
+      // hCorrYield_RelativSyserror->SetBinContent(k, hCorrYield_RelativSyserror->GetBinError(k)*100.);
+      // hCorrYield_RelativSyserror->SetBinError(k,0.01);
 
       hCorrYield_IntSysError->SetBinContent(k, hCorrYield_IntSysError->GetBinError(k)/(Double_t)hCorrYield_IntSysError->GetBinContent(k)*100.);
       hCorrYield_IntSysError->SetBinError(k,0.);

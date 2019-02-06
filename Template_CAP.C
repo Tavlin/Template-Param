@@ -395,7 +395,7 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
         OutputFile      = new TFile("OutputFileBetterBkgNN.root", "RECREATE");
       }
       else if(templatemethod == 1){
-        OutputFile      = new TFile("OutputFileBetterBkg3to8.root", "RECREATE");
+        OutputFile      = new TFile("OutputFileBetterBkg3to8_LeftBkgSmall.root", "RECREATE");
       }
       else if(templatemethod == 3){
         OutputFile      = new TFile("OutputFileBetterBkgPulse.root", "RECREATE");
@@ -417,7 +417,7 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
         OutputFile      = new TFile("OutputFileBetterBkgNN.root", "UPDATE");
       }
       else if(templatemethod == 1){
-        OutputFile      = new TFile("OutputFileBetterBkg3to8.root", "UPDATE");
+        OutputFile      = new TFile("OutputFileBetterBkg3to8_LeftBkgSmall.root", "UPDATE");
       }
       else if(templatemethod == 3){
         OutputFile      = new TFile("OutputFileBetterBkgPulse.root", "UPDATE");
@@ -477,7 +477,7 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
      * This is the value of our efficiency in the corresponding pT interval
      */
 
-    Int_t lowerEffirange = hPeak_MC->FindBin(lowercountrange[k]);
+    Int_t lowerEffirange = hPeak_MC->FindBin(lowercountrange/*[k]*/);
     Int_t upperEffirange = hPeak_MC->FindBin(uppercountrange);
     Double_t IntInRangeError  = 0;
     Double_t IntInRange       = hPeak_MC->IntegralAndError(lowerEffirange, upperEffirange, IntInRangeError);
@@ -529,7 +529,7 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
      * Then giving theses values into the uncorrected Yield histogram.
      */
     int_value = data_clone_for_int_dt_chi2map->IntegralAndError(
-      data_clone_for_int_dt_chi2map->FindBin(lowercountrange[k]),
+      data_clone_for_int_dt_chi2map->FindBin(lowercountrange/*[k]*/),
       data_clone_for_int_dt_chi2map->FindBin(uppercountrange),
       int_error
     );
@@ -546,7 +546,7 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
 
     hYieldMC->SetBinContent(
       k+1, hPeak_MC->Integral(
-        hPeak_MC->FindBin(lowercountrange[k]),
+        hPeak_MC->FindBin(lowercountrange/*[k]*/),
         hPeak_MC->FindBin(uppercountrange)
       )
     );
@@ -678,7 +678,7 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
     OutputFile      = new TFile("OutputFileBetterBkgNN.root", "UPDATE");
   }
   else if(templatemethod == 1){
-    OutputFile      = new TFile("OutputFileBetterBkg3to8.root", "UPDATE");
+    OutputFile      = new TFile("OutputFileBetterBkg3to8_LeftBkgSmall.root", "UPDATE");
   }
   else if(templatemethod == 3){
     OutputFile      = new TFile("OutputFileBetterBkgPulse.root", "UPDATE");
@@ -850,7 +850,7 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
   v_y_min.clear();
   vsigma_dt.clear();
 
-  systematics(templatemethod, OutputFile);
+  // systematics(templatemethod, OutputFile);
 
   /**
    * Closing all the files which were opend for the Yields.

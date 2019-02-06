@@ -95,9 +95,9 @@ void GetLowerBounds(void){
   for (int i = 1; i < numberbins; i++) {
     TH1D* hMinv_pT_ratio_projectionX = NULL;
     hMinv_pT_ratio_projectionX = (TH1D*) hMinv_pT_ratio->ProjectionX(Form("hMinv_pT_ratio_projectionX[%02d,%02d]", i, i+1), i, i+1);
-    Int_t lowerbinnumber = hMinv_pT_ratio_projectionX->FindFirstBinAbove(8.) + 5;
+    Int_t lowerbinnumber = hMinv_pT_ratio_projectionX->FindFirstBinAbove(0.0);
 
-    std::cout << "lower bin = " << hMinv_pT_ratio_projectionX->GetXaxis()->GetBinCenter(lowerbinnumber)  << '\n';
+    std::cout << "bin " << i << " minv_min = " << hMinv_pT_ratio_projectionX->GetXaxis()->GetBinCenter(lowerbinnumber)  << '\n';
   }
 
   OACFile->Close();

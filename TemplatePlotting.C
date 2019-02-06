@@ -201,7 +201,7 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
      * @param [name] [description]
      */
     h_y_min                           = (TH1D*)OutputFile->Get("h_y_min");
-    SetHistogramProperties(h_y_min, "pt", "SF_{korr. Untergrund}", 4, 1.4, 12.);
+    SetHistogramProperties(h_y_min, "pt", "SF_{korr. Untergrund}", 8, 1.4, 12.);
 
 
     hEfficiency                       = (TH1D*) OutputFile->Get("hEfficiency");
@@ -381,13 +381,13 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
           legCorrBkgComp->AddEntry(hCorrBack, "korr. Untergrund (kombiniert)", "p");
           legCorrBkgComp->AddEntry(hCorrBackNoRebin, "korr. Untergrund (einzeln)", "p");
 
-          legTemplateRatio = new TLegend(0.5, 0.5, 0.8, 0.7);
+          legTemplateRatio = new TLegend(0.7, 0.52, 0.85, 0.76);
           legTemplateRatio->AddEntry((TObject*) 0, "Templates:", "");
           legTemplateRatio->AddEntry((TObject*) 0, "PYTHIA 8", "");
           legTemplateRatio->AddEntry((TObject*) 0, "Monash 2013", "");
           legTemplateRatio->AddEntry((TObject*) 0, "GEANT 3", "");
 
-          legpTRatio = new TLegend(0.5, 0.7, 0.8, 0.76);
+          legpTRatio = new TLegend(0.55, 0.8, 0.85, 0.86);
           legpTRatio->AddEntry((TObject*) 0, str, "");
 
           if(hCorrBack->GetMaximum() > hCorrBackNoRebin->GetMaximum()){
@@ -522,7 +522,7 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
 
 
           double line_y = gPad->GetUymax()*0.995;
-          TLine* paramrange = new TLine(lowerparamrange[k-1], line_y, upperparamrange, line_y);
+          TLine* paramrange = new TLine(lowerparamrange/*[k-1]*/, line_y, upperparamrange, line_y);
           paramrange->SetLineColor(kAzure+10);
           paramrange->SetLineWidth(7);
 

@@ -22,7 +22,7 @@ DIR=${PWD##*/} # the directery where I am currently to make things a bit more
 
 ## changed loop from 1-5 to 2-5 since! needs to be changed back!
 
-# for i in {1..5..1}
+# for i in {5..1..-1}
 #   do
 #
 #     echo ""
@@ -31,24 +31,25 @@ DIR=${PWD##*/} # the directery where I am currently to make things a bit more
 #     time root -l -q -b Template_CAP.C++\(\"$DIR\",$i,\"$c\",\"$d\",\"$e\",\"$f\",\"$g\",\"$h\",\"$x\",\"$y\"\)
 #   done
 
-# time root -l -q -b Template_CAP.C++\(\"$DIR\",1,\"$c\",\"$d\",\"$e\",\"$f\",\"$g\",\"$h\",\"$x\",\"$y\"\)
+time root -l -q -b Template_CAP.C++\(\"$DIR\",1,\"$c\",\"$d\",\"$e\",\"$f\",\"$g\",\"$h\",\"$x\",\"$y\"\)
 
-rm -r BetterBkgNN
-mkdir BetterBkgNN
-rm -r BetterBkg3to8
-mkdir BetterBkg3to8
-rm -r BetterBkg3to8Pulse
-mkdir BetterBkg3to8Pulse
-rm -r Normal
-mkdir Normal
-rm -r OneTemplate
-mkdir OneTemplate
-
-time root -l -q -b TemplatePlotting.C++\(\"$a\",\"$b\"\,\"$e\",\"$SaveAppendix\"\)
-
-rm -r Yields
-mkdir Yields
-time root -l -q -b Yields.C++\(\"$b\",\"$SaveAppendix\"\)
+# rm -r BetterBkgNN
+# mkdir BetterBkgNN
+# rm -r BetterBkg3to8
+# mkdir BetterBkg3to8
+# rm -r BetterBkg3to8Pulse
+# mkdir BetterBkg3to8Pulse
+# rm -r Normal
+# mkdir Normal
+# rm -r OneTemplate
+# mkdir OneTemplate
+#
+# time root -l -q -b TemplatePlotting.C++\(\"$a\",\"$b\"\,\"$e\",\"$SaveAppendix\"\)
+#
+# rm -r Yields
+# mkdir Yields
+# time root -l -q -b Yields.C++\(\"$b\",\"$SaveAppendix\"\)
+# time root -l -q -b YieldPlotting.C++\(\"$a\",\"$b\"\,\"$e\",\"$SaveAppendix\"\)
 
 
 # rm -r Untergrund

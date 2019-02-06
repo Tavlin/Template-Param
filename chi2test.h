@@ -23,7 +23,7 @@ Double_t Chi2Calc(TH1D* h1, TH1D* h2, TH1D* h3, Double_t &ndf, Double_t a,
                        Double_t b, int templatemethod, int binnumber, Double_t fPulse_eval, Double_t sigma_cons){
   Double_t chi2 = 0;
   Double_t temp_error = 0;
-  Int_t lowerfitrange = h3->FindBin(lowerparamrange[binnumber-1]);
+  Int_t lowerfitrange = h3->FindBin(lowerparamrange/*[binnumber-1]*/);
   Int_t upperfitrange = h3->FindBin(upperparamrange);
 
 
@@ -69,7 +69,7 @@ Double_t Chi2Calc1D(TH1D* h1, TH1D* h3, Double_t &ndf, Double_t a,
 
   Double_t chi2 = 0;
   Double_t temp_error = 0;
-  Int_t lowerfitrange = h3->FindBin(lowerparamrange[binnumber-1]);
+  Int_t lowerfitrange = h3->FindBin(lowerparamrange/*[binnumber-1]*/);
   Int_t upperfitrange = h3->FindBin(upperparamrange);
 
 
@@ -134,7 +134,7 @@ TH2D* Chi2MapFunction(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi
   TH1D* hSignal_clone = (TH1D*) hSignal->Clone("hSignal");
   TH1D* hCorrback_clone = (TH1D*) hCorrback->Clone("hCorrback");
 
-  Int_t lowerfitrange = hData_clone->FindBin(lowerparamrange[binnumber-1]);
+  Int_t lowerfitrange = hData_clone->FindBin(lowerparamrange/*[binnumber-1]*/);
   Int_t upperfitrange = hData_clone->FindBin(upperparamrange);
 
   /**

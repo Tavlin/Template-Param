@@ -1,6 +1,9 @@
 #include "CommonHeader.h"
+#include "BackGroundFitting.h"
 
 void IntAndErrorBkgTemp(){
+
+  GetLowerBounds();
 
   TFile* InputFile = SafelyOpenRootfile("OutputFileNormal.root");
   TH1D* hCorrBkg   = NULL;
@@ -21,7 +24,7 @@ void IntAndErrorBkgTemp(){
       std::cout << "k ist zu gross!" << '\n';
       continue;
     }
-    std::cout << "Start bin  " << k << " reading and wrinting!" << "\n";
+    // std::cout << "Start bin  " << k << " reading and wrinting!" << "\n";
 
     hCorrBkg = (TH1D*) InputFile->Get(Form("hCorrBack_bin%02d",k));
 
@@ -35,7 +38,7 @@ void IntAndErrorBkgTemp(){
       OutputFile << std::setw(10) <<  error_value << "\n";
     // }
 
-    std::cout << "End bin  " << k << " reading and wrinting!" << "\n\n";
+    // std::cout << "End bin  " << k << " reading and wrinting!" << "\n\n";
   }
   OutputFile.close();
 }
