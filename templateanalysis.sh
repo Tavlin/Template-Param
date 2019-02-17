@@ -31,7 +31,7 @@ DIR=${PWD##*/} # the directery where I am currently to make things a bit more
 #     time root -l -q -b Template_CAP.C++\(\"$DIR\",$i,\"$c\",\"$d\",\"$e\",\"$f\",\"$g\",\"$h\",\"$x\",\"$y\"\)
 #   done
 
-time root -l -q -b Template_CAP.C++\(\"$DIR\",1,\"$c\",\"$d\",\"$e\",\"$f\",\"$g\",\"$h\",\"$x\",\"$y\"\)
+# time root -l -q -b Template_CAP.C++\(\"$DIR\",1,\"$c\",\"$d\",\"$e\",\"$f\",\"$g\",\"$h\",\"$x\",\"$y\"\)
 
 # rm -r BetterBkgNN
 # mkdir BetterBkgNN
@@ -45,11 +45,11 @@ time root -l -q -b Template_CAP.C++\(\"$DIR\",1,\"$c\",\"$d\",\"$e\",\"$f\",\"$g
 # mkdir OneTemplate
 #
 # time root -l -q -b TemplatePlotting.C++\(\"$a\",\"$b\"\,\"$e\",\"$SaveAppendix\"\)
-#
-# rm -r Yields
-# mkdir Yields
-# time root -l -q -b Yields.C++\(\"$b\",\"$SaveAppendix\"\)
-# time root -l -q -b YieldPlotting.C++\(\"$a\",\"$b\"\,\"$e\",\"$SaveAppendix\"\)
+
+rm -r Yields
+mkdir Yields
+time root -l -q -b Yields.C++\(\"$b\",\"$SaveAppendix\"\)
+time root -l -q -b YieldPlotting.C++\(\"$a\",\"$b\"\,\"$e\",\"$SaveAppendix\"\)
 
 
 # rm -r Untergrund

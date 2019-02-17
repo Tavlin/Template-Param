@@ -8,6 +8,8 @@ void systematics(int templatemethod, TFile* OutputFile){
   TFile* InputFile      = NULL;
   TFile* NNMethodFile   = NULL;
   TFile* SingleBkgFile  = NULL;
+  TFile* LeftBkgSmall   = NULL;
+  TFile* LeftBkgWide    = NULL;
 
   if(templatemethod == 2){
     InputFile      = SafelyOpenRootfile("OutputFileBetterBkgNN.root");
@@ -16,6 +18,8 @@ void systematics(int templatemethod, TFile* OutputFile){
     InputFile      = SafelyOpenRootfile("OutputFileBetterBkg3to8.root");
     NNMethodFile   = SafelyOpenRootfile("OutputFileBetterBkgNN.root");
     SingleBkgFile  = SafelyOpenRootfile("OutputFileNormal.root");
+    LeftBkgSmall   = SafelyOpenRootfile("OutputFileBetterBkg3to8_LeftBkgSmall.root");
+    LeftBkgWide    = SafelyOpenRootfile("OutputFileBetterBkg3to8_LeftBkgWide.root");
   }
   else if(templatemethod == 3){
     InputFile      = SafelyOpenRootfile("OutputFileBetterBkgPulse.root");
@@ -51,6 +55,7 @@ void systematics(int templatemethod, TFile* OutputFile){
   TH1D* hCorrYield_RebinningSysError      = NULL;
   TH1D* hCorrYield_SysError               = NULL;
   TH1D* hCorrYield_RelativSyserror        = NULL;
+  TH1D* hCorrYield_LeftBkgySerror         = NULL;
   TH1D* hCorrYield_SyserrorRatio          = NULL;
   TH1D* hCorrYield_NNMethod               = NULL;
   TH1D* hCorrYield_SingleBkg              = NULL;
@@ -77,6 +82,7 @@ void systematics(int templatemethod, TFile* OutputFile){
 
 
   std::vector<Double_t> vCountSys;
+  std::vector<Double_t> vLeftBkgSys;
   std::vector<Double_t> vParamSys;
   std::vector<Double_t> vBGFitSys;
   std::vector<Double_t> vFinalSys;
@@ -92,6 +98,15 @@ void systematics(int templatemethod, TFile* OutputFile){
 
     hCorrYield_NNMethod           = (TH1D*) NNMethodFile->  Get("hYield_dt_chi2map_corrected");
     hCorrYield_SingleBkg          = (TH1D*) SingleBkgFile-> Get("hYield_dt_chi2map_corrected");
+
+    hCorrYield_LeftBkgSmall       = (TH1D*) LeftBkgSmall->  Get("hYield_dt_chi2map_corrected");
+    hCorrYield_LeftBkgWide        = (TH1D*) LeftBkgWide->   Get("hYield_dt_chi2map_corrected");
+
+    hCorrYield_LeftBkgSmall->Add(hCorrYield_LeftBkgSmall, hCorrYieldME, 1, -1);
+    hCorrYield_LeftBkgSmall->Divide(hCorrYield_LeftBkgSmall, hCorrYieldME, 1, 1, "B");
+
+    hCorrYield_LeftBkgWide->Add(hCorrYield_LeftBkgWide, hCorrYieldME, 1, -1);
+    hCorrYield_LeftBkgWide->Divide(hCorrYield_LeftBkgWide, hCorrYieldME, 1, 1, "B");
 
     hCorrYield_NNMethod->Add(hCorrYield_NNMethod, hCorrYieldME, 1, -1);
     hCorrYield_NNMethod->Divide(hCorrYield_NNMethod, hCorrYieldME, 1, 1, "B");
@@ -143,6 +158,7 @@ void systematics(int templatemethod, TFile* OutputFile){
   hCorrYield_IntSysError        = (TH1D*) hCorrYieldME->Clone("hCorrYield_IntSysError");
   hCorrYield_FitSysErrro        = (TH1D*) hCorrYieldME->Clone("hCorrYield_FitSysErrro");
   hCorrYield_RebinningSysError  = (TH1D*) hCorrYieldME->Clone("hCorrYield_RebinningSysError");
+  hCorrYield_LeftBkgySerror    = (TH1D*) hCorrYieldME->Clone("hCorrYield_LeftBkgySerror");
 
   //////////////////////////////////////////////////////////////////////////////
   // First the counting range variation:
@@ -202,125 +218,124 @@ void systematics(int templatemethod, TFile* OutputFile){
   hCorrYield_HigherRebinning->Divide(hCorrYield_HigherRebinning, hCorrYieldME, 1, 1, "B");
 
 
-
+  /*
+  Systematics for paramrange changes
+   */
   if(templatemethod == 1){
     Double_t temp = 0;
     for (int i = 2; i < numberbins; i++) {
-
       temp = 0;
-      // check for biggest diff. in param vari
-      // if(fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_HigherFit->GetBinContent(i)) > temp){
       temp += pow(hCorrYield_HigherFit->GetBinContent(i), 2.);
-      // }
-      // if(fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_SmallFit->GetBinContent(i)) > temp){
       temp += pow(hCorrYield_SmallFit->GetBinContent(i), 2.);
-      // }
-      // pushing biggest difference back
       temp = temp/2.;
       temp = sqrt(temp);
       vParamSys.push_back(temp);
     }
 
+    /*
+    Systematics for integral range changes
+     */
     for (int i = 2; i < numberbins; i++) {
-      // resetting temp
       temp = 0;
-
-      // chech for biggest diff. in count vari
-      // if(fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_HigherInt->GetBinContent(i)) > temp){
       temp += pow(hCorrYield_HigherInt->GetBinContent(i), 2.);
-      // }
-      // if(fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_SmallInt->GetBinContent(i)) > temp){
       temp += pow(hCorrYield_SmallInt->GetBinContent(i), 2.);
-      // }
       temp = temp/2.;
       temp = sqrt(temp);
-      // pushing biggest difference back
       vCountSys.push_back(temp);
     }
 
+    /*
+    Systematics for Rebinning changes
+     */
     for (int i = 2; i < numberbins; i++) {
       temp = 0;
-
-      // chech for biggest diff. in BGGit vari
-      // if(fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_LowerRebinning->GetBinContent(i)) > temp){
       temp += pow(hCorrYield_LowerRebinning->GetBinContent(i), 2.);
-      // }
-      // if(fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_HigherRebinning->GetBinContent(i)) > temp){
       temp += pow(hCorrYield_HigherRebinning->GetBinContent(i), 2.);
-      // }
-
       temp = temp/2.;
       temp = sqrt(temp);
-      // pushing biggest difference back
       vBGFitSys.push_back(temp);
     }
 
-    //////////////////////////////////////////////////////////////////////////////
-    // different corr. bkg templates
+    /*
+    systematics for different correlated background Templates
+     */
+
     for (int i = 2; i < numberbins; i++) {
       temp = 0;
-
-      // chech for biggest diff. in BGGit vari
-      // if(fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_NNMethod->GetBinContent(i)) > temp){
       temp += pow(hCorrYield_NNMethod->GetBinContent(i), 2.);
-      // }
-      // if(fabs(hCorrYieldME->GetBinContent(i)-hCorrYield_SingleBkg->GetBinContent(i)) > temp){
       temp += pow(hCorrYield_SingleBkg->GetBinContent(i), 2.);
-      // }
-
       temp = temp/2.;
       temp = sqrt(temp);
-      // pushing biggest difference back
       vCorrBkgSys.push_back(temp);
+    }
+
+    /*
+    Systematics for different Param range for the uncorrelated background
+     */
+    for (int i = 2; i < numberbins; i++) {
+
+      temp = 0;
+      temp += pow(hCorrYield_LeftBkgSmall->GetBinContent(i), 2.);
+      temp += pow(hCorrYield_LeftBkgWide->GetBinContent(i), 2.);
+      temp = temp/2.;
+      temp = sqrt(temp);
+      vLeftBkgSys.push_back(temp);
     }
 
     hCorrYield_RelativSyserror            = (TH1D*) hCorrYield_SysError->Clone("hCorrYield_RelativSyserror");
     for (int i = 2; i < numberbins; i++) {
-      temp = sqrt(1./4.*(pow(vParamSys[i-2], 2.) + pow(vCountSys[i-2], 2.) + pow(vBGFitSys[i-2], 2.)+ pow(vCorrBkgSys[i-2], 2.)));
+      temp = sqrt(
+        (pow(vParamSys[i-2], 2.) + pow(vCountSys[i-2], 2.)
+       + pow(vBGFitSys[i-2], 2.) + pow(vCorrBkgSys[i-2], 2.)
+       + pow(vLeftBkgSys[i-2], 2.))
+      );
       vFinalSys.push_back(temp);
       hCorrYield_SysError->         SetBinError(i, vFinalSys[i-2]*hCorrYield_SysError->GetBinContent(i));
-      hCorrYield_RelativSyserror->  SetBinContent(i, vFinalSys[i-2]*100);
-      hCorrYield_RelativSyserror->  SetBinError(i, 0.001);
+      hCorrYield_RelativSyserror->  SetBinContent(i, vFinalSys[i-2]);
       hCorrYield_IntSysError->      SetBinError(i, vCountSys[i-2]);
       hCorrYield_FitSysErrro->      SetBinError(i, vParamSys[i-2]);
       hCorrYield_RebinningSysError->SetBinError(i, vBGFitSys[i-2]);
       hCorrYield_CorrBkgSysError->  SetBinError(i, vCorrBkgSys[i-2]);
+      hCorrYield_LeftBkgySerror->  SetBinContent(i, vLeftBkgSys[i-2]);
       temp = 0;
     }
 
 
-    // hCorrYield_RelativSyserror            = (TH1D*) hCorrYield_SysError->Clone("hCorrYield_RelativSyserror");
+    hCorrYield_IntSysError->SetXTitle(pt_str);
+    hCorrYield_IntSysError->SetYTitle("relative sys. Abweichung (%)");
+
+    hCorrYield_FitSysErrro->SetXTitle(pt_str);
+    hCorrYield_FitSysErrro->SetYTitle("relative sys. Abweichung (%)");
+
+    hCorrYield_RebinningSysError->SetXTitle(pt_str);
+    hCorrYield_RebinningSysError->SetYTitle("relative sys. Abweichung (%)");
+
+    hCorrYield_CorrBkgSysError->SetXTitle(pt_str);
+    hCorrYield_CorrBkgSysError->SetYTitle("relative sys. Abweichung (%)");
+
     hCorrYield_RelativSyserror->SetXTitle(pt_str);
     hCorrYield_RelativSyserror->SetYTitle("relative sys. Unsicherheit (%)");
 
-    hCorrYield_IntSysError->SetXTitle(pt_str);
-    hCorrYield_IntSysError->SetYTitle("relative sys. Unsicherheit (%)");
-
-    hCorrYield_FitSysErrro->SetXTitle(pt_str);
-    hCorrYield_FitSysErrro->SetYTitle("relative sys. Unsicherheit (%)");
-
-    hCorrYield_RebinningSysError->SetXTitle(pt_str);
-    hCorrYield_RebinningSysError->SetYTitle("relative sys. Unsicherheit (%)");
-
-    hCorrYield_CorrBkgSysError->SetXTitle(pt_str);
-    hCorrYield_CorrBkgSysError->SetYTitle("relative sys. Unsicherheit (%)");
+    hCorrYield_LeftBkgSmall->SetXTitle(pt_str);
+    hCorrYield_LeftBkgSmall->SetYTitle("relative sys. Abweichung (%)");
 
 
     for(int k = 2; k < numberbins; k++){
-      // hCorrYield_RelativSyserror->SetBinContent(k, hCorrYield_RelativSyserror->GetBinError(k)*100.);
-      // hCorrYield_RelativSyserror->SetBinError(k,0.01);
 
-      hCorrYield_IntSysError->SetBinContent(k, hCorrYield_IntSysError->GetBinError(k)/(Double_t)hCorrYield_IntSysError->GetBinContent(k)*100.);
+      hCorrYield_IntSysError->SetBinContent(k, hCorrYield_IntSysError->GetBinError(k)/(Double_t)hCorrYield_IntSysError->GetBinContent(k)*100);
       hCorrYield_IntSysError->SetBinError(k,0.);
 
-      hCorrYield_FitSysErrro->SetBinContent(k, hCorrYield_FitSysErrro->GetBinError(k)/(Double_t)hCorrYield_FitSysErrro->GetBinContent(k)*100.);
+      hCorrYield_FitSysErrro->SetBinContent(k, hCorrYield_FitSysErrro->GetBinError(k)/(Double_t)hCorrYield_FitSysErrro->GetBinContent(k)*100);
       hCorrYield_FitSysErrro->SetBinError(k,0.);
 
-      hCorrYield_RebinningSysError->SetBinContent(k, hCorrYield_RebinningSysError->GetBinError(k)/(Double_t)hCorrYield_RebinningSysError->GetBinContent(k)*100.);
+      hCorrYield_RebinningSysError->SetBinContent(k, hCorrYield_RebinningSysError->GetBinError(k)/(Double_t)hCorrYield_RebinningSysError->GetBinContent(k)*100);
       hCorrYield_RebinningSysError->SetBinError(k,0.);
 
-      hCorrYield_CorrBkgSysError->SetBinContent(k, hCorrYield_CorrBkgSysError->GetBinError(k)/(Double_t)hCorrYield_CorrBkgSysError->GetBinContent(k)*100.);
+      hCorrYield_CorrBkgSysError->SetBinContent(k, hCorrYield_CorrBkgSysError->GetBinError(k)/(Double_t)hCorrYield_CorrBkgSysError->GetBinContent(k)*100);
       hCorrYield_CorrBkgSysError->SetBinError(k,0.);
+
+      // hCorrYield_RelativSyserror->SetBinContent(k, hCorrYield_RelativSyserror->GetBinError(k)/(Double_t)hCorrYield_RelativSyserror->GetBinContent(k)*100);
+      hCorrYield_RelativSyserror->SetBinError(k,0.);
 
       hCorrYield_HigherInt->SetBinError(k, 0.001);
       hCorrYield_SmallInt->SetBinError(k, 0.001);
@@ -330,6 +345,8 @@ void systematics(int templatemethod, TFile* OutputFile){
       hCorrYield_HigherRebinning->SetBinError(k, 0.001);
       hCorrYield_NNMethod->SetBinError(k, 0.001);
       hCorrYield_SingleBkg->SetBinError(k, 0.001);
+      hCorrYield_LeftBkgSmall->SetBinError(k, 0.001);
+      hCorrYield_LeftBkgWide->SetBinError(k, 0.001);
 
     }
 
@@ -352,6 +369,9 @@ void systematics(int templatemethod, TFile* OutputFile){
     hCorrYield_HigherRebinning->Scale(100);
     hCorrYield_NNMethod->Scale(100);
     hCorrYield_SingleBkg->Scale(100);
+    hCorrYield_LeftBkgSmall->Scale(100);
+    hCorrYield_LeftBkgWide->Scale(100);
+    hCorrYield_RelativSyserror->Scale(100);
 
     hCorrYield_SysError->             Write("hCorrYield_SysError");
     hCorrYield_IntSysError->          Write("hCorrYield_IntSysError");
@@ -368,6 +388,8 @@ void systematics(int templatemethod, TFile* OutputFile){
     hCorrYield_HigherRebinning->      Write("hCorrYield_HigherRebinningSysUncertainty");
     hCorrYield_NNMethod->             Write("hCorrYield_NNMethodSysUncertainty");
     hCorrYield_SingleBkg->            Write("hCorrYield_SingleBkgSysUncertainty");
+    hCorrYield_LeftBkgSmall->         Write("hCorrYield_LeftBkgSmallSysUncertainty");
+    hCorrYield_LeftBkgWide->          Write("hCorrYield_LeftBkgWideSysUncertainty");
   }
 
 

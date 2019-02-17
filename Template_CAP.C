@@ -395,7 +395,7 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
         OutputFile      = new TFile("OutputFileBetterBkgNN.root", "RECREATE");
       }
       else if(templatemethod == 1){
-        OutputFile      = new TFile("OutputFileBetterBkg3to8_LeftBkgSmall.root", "RECREATE");
+        OutputFile      = new TFile("OutputFileBetterBkg3to8.root", "RECREATE");
       }
       else if(templatemethod == 3){
         OutputFile      = new TFile("OutputFileBetterBkgPulse.root", "RECREATE");
@@ -417,7 +417,7 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
         OutputFile      = new TFile("OutputFileBetterBkgNN.root", "UPDATE");
       }
       else if(templatemethod == 1){
-        OutputFile      = new TFile("OutputFileBetterBkg3to8_LeftBkgSmall.root", "UPDATE");
+        OutputFile      = new TFile("OutputFileBetterBkg3to8.root", "UPDATE");
       }
       else if(templatemethod == 3){
         OutputFile      = new TFile("OutputFileBetterBkgPulse.root", "UPDATE");
@@ -678,7 +678,7 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
     OutputFile      = new TFile("OutputFileBetterBkgNN.root", "UPDATE");
   }
   else if(templatemethod == 1){
-    OutputFile      = new TFile("OutputFileBetterBkg3to8_LeftBkgSmall.root", "UPDATE");
+    OutputFile      = new TFile("OutputFileBetterBkg3to8.root", "UPDATE");
   }
   else if(templatemethod == 3){
     OutputFile      = new TFile("OutputFileBetterBkgPulse.root", "UPDATE");
@@ -850,7 +850,7 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
   v_y_min.clear();
   vsigma_dt.clear();
 
-  // systematics(templatemethod, OutputFile);
+  systematics(templatemethod, OutputFile);
 
   /**
    * Closing all the files which were opend for the Yields.

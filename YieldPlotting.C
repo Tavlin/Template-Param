@@ -65,7 +65,7 @@ void YieldPlotting(TString wpsid = "all", TString PicFormat = "pdf", std::string
   legYields->AddEntry(hCorrYieldME_BetterBkg3to8, "Template", "l");
   legYields->AddEntry(hCorrYield_Framework, "Standard", "l");
 
-  OAhists->Add(hCorrYield_SysError);
+  OAhists->Add(hCorrYield_SysError); //seems to be buggy
   OAhists->Add(hCorrYieldME_BetterBkg3to8);
   OAhists->Add(hCorrYield_Framework);
   OAhists->Add(legSystem);
@@ -77,6 +77,7 @@ void YieldPlotting(TString wpsid = "all", TString PicFormat = "pdf", std::string
   OAratios->Add(hCorrYieldME_Ratio_BetterBkg3to8);
   OAratios->Add(OneLine);
 
+  c1 = NULL;
   c1 = makeCanvas(OAhists, OAratios, "notimeSystematicsLogYThick", 0, 0);
 
   c1->Update();
@@ -85,6 +86,8 @@ void YieldPlotting(TString wpsid = "all", TString PicFormat = "pdf", std::string
   c1 = NULL;
   OAhists->Clear();
   OAratios->Clear();
+
+
   /****************************************************************************/
 
 
@@ -148,7 +151,7 @@ void YieldPlotting(TString wpsid = "all", TString PicFormat = "pdf", std::string
   /****************************************************************************/
 
   /*
-    Plotting of the corrected Yield with both uncertainties and Ratio
+    Plotting of the corrected Yield with both uncertainties
    */
 
   TLegend* legSystemYield = new TLegend(0.1, 0.94, 0.7, 0.98);
@@ -163,6 +166,24 @@ void YieldPlotting(TString wpsid = "all", TString PicFormat = "pdf", std::string
 
   c1->Update();
   c1->SaveAs(Form("Yields/KorrigierterYield" + SaveAppendix + "." + PicFormat));
+  c1->Clear();
+  c1 = NULL;
+  OAhists->Clear();
+  OAratios->Clear();
+  /****************************************************************************/
+
+  /*
+    Plotting of the corrected Yield with only statistical uncertainties
+   */
+
+  OAhists->Add(hCorrYieldME_BetterBkg3to8);
+  OAhists->Add(legSystemYield);
+  OAhists->Add(legTemplatSys);
+
+  c1 = makeCanvas(OAhists, 0, "notimeLogYHorizontal", 0, 0);
+
+  c1->Update();
+  c1->SaveAs(Form("Yields/KorrigierterYieldNurStat" + SaveAppendix + "." + PicFormat));
   c1->Clear();
   c1 = NULL;
   OAhists->Clear();
