@@ -174,7 +174,7 @@ void Yields(TString PicFormat = "png", TString SaveAppendix = ""){
      /*************************************************************************/
 
      TLegend* legBkgVariationSysUncertainty = new TLegend(0.13, 0.7, 0.5, 0.9);
-     legBkgVariationSysUncertainty->AddEntry((TObject*) 0, "Templates des korrelierten Untergrund:", "");
+     legBkgVariationSysUncertainty->AddEntry((TObject*) 0, "templates des korrelierten Untergrund:", "");
      legBkgVariationSysUncertainty->AddEntry(hCorrYield_NNMethodSysUncertainty, "n#ddot{a}chste Nachbarn", "p");
      legBkgVariationSysUncertainty->AddEntry(hCorrYield_SingleBkgSysUncertainty, "einzelne", "p");
 

@@ -33,18 +33,18 @@ DIR=${PWD##*/} # the directery where I am currently to make things a bit more
 
 # time root -l -q -b Template_CAP.C++\(\"$DIR\",1,\"$c\",\"$d\",\"$e\",\"$f\",\"$g\",\"$h\",\"$x\",\"$y\"\)
 
-# rm -r BetterBkgNN
-# mkdir BetterBkgNN
-# rm -r BetterBkg3to8
-# mkdir BetterBkg3to8
-# rm -r BetterBkg3to8Pulse
-# mkdir BetterBkg3to8Pulse
-# rm -r Normal
-# mkdir Normal
-# rm -r OneTemplate
-# mkdir OneTemplate
-#
-# time root -l -q -b TemplatePlotting.C++\(\"$a\",\"$b\"\,\"$e\",\"$SaveAppendix\"\)
+rm -r BetterBkgNN
+mkdir BetterBkgNN
+rm -r BetterBkg3to8
+mkdir BetterBkg3to8
+rm -r BetterBkg3to8Pulse
+mkdir BetterBkg3to8Pulse
+rm -r Normal
+mkdir Normal
+rm -r OneTemplate
+mkdir OneTemplate
+
+time root -l -q -b TemplatePlotting.C++\(\"$a\",\"$b\"\,\"$e\",\"$SaveAppendix\"\)
 
 rm -r Yields
 mkdir Yields

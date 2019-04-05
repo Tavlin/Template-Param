@@ -62,6 +62,13 @@ void PlotArray(TObjArray *arraytoplot, const char *controlstring ,Short_t *color
       hist->GetYaxis()->SetTitleOffset(titleOffsetY);
       hist->SetTitle("");
 
+
+      if(hh==0 && hist->GetMaximum() > 0. && !(control.Contains("logY")||control.Contains("logy")||control.Contains("LogY")||control.Contains("LOGY"))){
+        Double_t yMin = -1.*hist->GetMaximum()*0.04;
+        Double_t yMax = hist->GetMaximum()*1.01;
+        hist->GetYaxis()->SetRangeUser(yMin, yMax);
+      }
+
       hist->SetAxisRange(xMin,xMax,"X");
 
 
@@ -94,6 +101,10 @@ void PlotArray(TObjArray *arraytoplot, const char *controlstring ,Short_t *color
       Double_t pad_height = gPad->YtoPixel(gPad->GetY1());
       hist->SetTickLength(15/pad_height,"X");
       hist->SetTickLength(15/pad_width,"Y");
+      if(control.Contains("weird")||control.Contains("Weird")){
+        hist->SetTickLength(45/pad_height,"X");
+        hist->SetTickLength(45/pad_width,"Y");
+      }
 
 
       if(control.Contains("Thick")||control.Contains("thick")){
@@ -133,12 +144,13 @@ void PlotArray(TObjArray *arraytoplot, const char *controlstring ,Short_t *color
           if(hh == 0) {
             TString yTitle = hist->GetYaxis()->GetTitle();
             if(yTitle.Contains("frac{1}")){
-              hist->SetFillColorAlpha(GetNiceColor(8), 0.50);
+              hist->SetFillColor(kOrange+6); //SetFillColorAlpha seems to bug out the SetFillStyle(4000); >-<
               hist->SetFillStyle(1001);
               hist->SetMarkerStyle(1);
               hist->SetMarkerSize(1);
               hist->SetMarkerColor(GetNiceColor(8));
               hist->SetLineColor(GetNiceColor(8));
+              hist->Draw("AXIS");
               hist->DrawCopy("E2");
             }
             else{
@@ -461,7 +473,7 @@ TCanvas *makeCanvas(TObjArray *histArray, TObjArray *ratioArray,const char *cont
     titleOffsetY=1.4;
     titleOffsetX=1.2;
     leftMargin=0.12;
-    rightMargin = leftMargin+0.08;
+    rightMargin = leftMargin-0.08;
     topMargin=leftMargin-0.05;
     lowMargin=leftMargin-0.02;//+0.05;
     if(ratioArray){
@@ -474,6 +486,7 @@ TCanvas *makeCanvas(TObjArray *histArray, TObjArray *ratioArray,const char *cont
       titleOffsetX=2.8;
     }
     else if(histArray->At(0)->InheritsFrom("TH2")){
+      rightMargin = leftMargin+0.08;
       TH2D* hist = (TH2D*) histArray->At(0);
       if( ((TString) hist->GetXaxis()->GetTitle()).Contains("#frac")){
         titleOffsetX=1.5;
@@ -513,6 +526,9 @@ TCanvas *makeCanvas(TObjArray *histArray, TObjArray *ratioArray,const char *cont
       }
     }
     if(ratioArray){
+      titleOffsetX=2.1;
+      lowMargin=0.225;
+      textSizeFactor =0.5 * 12000;
     }
   }else if (control.Contains("A4")||control.Contains("a4")){
     cout<<"| - DIN-A4 shaped Canvas"<<endl;
@@ -525,6 +541,20 @@ TCanvas *makeCanvas(TObjArray *histArray, TObjArray *ratioArray,const char *cont
     rightMargin = leftMargin;
     topMargin=leftMargin * 1.414213562 - 0.05;
     lowMargin=leftMargin * 1.414213562 + 0.05;
+    if(ratioArray){
+    }
+  }else if (control.Contains("weird")||control.Contains("Weird")){
+    cout<<"| - Weird shaped Canvas"<<endl;
+    canvasWidth=1800*2.2;
+    canvasHeight=1800;
+    textSizeFactor = 12000 * 10.;
+    padFraction = 0.25;
+    titleOffsetY=0.4;
+    titleOffsetX=0.95;
+    leftMargin = 0.07;
+    rightMargin = leftMargin - 0.04;
+    topMargin=leftMargin / 1.1;
+    lowMargin=leftMargin / 2.2 + 0.1;
     if(ratioArray){
     }
   }else if (control.Contains("OldAspect")||control.Contains("oldaspect")){
@@ -546,21 +576,21 @@ TCanvas *makeCanvas(TObjArray *histArray, TObjArray *ratioArray,const char *cont
     }
   }else{
     cout<<"| - Improved aspect ratio Canvas"<<endl;
-    textSizeFactor =1.8 * 12000;
+    textSizeFactor =1.4 * 12000; //1.8 * 12000;
     canvasWidth=800;
-    canvasHeight=800*1.41421356;
+    canvasHeight=800*1.21421356; //1.41421356
     padFraction = 0.33;                   //0.25
     titleOffsetY=2;
     titleOffsetX=4.5;
     leftMargin = 0.16;
     rightMargin = 0.05;
-    topMargin = 0.12 * 1.414213562/2;
-    lowMargin = 0.12 * 1.414213562/2;
+    topMargin = 0.12 * 1.21421356/2;
+    lowMargin = 0.12 * 1.21421356/2;
     if(ratioArray){
       titleOffsetY=2;
       titleOffsetX=3.5;
-      topMargin = (0.06 * 1.414213562/2)/(1-padFraction);
-      lowMargin = (0.13 * 1.414213562/2)/(padFraction);
+      topMargin = (0.07 * 1.21421356/2)/(1-padFraction);
+      lowMargin = (0.16 * 1.21421356/2)/(padFraction);
     }
     TH1D *hist = (TH1D*) histArray->At(0);
     TString yTitle(hist->GetYaxis()->GetTitle());
@@ -638,7 +668,8 @@ TCanvas *makeCanvas(TObjArray *histArray, TObjArray *ratioArray,const char *cont
 
   /// Create Canvas in a given size
   TCanvas *newCanvas = new TCanvas(title,title,10,10,canvasWidth+10,canvasHeight+10);
-  newCanvas->SetFillStyle(4000);
+  newCanvas->SetFillStyle(1001);
+  newCanvas->SetFillColor(kWhite);
   newCanvas->cd();
 
     TPad *upperPad = nullptr;
@@ -649,7 +680,8 @@ TCanvas *makeCanvas(TObjArray *histArray, TObjArray *ratioArray,const char *cont
     upperPad = new TPad("upperPad","Distribution" ,0 ,padFraction ,1 ,1);
     TPad *lowerPad = new TPad("lowerPad","Ratio"        ,0 ,0           ,1 ,padFraction);
 
-    upperPad->SetFillStyle(4000);
+    upperPad->SetFillStyle(1001);
+    upperPad->SetFillColor(kWhite);
     upperPad->SetTopMargin(topMargin);
     upperPad->SetLeftMargin(leftMargin);
     upperPad->SetRightMargin(rightMargin);
@@ -658,7 +690,8 @@ TCanvas *makeCanvas(TObjArray *histArray, TObjArray *ratioArray,const char *cont
     upperPad->SetTicky(1);
     upperPad->Draw();
 
-    lowerPad->SetFillStyle(4000);
+    lowerPad->SetFillStyle(1001);
+    lowerPad->SetFillColor(kWhite);
     lowerPad->SetTopMargin(0.0);
     lowerPad->SetLeftMargin(leftMargin);
     lowerPad->SetRightMargin(rightMargin);

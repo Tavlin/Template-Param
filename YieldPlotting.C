@@ -32,21 +32,21 @@ void YieldPlotting(TString wpsid = "all", TString PicFormat = "pdf", std::string
 
   SetHistogramProperties(hCorrYieldME_BetterBkg3to8,        "pt", strCorrectedYield, 8, 1.4, 12.0);
   SetHistogramProperties(hCorrYield_Framework,              "pt", strCorrectedYield, 5, 1.4, 12.0);
-  SetHistogramProperties(hCorrYieldME_Ratio_BetterBkg3to8,  "pt", "#frac{Template}{Standard}", 0, 1.4, 12.0);
+  SetHistogramProperties(hCorrYieldME_Ratio_BetterBkg3to8,  "pt", "#frac{template}{traditional}", 0, 1.4, 12.0);
   SetHistogramProperties(hCorrYield_SysError,               "pt", strCorrectedYield, 8, 1.4, 12.0);
-  SetHistogramProperties(hCorrYield_RelativSyserror,        "pt", "rel. systematische Unsicherheit (%)", 8, 1.4, 12.0);
-  SetHistogramProperties(hCorrYieldME_StatError,            "pt", "rel. statistische Unsicherheit (%)", 8, 1.4, 12.0);
-  SetHistogramProperties(hCorrectedYieldNormEff_StatError,  "pt", "rel. statistische Unsicherheit (%)", 5, 1.4, 12.0);
+  SetHistogramProperties(hCorrYield_RelativSyserror,        "pt", "rel. systematic uncertainties (%)", 8, 1.4, 12.0);
+  SetHistogramProperties(hCorrYieldME_StatError,            "pt", "rel. statistical uncertainties (%)", 8, 1.4, 12.0);
+  SetHistogramProperties(hCorrectedYieldNormEff_StatError,  "pt", "rel. statistical uncertainties (%)", 5, 1.4, 12.0);
 
 
   /*
     TLegend which displays most important info as header!
    */
   TLegend* legSystem = new TLegend(0.01, 0.94, 0.63, 0.98);
-  legSystem->AddEntry((TObject*) 0, "ALICE, pp bei #sqrt{#it{s}} = 13 TeV, #pi^{0} #rightarrow #gamma#gamma mit EMCal", "");
+  legSystem->AddEntry((TObject*) 0, "ALICE, pp #sqrt{#it{s}} = 13 TeV, #pi^{0} #rightarrow #gamma#gamma with EMCal", "");
 
   TLegend* legTemplat = new TLegend(0.2, 0.05, 0.5, 0.3);
-  legTemplat->AddEntry((TObject*) 0, "Templates:", "");
+  legTemplat->AddEntry((TObject*) 0, "templates:", "");
   legTemplat->AddEntry((TObject*) 0, "PYTHIA 8", "");
   legTemplat->AddEntry((TObject*) 0, "Monash 2013", "");
   legTemplat->AddEntry((TObject*) 0, "GEANT 3", "");
@@ -61,9 +61,9 @@ void YieldPlotting(TString wpsid = "all", TString PicFormat = "pdf", std::string
    */
 
   TLegend* legYields = new TLegend(0.6, 0.7, 0.8, 0.9);
-  legYields->AddEntry((TObject*) 0, "Methode:", "");
-  legYields->AddEntry(hCorrYieldME_BetterBkg3to8, "Template", "l");
-  legYields->AddEntry(hCorrYield_Framework, "Standard", "l");
+  legYields->AddEntry((TObject*) 0, "method:", "");
+  legYields->AddEntry(hCorrYieldME_BetterBkg3to8, "template", "l");
+  legYields->AddEntry(hCorrYield_Framework, "traditional", "l");
 
   OAhists->Add(hCorrYield_SysError); //seems to be buggy
   OAhists->Add(hCorrYieldME_BetterBkg3to8);
@@ -92,31 +92,33 @@ void YieldPlotting(TString wpsid = "all", TString PicFormat = "pdf", std::string
 
 
   TLegend* legSystemStat = new TLegend(0.1, 0.94, 0.7, 0.98);
-  legSystemStat->AddEntry((TObject*) 0, "ALICE, pp bei #sqrt{#it{s}} = 13 TeV, #pi^{0} #rightarrow #gamma#gamma mit EMCal", "");
+  legSystemStat->AddEntry((TObject*) 0, "ALICE, pp #sqrt{#it{s}} = 13 TeV, #pi^{0} #rightarrow #gamma#gamma with EMCal", "");
 
-  TLegend* legTemplatStat = new TLegend(0.1, 0.66, 0.4, 0.9);
-  legTemplatStat->AddEntry((TObject*) 0, "Templates:", "");
+  TLegend* legTemplatStat = new TLegend(0.1, 0.68, 0.3, 0.88);
+  legTemplatStat->AddEntry((TObject*) 0, "templates:", "");
   legTemplatStat->AddEntry((TObject*) 0, "PYTHIA 8", "");
   legTemplatStat->AddEntry((TObject*) 0, "Monash 2013", "");
   legTemplatStat->AddEntry((TObject*) 0, "GEANT 3", "");
 
 
-  TLegend* legStat = new TLegend(0.7, 0.15, 0.9, 0.4);
-  legStat->AddEntry((TObject*) 0, "Methode:", "");
-  legStat->AddEntry(hCorrYieldME_StatError, "Template", "l");
-  legStat->AddEntry(hCorrectedYieldNormEff_StatError, "Standard", "l");
+  TLegend* legStat = new TLegend(0.8, 0.22, 0.9, 0.4);
+  legStat->AddEntry((TObject*) 0, "method:", "");
+  legStat->AddEntry(hCorrYieldME_StatError, "template", "l");
+  legStat->AddEntry(hCorrectedYieldNormEff_StatError, "traditional", "l");
 
   /*
     Plotting of the statistical uncertainties of the Yields
    */
 
-  OAhists->Add(hCorrYieldME_StatError);
+  hCorrectedYieldNormEff_StatError->GetYaxis()->SetRangeUser(0.97, 6.03);
+
   OAhists->Add(hCorrectedYieldNormEff_StatError);
+  OAhists->Add(hCorrYieldME_StatError);
   OAhists->Add(legSystemStat);
   OAhists->Add(legStat);
   OAhists->Add(legTemplatStat);
 
-  c1 = makeCanvas(OAhists, 0, "notimehorizontalThick", 0, 0);
+  c1 = makeCanvas(OAhists, 0, "notimeWeirdThick", 0, 0);
 
   c1->Update();
   c1->SaveAs(Form("Yields/StatistischeUnsicherheitVergleich" + SaveAppendix + "." + PicFormat));
@@ -127,7 +129,7 @@ void YieldPlotting(TString wpsid = "all", TString PicFormat = "pdf", std::string
   /****************************************************************************/
 
   TLegend* legTemplatSys = new TLegend(0.6, 0.66, 0.9, 0.9);
-  legTemplatSys->AddEntry((TObject*) 0, "Templates:", "");
+  legTemplatSys->AddEntry((TObject*) 0, "templates:", "");
   legTemplatSys->AddEntry((TObject*) 0, "PYTHIA 8", "");
   legTemplatSys->AddEntry((TObject*) 0, "Monash 2013", "");
   legTemplatSys->AddEntry((TObject*) 0, "GEANT 3", "");
@@ -155,7 +157,7 @@ void YieldPlotting(TString wpsid = "all", TString PicFormat = "pdf", std::string
    */
 
   TLegend* legSystemYield = new TLegend(0.1, 0.94, 0.7, 0.98);
-  legSystemYield->AddEntry((TObject*) 0, "ALICE, pp bei #sqrt{#it{s}} = 13 TeV, #pi^{0} #rightarrow #gamma#gamma mit EMCal", "");
+  legSystemYield->AddEntry((TObject*) 0, "ALICE, pp #sqrt{#it{s}} = 13 TeV, #pi^{0} #rightarrow #gamma#gamma with EMCal", "");
 
   OAhists->Add(hCorrYield_SysError);
   OAhists->Add(hCorrYieldME_BetterBkg3to8);

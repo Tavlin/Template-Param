@@ -850,7 +850,9 @@ void Template_CAP(std::string current_path, int templatemethod, std::string ESD_
   v_y_min.clear();
   vsigma_dt.clear();
 
+  std::cout << "\nStart Systematic Analysis\n\n" << '\n';
   systematics(templatemethod, OutputFile);
+  std::cout << "\n\nFinished Systematic Analysis" << '\n';
 
   /**
    * Closing all the files which were opend for the Yields.
