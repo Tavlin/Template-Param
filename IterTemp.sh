@@ -38,9 +38,9 @@ DIR=${PWD##*/} # the directery where I am currently to make things a bit more
 
 time root -l -b -q IterTempCreation2.C++\(\"$DIR\",$4,6\)
 
-rm -r Systematics
-mkdir Systematics
-time root -l -b -q Systematics.C++\(\"$3\",6\)
+# rm -r Systematics
+# mkdir Systematics
+# time root -l -b -q Systematics.C++\(\"$3\",6\)
 
 # rm -r BetterBkgNN
 # mkdir BetterBkgNN
