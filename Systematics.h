@@ -163,7 +163,7 @@ void systematics(TFile* OutputFile){
   //////////////////////////////////////////////////////////////////////////////
   // 2nd the param range variation:
   TFile* OutputFileBetterBkg3to8_HigherFit  = SafelyOpenRootfile("OutputFileBetterBkg3to8_HigherFit.root");
-  if (OutputFileBetterBkg3to8_HigherFit->   IsOpen() ) printf("OutputFileBetterBkg3to8_HigherFit successfully\n");
+  if (OutputFileBetterBkg3to8_HigherFit->   IsOpen() ) printf("OutputFileBetterBkg3to8_HigherFit opened successfully\n");
 
   hCorrYield_HigherFit                      = (TH1D*) OutputFileBetterBkg3to8_HigherFit->Get("hYield_dt_chi2map_corrected");
   hCorrYield_HigherFit->Add(hCorrYield_HigherFit, hCorrYieldME, 1, -1);
@@ -171,7 +171,7 @@ void systematics(TFile* OutputFile){
 
 
   TFile* OutputFileBetterBkg3to8_SmallFit   = SafelyOpenRootfile("OutputFileBetterBkg3to8_SmallFit.root");
-  if (OutputFileBetterBkg3to8_SmallFit->      IsOpen() ) printf("OutputFileBetterBkg3to8_SmallFit successfully\n");
+  if (OutputFileBetterBkg3to8_SmallFit->      IsOpen() ) printf("OutputFileBetterBkg3to8_SmallFit opened successfully\n");
 
   hCorrYield_SmallFit                       = (TH1D*) OutputFileBetterBkg3to8_SmallFit->Get("hYield_dt_chi2map_corrected");
   hCorrYield_SmallFit->Add(hCorrYield_SmallFit, hCorrYieldME, 1, -1);
@@ -184,7 +184,7 @@ void systematics(TFile* OutputFile){
   // 3rd the Rebinning  variation
   //
   TFile* OutputFileBetterBkg3to8_LowerRebinning   = SafelyOpenRootfile("OutputFileBetterBkg3to8_LowerRebinning.root");
-  if (OutputFileBetterBkg3to8_LowerRebinning->    IsOpen() ) printf("OutputFileBetterBkg3to8_LowerRebinning successfully\n");
+  if (OutputFileBetterBkg3to8_LowerRebinning->    IsOpen() ) printf("OutputFileBetterBkg3to8_LowerRebinning opened successfully\n");
 
   hCorrYield_LowerRebinning                       = (TH1D*) OutputFileBetterBkg3to8_LowerRebinning->Get("hYield_dt_chi2map_corrected");
   hCorrYield_LowerRebinning->Add(hCorrYield_LowerRebinning, hCorrYieldME, 1, -1);
@@ -194,11 +194,15 @@ void systematics(TFile* OutputFile){
   TFile* OutputFileBetterBkg3to8_HigherRebinning  = SafelyOpenRootfile("OutputFileBetterBkg3to8_HigherRebinning.root");
   if (OutputFileBetterBkg3to8_HigherRebinning->   IsOpen() ) printf("OutputFileBetterBkg3to8_HigherRebinning opened successfully\n");
 
+  std::cout << "after opening all" << '\n';
+
   hCorrYield_HigherRebinning                      = (TH1D*) OutputFileBetterBkg3to8_HigherRebinning->Get("hYield_dt_chi2map_corrected");
+  std::cout << "after obtaining hCorrYield_HigherRebinning" << '\n';
   hCorrYield_HigherRebinning->Add(hCorrYield_HigherRebinning, hCorrYieldME, 1, -1);
+  std::cout << "after add HigherRebinning" << '\n';
   hCorrYield_HigherRebinning->Divide(hCorrYield_HigherRebinning, hCorrYieldME, 1, 1, "B");
 
-
+  std::cout << "after add and divide HigherRebinning" << '\n';
   /*
   Systematics for paramrange changes
    */

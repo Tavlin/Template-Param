@@ -316,24 +316,21 @@ TH1D* BackGround3to8(int i, const int TEMPLATEMETHOD){
   switch (TEMPLATEMETHOD) {
     case 3:
       hBack->Rebin(fBinsPi013TeVEMCPtSmallerRebin[i]);
-      hMinv_pT_ratio->RebinX(2);
       hMinv_pT_ratio->RebinX(fBinsPi013TeVEMCPtSmallerRebin[i]);
       // needs rescaling since it is 8 histos merged and also for the rebinnig
-      hMinv_pT_ratio->Scale(1./(8.0*2.0*fBinsPi013TeVEMCPtSmallerRebin[i]));
+      hMinv_pT_ratio->Scale(1./(8.0*fBinsPi013TeVEMCPtSmallerRebin[i]));
       break;
     case 4:
       hBack->Rebin(fBinsPi013TeVEMCPtHigherRebin[i]);
-      hMinv_pT_ratio->RebinX(2);
       hMinv_pT_ratio->RebinX(fBinsPi013TeVEMCPtHigherRebin[i]);
       // needs rescaling since it is 8 histos merged and also for the rebinnig
-      hMinv_pT_ratio->Scale(1./(8.0*2.0*fBinsPi013TeVEMCPtHigherRebin[i]));
+      hMinv_pT_ratio->Scale(1./(8.0*fBinsPi013TeVEMCPtHigherRebin[i]));
       break;
     default:
       hBack->Rebin(fBinsPi013TeVEMCPtRebin[i]);
-      hMinv_pT_ratio->RebinX(2);
       hMinv_pT_ratio->RebinX(fBinsPi013TeVEMCPtRebin[i]);
       // needs rescaling since it is 8 histos merged and also for the rebinnig
-      hMinv_pT_ratio->Scale(1./(8.0*2.0*fBinsPi013TeVEMCPtRebin[i]));
+      hMinv_pT_ratio->Scale(1./(8.0*fBinsPi013TeVEMCPtRebin[i]));
       break;
   }
 
@@ -376,65 +373,65 @@ TH1D* BackGround3to8(int i, const int TEMPLATEMETHOD){
   hPilledUpBack->Scale(1./(Double_t)scalefactor);
   hPilledUpBack->GetXaxis()->SetRangeUser(0.0, 0.3);
 
-  // Double_t sum = 0;
-  // Double_t OAC_scaling = 0;
-  // switch (TEMPLATEMETHOD) {
-  //   case 3:
-  //     for (int b = 1; b <= (800/fBinsPi013TeVEMCPtSmallerRebin[i])*3.0/(8.0*2.0)-1; b++) { //NO IDEA ABOUT THAT +1!!!
-  //       sum = 0;
-  //       if(hMinv_pT_ratio->GetBinContent(b, i+1) != 0){
-  //         OAC_scaling = 0;
-  //         OAC_scaling = hMinv_pT_ratio->GetBinContent(b, i+1);  //sum;
-  //         hPilledUpBack->SetBinContent(b,hPilledUpBack->GetBinContent(b)*OAC_scaling);
-  //         hPilledUpBack->SetBinError(b,hPilledUpBack->GetBinError(b)*OAC_scaling);
-  //       }
-  //       else{
-  //         hPilledUpBack->SetBinContent(b, 0.0);
-  //         hPilledUpBack->SetBinError(b, 0.0);
-  //       }
-  //     }
-  //     break;
-  //   case 4:
-  //     for (int b = 1; b <= (800/fBinsPi013TeVEMCPtHigherRebin[i])*3.0/(8.0*2.0)-1; b++) { //NO IDEA ABOUT THAT +1!!!
-  //       sum = 0;
-  //       if(hMinv_pT_ratio->GetBinContent(b, i+1) != 0){
-  //         OAC_scaling = 0;
-  //         OAC_scaling = hMinv_pT_ratio->GetBinContent(b, i+1);  //sum;
-  //         hPilledUpBack->SetBinContent(b,hPilledUpBack->GetBinContent(b)*OAC_scaling);
-  //         hPilledUpBack->SetBinError(b,hPilledUpBack->GetBinError(b)*OAC_scaling);
-  //       }
-  //       else{
-  //         hPilledUpBack->SetBinContent(b, 0.0);
-  //         hPilledUpBack->SetBinError(b, 0.0);
-  //       }
-  //     }
-  //     break;
-  //   default:
-  //     for (int b = 1; b <= (800/fBinsPi013TeVEMCPtRebin[i])*3.0/(8.0*2.0)-1; b++) { //NO IDEA ABOUT THAT +1!!!
-  //       sum = 0;
-  //       // for (int c = 3; c <= 8; c++) {
-  //       //   if(i == c){
-  //       //     continue;
-  //       //   }
-  //       //   else{
-  //       //     sum += hMinv_pT_ratio->GetBinContent(b, c+1);
-  //       //   }
-  //       // }
-  //       // std::cout << "BinContent = " << hMinv_pT_ratio->GetBinContent(b, i+1) << '\n';
-  //       if(hMinv_pT_ratio->GetBinContent(b, i+1) != 0){
-  //         OAC_scaling = 0;
-  //         OAC_scaling = hMinv_pT_ratio->GetBinContent(b, i+1);  //sum;
-  //         hPilledUpBack->SetBinContent(b,hPilledUpBack->GetBinContent(b)*OAC_scaling);
-  //         hPilledUpBack->SetBinError(b,hPilledUpBack->GetBinError(b)*OAC_scaling);
-  //       }
-  //       else{
-  //         hPilledUpBack->SetBinContent(b, 0.0);
-  //         hPilledUpBack->SetBinError(b, 0.0);
-  //       }
-  //       // std::cout << "BinContent = " << hPilledUpBack->GetBinContent(b) << '\n';
-  //     }
-  //     break;
-  // }
+  Double_t sum = 0;
+  Double_t OAC_scaling = 0;
+  switch (TEMPLATEMETHOD) {
+    case 3:
+      for (int b = 1; b <= (150/fBinsPi013TeVEMCPtSmallerRebin[i]); b++) { //NO IDEA ABOUT THAT +1!!!
+        sum = 0;
+        if(hMinv_pT_ratio->GetBinContent(b, i+1) != 0){
+          OAC_scaling = 0;
+          OAC_scaling = hMinv_pT_ratio->GetBinContent(b, i+1);  //sum;
+          hPilledUpBack->SetBinContent(b,hPilledUpBack->GetBinContent(b)*OAC_scaling);
+          hPilledUpBack->SetBinError(b,hPilledUpBack->GetBinError(b)*OAC_scaling);
+        }
+        else{
+          hPilledUpBack->SetBinContent(b, 0.0);
+          hPilledUpBack->SetBinError(b, 0.0);
+        }
+      }
+      break;
+    case 4:
+      for (int b = 1; b <= (150/fBinsPi013TeVEMCPtHigherRebin[i]); b++) { //NO IDEA ABOUT THAT +1!!!
+        sum = 0;
+        if(hMinv_pT_ratio->GetBinContent(b, i+1) != 0){
+          OAC_scaling = 0;
+          OAC_scaling = hMinv_pT_ratio->GetBinContent(b, i+1);  //sum;
+          hPilledUpBack->SetBinContent(b,hPilledUpBack->GetBinContent(b)*OAC_scaling);
+          hPilledUpBack->SetBinError(b,hPilledUpBack->GetBinError(b)*OAC_scaling);
+        }
+        else{
+          hPilledUpBack->SetBinContent(b, 0.0);
+          hPilledUpBack->SetBinError(b, 0.0);
+        }
+      }
+      break;
+    default:
+      for (int b = 1; b <= (150/fBinsPi013TeVEMCPtRebin[i]); b++) { //NO IDEA ABOUT THAT +1!!!
+        sum = 0;
+        // for (int c = 3; c <= 8; c++) {
+        //   if(i == c){
+        //     continue;
+        //   }
+        //   else{
+        //     sum += hMinv_pT_ratio->GetBinContent(b, c+1);
+        //   }
+        // }
+        // std::cout << "BinContent = " << hMinv_pT_ratio->GetBinContent(b, i+1) << '\n';
+        if(hMinv_pT_ratio->GetBinContent(b, i+1) != 0){
+          OAC_scaling = 0;
+          OAC_scaling = hMinv_pT_ratio->GetBinContent(b, i+1);  //sum;
+          hPilledUpBack->SetBinContent(b,hPilledUpBack->GetBinContent(b)*OAC_scaling);
+          hPilledUpBack->SetBinError(b,hPilledUpBack->GetBinError(b)*OAC_scaling);
+        }
+        else{
+          hPilledUpBack->SetBinContent(b, 0.0);
+          hPilledUpBack->SetBinError(b, 0.0);
+        }
+        // std::cout << "BinContent = " << hPilledUpBack->GetBinContent(b) << '\n';
+      }
+      break;
+  }
   std::cout << "number bins = " << hMinv_pT_ratio->GetNbinsX() << '\n';
   hRatio      = (TH1D*) hBack->Clone();
   hRatio->Divide(hBack, hPilledUpBack, 1, 1);

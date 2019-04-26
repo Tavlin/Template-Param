@@ -637,9 +637,9 @@ void Template_CAP(const int TEMPLATEMETHOD,
 
     MCFile->Close();
     DataFile->Close();
-    if(TEMPLATEMETHOD == 4){
-      CorrBkgFile->Close();
-    }
+    // if(TEMPLATEMETHOD == 4){
+    //   CorrBkgFile->Close();
+    // }
 
     std::cout << "bin number " << k << " reading and writing... DONE!" << "\n\n";
   }

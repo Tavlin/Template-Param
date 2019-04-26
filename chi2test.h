@@ -176,10 +176,10 @@ TH2D* Chi2MapFunction(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi
 
       stepwidth   = (1./pow(10., nIterationsChi2Fit)) * (NEvents_data/NEvents_MC);
       numbersteps = 100;
-      std::cout << "x_min = " << x_min << '\n';
-      std::cout << "y_min = " << y_min << '\n';
-      std::cout << "x_min - (numbersteps+2)*stepwidth/2 = " << x_min - (numbersteps+2)*stepwidth/2 << '\n';
-      std::cout << "x_min + (numbersteps-2)*stepwidth/2 = " << x_min + (numbersteps-2)*stepwidth/2. << '\n';
+      // std::cout << "x_min = " << x_min << '\n';
+      // std::cout << "y_min = " << y_min << '\n';
+      // std::cout << "x_min - (numbersteps+2)*stepwidth/2 = " << x_min - (numbersteps+2)*stepwidth/2 << '\n';
+      // std::cout << "x_min + (numbersteps-2)*stepwidth/2 = " << x_min + (numbersteps-2)*stepwidth/2. << '\n';
       hChi2map    = new TH2D("hChi2map", "",
       numbersteps, x_min - (numbersteps+2)*stepwidth/2., x_min + (numbersteps+2)*stepwidth/2.,
       numbersteps, y_min - (numbersteps-2)*stepwidth/2., y_min + (numbersteps-2)*stepwidth/2.);

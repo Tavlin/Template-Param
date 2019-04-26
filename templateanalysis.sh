@@ -23,7 +23,7 @@ DIR=${PWD##*/} # the directery where I am currently to make things a bit more
 
 ## changed loop from 1-5 to 2-5 since! needs to be changed back!
 
-for iTM in {10..0..-1}
+for iTM in {0..0..-1}
   do
 
     echo ""
@@ -32,14 +32,14 @@ for iTM in {10..0..-1}
     time root -l -q -b Template_CAP.C++\($iTM,\"$c\",\"$d\",\"$e\",\"$f\",\"$g\",\"$h\",\"$i\",\"$j\",\"$k\"\)
   done
 
-rm -r BetterBkgNN
-mkdir BetterBkgNN
-rm -r BetterBkg3to8
-mkdir BetterBkg3to8
-rm -r Normal
-mkdir Normal
-
-time root -l -q -b TemplatePlotting.C++\(\"$a\",\"$b\"\,\"$e\",\"$l\"\)
+# rm -r BetterBkgNN
+# mkdir BetterBkgNN
+# rm -r BetterBkg3to8
+# mkdir BetterBkg3to8
+# rm -r Normal
+# mkdir Normal
+#
+# time root -l -q -b TemplatePlotting.C++\(\"$a\",\"$b\"\,\"$e\",\"$l\"\)
 
 rm -r Yields
 mkdir Yields
