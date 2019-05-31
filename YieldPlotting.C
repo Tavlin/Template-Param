@@ -30,13 +30,13 @@ void YieldPlotting(TString wpsid = "all", TString PicFormat = "pdf", std::string
 
 
 
-  SetHistogramProperties(hCorrYieldME_BetterBkg3to8,        "pt", strCorrectedYield, 8, 1.4, 12.0);
-  SetHistogramProperties(hCorrYield_Framework,              "pt", strCorrectedYield, 5, 1.4, 12.0);
-  SetHistogramProperties(hCorrYieldME_Ratio_BetterBkg3to8,  "pt", "#frac{template}{traditional}", 0, 1.4, 12.0);
-  SetHistogramProperties(hCorrYield_SysError,               "pt", strCorrectedYield, 8, 1.4, 12.0);
-  SetHistogramProperties(hCorrYield_RelativSyserror,        "pt", "rel. systematic uncertainties (%)", 8, 1.4, 12.0);
-  SetHistogramProperties(hCorrYieldME_StatError,            "pt", "rel. statistical uncertainties (%)", 8, 1.4, 12.0);
-  SetHistogramProperties(hCorrectedYieldNormEff_StatError,  "pt", "rel. statistical uncertainties (%)", 5, 1.4, 12.0);
+  SetHistogramProperties(hCorrYieldME_BetterBkg3to8,        "pt", strCorrectedYield, 8, 1.4, 14.0);
+  SetHistogramProperties(hCorrYield_Framework,              "pt", strCorrectedYield, 5, 1.4, 14.0);
+  SetHistogramProperties(hCorrYieldME_Ratio_BetterBkg3to8,  "pt", "#frac{template}{traditional}", 0, 1.4, 14.0);
+  SetHistogramProperties(hCorrYield_SysError,               "pt", strCorrectedYield, 8, 1.4, 14.0);
+  SetHistogramProperties(hCorrYield_RelativSyserror,        "pt", "rel. systematic uncertainties (%)", 8, 1.4, 14.0);
+  SetHistogramProperties(hCorrYieldME_StatError,            "pt", "rel. statistical uncertainties (%)", 8, 1.4, 14.0);
+  SetHistogramProperties(hCorrectedYieldNormEff_StatError,  "pt", "rel. statistical uncertainties (%)", 5, 1.4, 14.0);
 
 
   /*
@@ -51,7 +51,7 @@ void YieldPlotting(TString wpsid = "all", TString PicFormat = "pdf", std::string
   legTemplat->AddEntry((TObject*) 0, "Monash 2013", "");
   legTemplat->AddEntry((TObject*) 0, "GEANT 3", "");
 
-  TLine* OneLine = new TLine(1.4, 1.0, 12.0, 1.0);
+  TLine* OneLine = new TLine(1.4, 1.0, 14.0, 1.0);
   OneLine->SetLineColor(kBlack);
   OneLine->SetLineWidth(3);
   OneLine->SetLineStyle(2);
@@ -64,6 +64,8 @@ void YieldPlotting(TString wpsid = "all", TString PicFormat = "pdf", std::string
   legYields->AddEntry((TObject*) 0, "method:", "");
   legYields->AddEntry(hCorrYieldME_BetterBkg3to8, "template", "l");
   legYields->AddEntry(hCorrYield_Framework, "traditional", "l");
+
+  hCorrYield_SysError->GetYaxis()->SetRangeUser(1.5E-7, 4.0E-2);
 
   OAhists->Add(hCorrYield_SysError); //seems to be buggy
   OAhists->Add(hCorrYieldME_BetterBkg3to8);
@@ -110,7 +112,7 @@ void YieldPlotting(TString wpsid = "all", TString PicFormat = "pdf", std::string
     Plotting of the statistical uncertainties of the Yields
    */
 
-  hCorrectedYieldNormEff_StatError->GetYaxis()->SetRangeUser(0.97, 6.03);
+  hCorrectedYieldNormEff_StatError->GetYaxis()->SetRangeUser(0.0, 5.03);
 
   OAhists->Add(hCorrectedYieldNormEff_StatError);
   OAhists->Add(hCorrYieldME_StatError);
@@ -118,7 +120,7 @@ void YieldPlotting(TString wpsid = "all", TString PicFormat = "pdf", std::string
   OAhists->Add(legStat);
   OAhists->Add(legTemplatStat);
 
-  c1 = makeCanvas(OAhists, 0, "notimeWeirdThick", 0, 0);
+  c1 = makeCanvas(OAhists, 0, "notimeHorizontalThick", 0, 0);
 
   c1->Update();
   c1->SaveAs(Form("Yields/StatistischeUnsicherheitVergleich" + SaveAppendix + "." + PicFormat));
@@ -158,6 +160,8 @@ void YieldPlotting(TString wpsid = "all", TString PicFormat = "pdf", std::string
 
   TLegend* legSystemYield = new TLegend(0.1, 0.94, 0.7, 0.98);
   legSystemYield->AddEntry((TObject*) 0, "ALICE, pp #sqrt{#it{s}} = 13 TeV, #pi^{0} #rightarrow #gamma#gamma with EMCal", "");
+  hCorrYield_SysError->GetYaxis()->SetRangeUser(1.5E-7, 4.0E-2);
+  hCorrYieldME_BetterBkg3to8->GetYaxis()->SetRangeUser(1.5E-7, 4.0E-2);
 
   OAhists->Add(hCorrYield_SysError);
   OAhists->Add(hCorrYieldME_BetterBkg3to8);

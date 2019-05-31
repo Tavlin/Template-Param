@@ -125,9 +125,9 @@ void systematics(TFile* OutputFile){
   // hCorrectedYieldNormEff->Rebin(39, "", fBinsPi013TeVEMCPt);
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  hCorrectedYieldNormEff->Fit(fitBylikin13TeV, "QM0P", "", 1.4, 12.);
-  hCorrYieldME->Fit(fitBylikin13TeV_3to8, "QM0P", "", 1.4, 12.);
-  hCorrectedYieldNormEff->Fit(ftsallis13TeV, "QM0P", "", 1.4, 12.);
+  hCorrectedYieldNormEff->Fit(fitBylikin13TeV, "QM0", "", 1.4, 12.);
+  hCorrYieldME->Fit(fitBylikin13TeV_3to8, "QM0", "", 1.4, 12.);
+  hCorrectedYieldNormEff->Fit(ftsallis13TeV, "QM0", "", 1.4, 12.);
 
   TF1 *fBylikinRatio = new TF1("fBylikinRatio", "fitBylikin13TeV_3to8/fitBylikin13TeV", 1.4, 12.);
   fBylikinRatio->SetLineWidth(3);
@@ -267,7 +267,7 @@ void systematics(TFile* OutputFile){
 
   hCorrYield_RelativSyserror            = (TH1D*) hCorrYield_SysError->Clone("hCorrYield_RelativSyserror");
   for (int i = 1; i <= numberbins; i++) {
-    if(i == 1 || i >= numberbins-2){
+    if(i == 1 || i >= numberbins-1){
       hCorrYield_SysError->         SetBinContent(i, 0.);
       hCorrYield_SysError->         SetBinError(i, 0.);
 

@@ -3,7 +3,10 @@
 //MCTemplatesAnData
 
 // wpsid = which picture should I draw
-void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::string Data = "", TString SaveAppendix = ""){
+void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png",
+                      const char* FrameworkOutput = "", const char*CutString = "" ,
+                      TString SaveAppendix = ""){
+
   TGaxis::SetMaxDigits(3);
   int binnumber = -1;
  /**
@@ -81,7 +84,12 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
     Double_t line_y = 0;
 
     TFile* MCWithOutFile = NULL;
-    MCWithOutFile = SafelyOpenRootfile(Data);
+
+    TString strCutString              = CutString;
+    TString strFrameworkOutput        = FrameworkOutput;
+    TString strMCWithoutCorrection    = strFrameworkOutput + strCutString + "/13TeV/Pi0_MC_GammaConvV1WithoutCorrection_" + strCutString + ".root";
+
+    MCWithOutFile = SafelyOpenRootfile(strMCWithoutCorrection.Data());
     TFile* OutputFile   = NULL;
     TFile* BackFileNN   = NULL;
     TFile* BackFile3to8 = NULL;
@@ -138,82 +146,104 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
         break;
     }
     if (OutputFile->IsOpen() ) printf("OutputFile opened successfully\n");
+
     /**
      * uncorrected Yield obtained via my (template) method
      */
     hYield_dt_chi2map_uncorr    = (TH1D*) OutputFile->Get(Form("hYield_dt_chi2map_uncorr"));
-    SetHistogramProperties(hYield_dt_chi2map_uncorr, "pt", rawyield, 0, 1.4, 12.);
+    SetHistogramProperties(hYield_dt_chi2map_uncorr, "pt", rawyield, 0, 1.4, 14.);
 
     /**
      * Chi^2/ndf (pT) from my method
      */
     hChi2Map_Chi2_pT            = (TH1D*)OutputFile->Get("hChi2Map_Chi2_pT");
-    SetHistogramProperties(hChi2Map_Chi2_pT, "pt", "#chi^{2}/ndf", 0, 1.4, 12.);
+    SetHistogramProperties(hChi2Map_Chi2_pT, "pt", "#chi^{2}/ndf", 0, 1.4, 14.);
 
     /**
      * Chi^2/ndf from the framework method with function parametrization
      */
     histoChi2_0                 = (TH1D*) OutputFile->Get("histoChi2_0");
-    SetHistogramProperties(histoChi2_0, "pt", "#chi^{2}/ndf", 5, 1.4, 12.);
+    SetHistogramProperties(histoChi2_0, "pt", "#chi^{2}/ndf", 5, 1.4, 14.);
 
     /**
      * Signal Area Scaling factor. Currently disabled so NO USE!
      */
     hSignalAreaScaling          = (TH1D*)OutputFile->Get("hSignalAreaScaling");
-    SetHistogramProperties(hSignalAreaScaling, "pt", "FS_{Signal}", 0, 1.4, 12.);
+    SetHistogramProperties(hSignalAreaScaling, "pt", "FS_{Signal}", 0, 1.4, 14.);
 
     /**
      * Correlated Background Area Scaling factor. Currently disabled so NO USE!
      */
     hCorrbackAreaScaling        = (TH1D*)OutputFile->Get("hCorrbackAreaScaling");
-    SetHistogramProperties(hCorrbackAreaScaling, "pt", "FS_{korr. Untergrund}", 0, 1.4, 12.);
+    SetHistogramProperties(hCorrbackAreaScaling, "pt", "FS_{korr. Untergrund}", 0, 1.4, 14.);
 
     /**
      * corrected Yield obtained via my (template) method
      */
     hYield_dt_chi2map_corrected = (TH1D*)OutputFile->Get("hYield_dt_chi2map_corrected");
-    SetHistogramProperties(hYield_dt_chi2map_corrected, "pt", strCorrectedYield, 0, 1.4, 12.);
+    SetHistogramProperties(hYield_dt_chi2map_corrected, "pt", strCorrectedYield, 0, 1.4, 14.);
 
     /**
      * corrected Yield with the framework method (function parametrization)
      */
     hCorrectedYieldNormEff      = (TH1D*) OutputFile->Get("hCorrectedYieldNormEff");
-    SetHistogramProperties(hCorrectedYieldNormEff, "pt", strCorrectedYield, 5, 1.4, 12.);
+    SetHistogramProperties(hCorrectedYieldNormEff, "pt", strCorrectedYield, 5, 1.4, 14.);
 
     /**
      * Signal Template Scaling factor
      */
     h_x_min = (TH1D*)OutputFile->Get("h_x_min");
-    SetHistogramProperties(h_x_min, "pt", "SF_{signal}", 2, 1.4, 12.);
+    SetHistogramProperties(h_x_min, "pt", "SF_{signal}", 2, 1.4, 14.);
 
     /**
      * corr. bkg. template sclaing factor
-     * @param [name] [description]
      */
     h_y_min                           = (TH1D*)OutputFile->Get("h_y_min");
-    SetHistogramProperties(h_y_min, "pt", "SF_{corr. background}", 8, 1.4, 12.);
+    SetHistogramProperties(h_y_min, "pt", "SF_{corr. background}", 8, 1.4, 14.);
 
 
+    /*
+    My own efficiency; NOT from the after burner!
+     */
     hEfficiency                       = (TH1D*) OutputFile->Get("hEfficiency");
-    SetHistogramProperties(hEfficiency, "pt", "correction factors", 0, 1.4, 12.);
+    SetHistogramProperties(hEfficiency, "pt", "correction factors", 0, 1.4, 14.);
 
+    /*
+    The normal acceptance
+     */
     hAcc                              = (TH1D*) OutputFile->Get("hAcc");
-    SetHistogramProperties(hAcc, "pt", "correction factors", 1, 1.4, 12.);
+    SetHistogramProperties(hAcc, "pt", "correction factors", 1, 1.4, 14.);
 
+    /*
+    Ratio: my Yield / AfterBurner Yield
+     */
     hCorrYieldME_Ratio                = (TH1D*) OutputFile->Get("hCorrYieldME_Ratio");
-    SetHistogramProperties(hCorrYieldME_Ratio, "pt", "ratio", 4, 1.4, 12.);
+    SetHistogramProperties(hCorrYieldME_Ratio, "pt", "ratio", 4, 1.4, 14.);
 
+    /*
+    Statistical uncertainties of my yield
+     */
     hCorrYieldME_StatError            = (TH1D*) OutputFile->Get("hCorrYieldME_StatError");
-    SetHistogramProperties(hCorrYieldME_StatError, "pt", StatUn_Str, 0, 1.4, 12.);
+    SetHistogramProperties(hCorrYieldME_StatError, "pt", StatUn_Str, 0, 1.4, 14.);
 
+    /*
+    Statistical uncertainties of the yield from the after burner
+     */
     hCorrectedYieldNormEff_StatError  = (TH1D*) OutputFile->Get("hCorrectedYieldNormEff_StatError");
-    SetHistogramProperties(hCorrectedYieldNormEff_StatError, "pt", StatUn_Str, 5, 1.4, 12.);
+    SetHistogramProperties(hCorrectedYieldNormEff_StatError, "pt", StatUn_Str, 5, 1.4, 14.);
 
+    /*
+    one TLine at 0.0 for the minv dependent pictures
+     */
     line_0 = new TLine(0.0, 0.0, 0.3, 0.0);
     line_0->SetLineWidth(3);
     line_0->SetLineStyle(1);
     line_0->SetLineColor(kBlack);
-    line_one = new TLine(1.4, 1.0, 12.0, 1.0);
+
+    /*
+    one TLine at 0.0 for the pT dependent pictures
+     */
+    line_one = new TLine(1.4, 1.0, 14.0, 1.0);
     line_one->SetLineWidth(2);
     line_one->SetLineStyle(3);
     line_one->SetLineColor(kBlack);
@@ -228,14 +258,14 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
       if(binnumber <=  0 || binnumber > numberbins){
 
 
-        hGG                      = (TH1D*) MCWithOutFile->Get(Form("Mapping_TrueMesonCaloPhoton_InvMass_in_Pt_Bin%02d", k));
-        SetHistogramProperties(hGG, "minv", count_str, 2, 0.0, 0.3);
-
-        hGC                      = (TH1D*) MCWithOutFile->Get(Form("Mapping_TrueMesonMixedCaloConvPhoton_InvMass_in_Pt_Bin%02d", k));
-        SetHistogramProperties(hGC, "minv", count_str, 4, 0.0, 0.3);
-
-        hCC                      = (TH1D*) MCWithOutFile->Get(Form("Mapping_TrueMesonCaloConvPhoton_InvMass_in_Pt_Bin%02d", k));
-        SetHistogramProperties(hCC, "minv", count_str, 7, 0.0, 0.3);
+        // hGG                      = (TH1D*) MCWithOutFile->Get(Form("Mapping_TrueMesonCaloPhoton_InvMass_in_Pt_Bin%02d", k));
+        // SetHistogramProperties(hGG, "minv", count_str, 2, 0.0, 0.3);
+        //
+        // hGC                      = (TH1D*) MCWithOutFile->Get(Form("Mapping_TrueMesonMixedCaloConvPhoton_InvMass_in_Pt_Bin%02d", k));
+        // SetHistogramProperties(hGC, "minv", count_str, 4, 0.0, 0.3);
+        //
+        // hCC                      = (TH1D*) MCWithOutFile->Get(Form("Mapping_TrueMesonCaloConvPhoton_InvMass_in_Pt_Bin%02d", k));
+        // SetHistogramProperties(hCC, "minv", count_str, 7, 0.0, 0.3);
 
 
         hInvMass_MC              = (TH1D*) MCWithOutFile->Get(Form("fHistoMappingSignalInvMass_in_Pt_Bin%02d", k));
@@ -351,7 +381,7 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
           hCorrBackNoRebin->Rebin(fBinsPi013TeVEMCPtRebin[k-1]);
 
           /*
-            TLegend which displays most important info as header!
+          TLegend which displays most important info as header!
            */
           TLegend* legSystemBWR = new TLegend(0.03, 0.85, 0.5, 0.9);
           legSystemBWR->AddEntry((TObject*) 0, "ALICE, pp #sqrt{#it{s}} = 13 TeV, #pi^{0} #rightarrow #gamma#gamma with EMCal", "");
@@ -603,34 +633,34 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
           delete lParamResult;
           delete paramrange;
 
-          if(templatemethod == 0){
-            TLegend* lGammas = new TLegend(0.63, 0.7, 0.8, 0.9);
-            lGammas->AddEntry(hSignal, "MC true #pi^{0} signal", "p");
-            lGammas->AddEntry(hGG, "#gamma#gamma", "p");
-            lGammas->AddEntry(hGC, "#gamma#gamma_{conv}", "p");
-            lGammas->AddEntry(hCC, "#gamma_{conv}#gamma_{conv}",  "p");
-
-
-            OAhists->Clear();
-            OAhists->Add(hSignal);
-            OAhists->Add(hGG);
-            OAhists->Add(hGC);
-            OAhists->Add(hCC);
-            OAhists->Add(lGammas);
-            OAhists->Add(legSystem);
-            OAhists->Add(line_0);
-            OAhists->Add(legpT);
-            OAhists->Add(legTemplat);
-
-            c1 = makeCanvas(OAhists, 0, "notimethicksquare", 0, 0);
-
-            c1->Update();
-            // DrawLabelALICE(0.6, 0.9, 0.02, 40, str);
-            c1->Update();
-
-            c1->SaveAs(Form("BetterBkg3to8/PeakTemplateMotivation%02d" + SaveAppendix + "." + PicFormat,k));
-
-          }
+          // if(templatemethod == 0){
+          //   TLegend* lGammas = new TLegend(0.63, 0.7, 0.8, 0.9);
+          //   lGammas->AddEntry(hSignal, "MC true #pi^{0} signal", "p");
+          //   lGammas->AddEntry(hGG, "#gamma#gamma", "p");
+          //   lGammas->AddEntry(hGC, "#gamma#gamma_{conv}", "p");
+          //   lGammas->AddEntry(hCC, "#gamma_{conv}#gamma_{conv}",  "p");
+          //
+          //
+          //   OAhists->Clear();
+          //   OAhists->Add(hSignal);
+          //   OAhists->Add(hGG);
+          //   OAhists->Add(hGC);
+          //   OAhists->Add(hCC);
+          //   OAhists->Add(lGammas);
+          //   OAhists->Add(legSystem);
+          //   OAhists->Add(line_0);
+          //   OAhists->Add(legpT);
+          //   OAhists->Add(legTemplat);
+          //
+          //   c1 = makeCanvas(OAhists, 0, "notimethicksquare", 0, 0);
+          //
+          //   c1->Update();
+          //   // DrawLabelALICE(0.6, 0.9, 0.02, 40, str);
+          //   c1->Update();
+          //
+          //   c1->SaveAs(Form("BetterBkg3to8/PeakTemplateMotivation%02d" + SaveAppendix + "." + PicFormat,k));
+          //
+          // }
 
           if(templatemethod == 2){
             c1->Clear();
@@ -659,9 +689,7 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
             c1 = makeCanvas(OAhists, 0, "notimetSquare", 0, 0);
 
             c1->Update();
-            // DrawLabelALICE(0.6, 0.9, 0.025, 40, str);
-            c1->Update();
-            c1->SaveAs(Form("BetterBkg3to8/EntstehungUntergrund%02d" + SaveAppendix + "." + PicFormat,k));
+            c1->SaveAs(Form("Normal/EntstehungUntergrund%02d" + SaveAppendix + "." + PicFormat,k));
           }
           c1->Clear();
 
@@ -738,7 +766,7 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
     if(wpsid == "all" || wpsid.Contains("uncorryield")){
 
       TLegend* leg = new TLegend(0.2,0.2,0.4,0.4);
-      hYield_dt_chi2map_uncorr->GetXaxis()->SetRangeUser(1.4, 12.);
+      hYield_dt_chi2map_uncorr->GetXaxis()->SetRangeUser(1.4, 14.);
 
       OAhists->Clear();
       OAhists->Add(hYield_dt_chi2map_uncorr);
@@ -797,8 +825,8 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
       TH1D* SFratio = (TH1D*) h_y_min->Clone("SFratio");
       SFratio->Divide(h_x_min);
       SFratio->SetYTitle("ratio");
-      SetHistogramProperties(h_x_min, "", "#lambda_{S}", 2, 1.4, 12.);
-      SetHistogramProperties(h_y_min, "", "#lambda_{CB}", 4, 1.4, 12.);
+      SetHistogramProperties(h_x_min, "", "#lambda_{S}", 2, 1.4, 14.);
+      SetHistogramProperties(h_y_min, "", "#lambda_{CB}", 4, 1.4, 14.);
 
       TLegend* SFLegend = new TLegend(0.6,0.75,0.85,0.9);
       SFLegend->SetHeader("Skalierungsfaktor:");
@@ -855,8 +883,8 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png", std::str
       }
       c1->Clear();
 
-      SetHistogramProperties(h_x_min, "pt", "SF_{signal}", 2, 1.4, 12.);
-      SetHistogramProperties(h_y_min, "pt", "SF_{corr. background}", 4, 1.4, 12.);
+      SetHistogramProperties(h_x_min, "pt", "SF_{signal}", 2, 1.4, 14.);
+      SetHistogramProperties(h_y_min, "pt", "SF_{corr. background}", 4, 1.4, 14.);
 
       TLegend* lCorrection = new TLegend(0.15,0.7,0.6,0.9);
       lCorrection->AddEntry(hEfficiency, "efficiency" , "l");

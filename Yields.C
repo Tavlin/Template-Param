@@ -58,38 +58,38 @@ void Yields(TString PicFormat = "png", TString SaveAppendix = ""){
     TH1D* hCorrYield_SingleBkgSysUncertainty        = NULL;
 
     TLegend* legSystem = new TLegend(0.1, 0.94, 0.7, 0.98);
-    legSystem->AddEntry((TObject*) 0, "ALICE, pp bei #sqrt{#it{s}} = 13 TeV, #pi^{0} #rightarrow #gamma#gamma mit EMCal", "");
+    legSystem->AddEntry((TObject*) 0, "ALICE, pp #sqrt{#it{s}} = 13 TeV, #pi^{0} #rightarrow #gamma#gamma with EMCal", "");
 
 
     hCorrYield_HigherFitSysUncertainty        = (TH1D*) BetterBkg3to8->Get("hCorrYield_HigherFitSysUncertainty");
-    SetHistogramProperties(hCorrYield_HigherFitSysUncertainty, "pt", "relative sys. Abweichung (%)", 2, 1.4, 12.);
+    SetHistogramProperties(hCorrYield_HigherFitSysUncertainty, "pt", "relative sys. uncertainties (%)", 2, 1.4, 14.);
 
     hCorrYield_SmallFitSysUncertainty         = (TH1D*) BetterBkg3to8->Get("hCorrYield_SmallFitSysUncertainty");
-    SetHistogramProperties(hCorrYield_SmallFitSysUncertainty, "pt", "relative sys. Abweichung (%)", 1, 1.4, 12.);
+    SetHistogramProperties(hCorrYield_SmallFitSysUncertainty, "pt", "relative sys. uncertainties (%)", 1, 1.4, 14.);
 
     hCorrYield_HigherIntSysUncertainty        = (TH1D*) BetterBkg3to8->Get("hCorrYield_HigherIntSysUncertainty");
-    SetHistogramProperties(hCorrYield_HigherIntSysUncertainty, "pt", "relative sys. Abweichung (%)", 2, 1.4, 12.);
+    SetHistogramProperties(hCorrYield_HigherIntSysUncertainty, "pt", "relative sys. uncertainties (%)", 2, 1.4, 14.);
 
     hCorrYield_SmallIntSysUncertainty         = (TH1D*) BetterBkg3to8->Get("hCorrYield_SmallIntSysUncertainty");
-    SetHistogramProperties(hCorrYield_SmallIntSysUncertainty, "pt", "relative sys. Abweichung (%)", 1, 1.4, 12.);
+    SetHistogramProperties(hCorrYield_SmallIntSysUncertainty, "pt", "relative sys. uncertainties (%)", 1, 1.4, 14.);
 
     hCorrYield_LowerRebinningSysUncertainty   = (TH1D*) BetterBkg3to8->Get("hCorrYield_LowerRebinningSysUncertainty");
-    SetHistogramProperties(hCorrYield_LowerRebinningSysUncertainty, "pt", "relative sys. Abweichung (%)", 1, 1.4, 12.);
+    SetHistogramProperties(hCorrYield_LowerRebinningSysUncertainty, "pt", "relative sys. uncertainties (%)", 1, 1.4, 14.);
 
     hCorrYield_HigherRebinningSysUncertainty  = (TH1D*) BetterBkg3to8->Get("hCorrYield_HigherRebinningSysUncertainty");
-    SetHistogramProperties(hCorrYield_HigherRebinningSysUncertainty, "pt", "relative sys. Abweichung (%)", 2, 1.4, 12.);
+    SetHistogramProperties(hCorrYield_HigherRebinningSysUncertainty, "pt", "relative sys. uncertainties (%)", 2, 1.4, 14.);
 
     hCorrYield_NNMethodSysUncertainty         = (TH1D*) BetterBkg3to8->Get("hCorrYield_NNMethodSysUncertainty");
-    SetHistogramProperties(hCorrYield_NNMethodSysUncertainty, "pt", "relative sys. Abweichung (%)", 2, 1.4, 12.);
+    SetHistogramProperties(hCorrYield_NNMethodSysUncertainty, "pt", "relative sys. uncertainties (%)", 2, 1.4, 14.);
 
     hCorrYield_SingleBkgSysUncertainty        = (TH1D*) BetterBkg3to8->Get("hCorrYield_SingleBkgSysUncertainty");
-    SetHistogramProperties(hCorrYield_SingleBkgSysUncertainty, "pt", "relative sys. Abweichung (%)", 1, 1.4, 12.);
+    SetHistogramProperties(hCorrYield_SingleBkgSysUncertainty, "pt", "relative sys. uncertainties (%)", 1, 1.4, 14.);
 
     hCorrYield_LeftBkgSmallSysUncertainty     = (TH1D*) BetterBkg3to8->Get("hCorrYield_LeftBkgSmallSysUncertainty");
-    SetHistogramProperties(hCorrYield_LeftBkgSmallSysUncertainty, "pt", "relative sys. Abweichung (%)", 1, 1.4, 12.);
+    SetHistogramProperties(hCorrYield_LeftBkgSmallSysUncertainty, "pt", "relative sys. uncertainties (%)", 1, 1.4, 14.);
 
     hCorrYield_LeftBkgWideSysUncertainty      = (TH1D*) BetterBkg3to8->Get("hCorrYield_LeftBkgWideSysUncertainty");
-    SetHistogramProperties(hCorrYield_LeftBkgWideSysUncertainty, "pt", "relative sys. Abweichung (%)", 2, 1.4, 12.);
+    SetHistogramProperties(hCorrYield_LeftBkgWideSysUncertainty, "pt", "relative sys. uncertainties (%)", 2, 1.4, 14.);
 
 
     TCanvas* c1                                 = NULL;
@@ -99,16 +99,16 @@ void Yields(TString PicFormat = "png", TString SaveAppendix = ""){
      */
      OAhists->Clear();
 
-     TLine* ZeroLine = new TLine(1.4, 0.0, 12.0, 0.0);
+     TLine* ZeroLine = new TLine(1.4, 0.0, 14.0, 0.0);
      ZeroLine->SetLineStyle(2);
      ZeroLine->SetLineWidth(3);
 
      TLegend* legFitSysUncertainty = new TLegend(0.13, 0.7, 0.5, 0.9);
-     legFitSysUncertainty->AddEntry((TObject*) 0, "Parametrisierungsbereich:", "");
-     legFitSysUncertainty->AddEntry(hCorrYield_HigherFitSysUncertainty, "breite Grenzen", "p");
-     legFitSysUncertainty->AddEntry(hCorrYield_SmallFitSysUncertainty, "schmale Grenzen", "p");
+     legFitSysUncertainty->AddEntry((TObject*) 0, "param. range:", "");
+     legFitSysUncertainty->AddEntry(hCorrYield_HigherFitSysUncertainty, "wide", "p");
+     legFitSysUncertainty->AddEntry(hCorrYield_SmallFitSysUncertainty, "narrow", "p");
 
-     hCorrYield_SmallFitSysUncertainty->GetYaxis()->SetRangeUser(-25.7, 25.7);
+     hCorrYield_SmallFitSysUncertainty->GetYaxis()->SetRangeUser(-12.7, 12.7);
 
      OAhists->Add(hCorrYield_SmallFitSysUncertainty);
      OAhists->Add(hCorrYield_HigherFitSysUncertainty);
@@ -127,11 +127,11 @@ void Yields(TString PicFormat = "png", TString SaveAppendix = ""){
      /*************************************************************************/
 
      TLegend* legIntSysUncertainty = new TLegend(0.13, 0.7, 0.5, 0.9);
-     legIntSysUncertainty->AddEntry((TObject*) 0, "Z#ddot{a}hlbereich:", "");
-     legIntSysUncertainty->AddEntry(hCorrYield_HigherIntSysUncertainty, "breite Grenzen", "p");
-     legIntSysUncertainty->AddEntry(hCorrYield_SmallIntSysUncertainty, "schmale Grenzen", "p");
+     legIntSysUncertainty->AddEntry((TObject*) 0, "counting range:", "");
+     legIntSysUncertainty->AddEntry(hCorrYield_HigherIntSysUncertainty, "wide", "p");
+     legIntSysUncertainty->AddEntry(hCorrYield_SmallIntSysUncertainty, "narrow", "p");
 
-     hCorrYield_SmallIntSysUncertainty->GetYaxis()->SetRangeUser(-25.7, 25.7);
+     hCorrYield_SmallIntSysUncertainty->GetYaxis()->SetRangeUser(-12.7, 12.7);
 
      OAhists->Add(hCorrYield_SmallIntSysUncertainty);
      OAhists->Add(hCorrYield_HigherIntSysUncertainty);
@@ -151,11 +151,11 @@ void Yields(TString PicFormat = "png", TString SaveAppendix = ""){
      /*************************************************************************/
 
      TLegend* legRebinningSysUncertainty = new TLegend(0.13, 0.7, 0.5, 0.9);
-     legRebinningSysUncertainty->AddEntry((TObject*) 0, "Intervallbreite #Delta #it{m}_{inv}:", "");
-     legRebinningSysUncertainty->AddEntry(hCorrYield_HigherRebinningSysUncertainty, "vergr#ddot{o}#betaert", "p");
-     legRebinningSysUncertainty->AddEntry(hCorrYield_LowerRebinningSysUncertainty, "verkleinert", "p");
+     legRebinningSysUncertainty->AddEntry((TObject*) 0, "intervall range #Delta #it{m}_{inv}:", "");
+     legRebinningSysUncertainty->AddEntry(hCorrYield_HigherRebinningSysUncertainty, "larger", "p");
+     legRebinningSysUncertainty->AddEntry(hCorrYield_LowerRebinningSysUncertainty, "smaller", "p");
 
-     hCorrYield_LowerRebinningSysUncertainty->GetYaxis()->SetRangeUser(-25.7, 25.7);
+     hCorrYield_LowerRebinningSysUncertainty->GetYaxis()->SetRangeUser(-12.7, 12.7);
 
      OAhists->Add(hCorrYield_LowerRebinningSysUncertainty);
      OAhists->Add(hCorrYield_HigherRebinningSysUncertainty);
@@ -174,11 +174,11 @@ void Yields(TString PicFormat = "png", TString SaveAppendix = ""){
      /*************************************************************************/
 
      TLegend* legBkgVariationSysUncertainty = new TLegend(0.13, 0.7, 0.5, 0.9);
-     legBkgVariationSysUncertainty->AddEntry((TObject*) 0, "templates des korrelierten Untergrund:", "");
-     legBkgVariationSysUncertainty->AddEntry(hCorrYield_NNMethodSysUncertainty, "n#ddot{a}chste Nachbarn", "p");
-     legBkgVariationSysUncertainty->AddEntry(hCorrYield_SingleBkgSysUncertainty, "einzelne", "p");
+     legBkgVariationSysUncertainty->AddEntry((TObject*) 0, "templates of the corr. background:", "");
+     legBkgVariationSysUncertainty->AddEntry(hCorrYield_NNMethodSysUncertainty, "next neighbours", "p");
+     legBkgVariationSysUncertainty->AddEntry(hCorrYield_SingleBkgSysUncertainty, "single", "p");
 
-     hCorrYield_SingleBkgSysUncertainty->GetYaxis()->SetRangeUser(-25.7, 25.7);
+     hCorrYield_SingleBkgSysUncertainty->GetYaxis()->SetRangeUser(-12.7, 12.7);
 
      OAhists->Add(hCorrYield_SingleBkgSysUncertainty);
      OAhists->Add(hCorrYield_NNMethodSysUncertainty);
@@ -198,12 +198,12 @@ void Yields(TString PicFormat = "png", TString SaveAppendix = ""){
      /*************************************************************************/
 
      TLegend* legLeftBkgVariationSysUncertainty = new TLegend(0.13, 0.7, 0.5, 0.9);
-     legLeftBkgVariationSysUncertainty->AddEntry((TObject*) 0, "Skalierungsbereich f#ddot{u}r:", "");
-     legLeftBkgVariationSysUncertainty->AddEntry((TObject*) 0, "den unkorrelierten Untergrund:", "");
+     legLeftBkgVariationSysUncertainty->AddEntry((TObject*) 0, "scaling range for the", "");
+     legLeftBkgVariationSysUncertainty->AddEntry((TObject*) 0, "uncorrected background:", "");
      legLeftBkgVariationSysUncertainty->AddEntry(hCorrYield_LeftBkgWideSysUncertainty, "0.225 #leq #it{m}_{inv} /(GeV/#it{c}^{2}) < 0.3", "p");
      legLeftBkgVariationSysUncertainty->AddEntry(hCorrYield_LeftBkgSmallSysUncertainty, "0.19 #leq #it{m}_{inv} /(GeV/#it{c}^{2}) < 0.265", "p");
 
-     hCorrYield_LeftBkgSmallSysUncertainty->GetYaxis()->SetRangeUser(-25.7, 25.7);
+     hCorrYield_LeftBkgSmallSysUncertainty->GetYaxis()->SetRangeUser(-12.7, 12.7);
 
      OAhists->Add(hCorrYield_LeftBkgSmallSysUncertainty);
      OAhists->Add(hCorrYield_LeftBkgWideSysUncertainty);

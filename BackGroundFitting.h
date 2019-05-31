@@ -120,7 +120,7 @@ TH1D* BackgroundAdding(int i){
   TFile* CorrBkgFile    = SafelyOpenRootfile("./CorrBkgFileNoRebin.root");
 
   // setting j and k right depending on the binning
-  const double b = 4.;
+  const double b = 3.;
   int j = i;
   int k = i+1;
   while(fBinsPi013TeVEMCPt[k]-fBinsPi013TeVEMCPt[j] < b){
@@ -142,7 +142,7 @@ TH1D* BackgroundAdding(int i){
     j = 37;
   }
   std::cout << fBinsPi013TeVEMCPt[k]-fBinsPi013TeVEMCPt[j] << '\n';
-  std::cout << "k and j are " << k <<  "and" << j << '\n';
+  std::cout << "k and j are " << k <<  " and " << j << '\n';
   int scalefactor = k-j;
 
   TH1D* (aBackStackup[k-j]);
@@ -175,21 +175,18 @@ TH1D* BackgroundAdding(int i){
       hBackStackup = NULL;
       hBackStackup = (TH1D*) (aBackStackup[k-m])->Clone("hBackStackup");
       Int_t NFitPoints = hBackStackup->FindBin(0.3) - hBackStackup->FindBin(0.1);
-      TF1* fit = new TF1("fit", &funcCorrBackFitting, 0.0 ,0.3, 1);
+      TF1* fit = new TF1(Form("fit%d", m), &funcCorrBackFitting, 0.0 ,0.3, 1);
       fit->SetNpx(ndrawpoints);
       fit->SetParameter(0, 1.);
       fit->SetNumberFitPoints(NFitPoints);
       fit->SetLineColor(kRed);
       fit->SetLineWidth(3);
-      hBack->Fit("fit", "QM0P","", 0.1, 0.3);
-      // std::cout << "after fit" << '\n';
+      hBack->Fit(Form("fit%d", m), "QM0","", 0.1, 0.3);
       aBackStackup[k-m]->Scale(fit->GetParameter(0));
 
       aBackStackup[k-m]->SetMarkerStyle(1);
       list->Add(aBackStackup[k-m]);
-      // std::cout << "before delete" << '\n';
       delete fit;
-      // std::cout << "after delete of fit" << '\n';
     }
     else{
       continue;
@@ -234,8 +231,9 @@ TH1D* BackgroundAdding(int i){
   hRatio      = (TH1D*) hBack->Clone();
   hRatio->Divide(hBack, hPilledUpBack, 1, 1);
 
-  fPol0        = new TF1(Form("fPol0_bin%02d",i), "[0]", 0.0, 0.3);
-  fPol0->SetParLimits(0, -1., 100.);
+  fPol0        = new TF1(Form("fPol0_bin%02d",i), "pol0", 0.0, 0.3);
+  fPol0->SetParameter(0, 1.0);
+  // fPol0->SetParLimits(0, -1., 100.);
 
   for (int t = 1; t < hRatio->GetNbinsX(); t++) {
     if(hRatio->GetBinError(t) > 40 || fabs(hRatio->GetBinContent(t)) > 40){
@@ -243,7 +241,7 @@ TH1D* BackgroundAdding(int i){
       hRatio->SetBinError(t, 0.0);
     }
   }
-  hRatio->Fit(fPol0,"QM0P", "",  0.1, 0.2);
+  hRatio->Fit(Form("fPol0_bin%02d",i), "QM0", "",  0.08, 0.2);
 
   // std::cout << "before making outputfile" << '\n';
   if(i == 1){
@@ -446,7 +444,7 @@ TH1D* BackGround3to8(int i, const int TEMPLATEMETHOD){
       hRatio->SetBinError(t, 0.0);
     }
   }
-  hRatio->Fit(fPol0,"QM0P", "",  0.1, 0.2);
+  hRatio->Fit(fPol0,"QM0", "",  0.1, 0.2);
 
 
 

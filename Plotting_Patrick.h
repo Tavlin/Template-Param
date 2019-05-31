@@ -63,11 +63,11 @@ void PlotArray(TObjArray *arraytoplot, const char *controlstring ,Short_t *color
       hist->SetTitle("");
 
 
-      if(hh==0 && hist->GetMaximum() > 0. && !(control.Contains("logY")||control.Contains("logy")||control.Contains("LogY")||control.Contains("LOGY"))){
-        Double_t yMin = -1.*hist->GetMaximum()*0.04;
-        Double_t yMax = hist->GetMaximum()*1.01;
-        hist->GetYaxis()->SetRangeUser(yMin, yMax);
-      }
+      // if(hh==0 && hist->GetMaximum() > 0. && !(control.Contains("logY")||control.Contains("logy")||control.Contains("LogY")||control.Contains("LOGY"))){
+      //   Double_t yMin = -1.*hist->GetMaximum()*0.04;
+      //   Double_t yMax = hist->GetMaximum()*1.01;
+      //   hist->GetYaxis()->SetRangeUser(yMin, yMax);
+      // }
 
       hist->SetAxisRange(xMin,xMax,"X");
 

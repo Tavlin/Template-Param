@@ -293,7 +293,7 @@ void Template_CAP(const int TEMPLATEMETHOD,
   )*hNEvents_data->GetBinContent(6);
   ESDFile_data->Close();
 
-  gDirectory->Cd(safePath.Data());                  // for saftey resetting path
+  gDirectory->Cd(safePath.Data());                  // for safety resetting path
 
   /**
    * Calls the CorrBkgCreation function from BackGroundFitting.h This function
