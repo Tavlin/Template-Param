@@ -50,14 +50,25 @@ Fitting and plotting of MC templates on data
      In the bash script are the different needed variables listed as follows:
 
      > $a == what should be plotted
+
      > $b == SaveFile Format (.eps, .pdf, .png etc.)
+
      > $c == path to the ESD MC
+
      > $d == path to the ESD data
+
      > $e == path to the normal framework output
+
      > $f == path to the framework output without rebinning
+
      > $g == path to the framework output with higher rebinning
+
      > $h == path to the framework output with lower rebinning
+
      > $i == path to the framework output with narrow uncorr back fit range
+
      > $j == path to the framework output with wide uncorr back fit range
+
      > $k == cut string (since the cut string log can contain more then one and this is made only for one cut string!)
+
      > $l == SaveAppendix (if you want to add something like the data set to the pictures' names)
