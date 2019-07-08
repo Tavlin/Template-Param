@@ -61,18 +61,3 @@ Fitting and plotting of MC templates on data
      > $j == path to the framework output with wide uncorr back fit range
      > $k == cut string (since the cut string log can contain more then one and this is made only for one cut string!)
      > $l == SaveAppendix (if you want to add something like the data set to the pictures' names)
-
-     As an example here is what I am using:
-
-     > a="all"
-     > b="png"
-     > c="/data4/mhemmer/Documents/2020_1617/Data/GammaCalo_2020_1617MC.root"
-     > d="/data4/mhemmer/Documents/2020_1617/Data/GammaCalo_2020_1617data.root"
-     > e="/data4/mhemmer/Documents/2020_1617/ABO_Normal/"
-     > f="/data4/mhemmer/Documents/2020_1617/ABO_NoRebin/"
-     > g="/data4/mhemmer/Documents/2020_1617/ABO_HigherRebin/"
-     > h="/data4/mhemmer/Documents/2020_1617/ABO_LowerRebin/"
-     > i="/data4/mhemmer/Documents/2020_1617/ABO_NarrowCorrBck/"
-     > j="/data4/mhemmer/Documents/2020_1617/ABO_WideCorrBck/"
-     > k="00010113_4117911067032230000_01631031000000d0"
-     > l="\_2020\_1617"
