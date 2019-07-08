@@ -1,4 +1,4 @@
-> Template-parametrisation
+Template-parametrisation
 Code for my bachelor thesis.
 Fitting and plotting of MC templates on data
 
@@ -72,3 +72,18 @@ Fitting and plotting of MC templates on data
      > $k == cut string (since the cut string log can contain more then one and this is made only for one cut string!)
 
      > $l == SaveAppendix (if you want to add something like the data set to the pictures' names)
+
+
+  2. ## Running the analysis
+     To run the analysis after you set up everything simply use the command:
+     ```bash
+     $ bash templateanalysis.sh
+     ```
+
+     Normally the bash script should run the full analaysis, with systematic
+     uncertainty calculation and plotting. If you wish to only do some parts,
+     you will need to change a few things in the bash script or comment some
+     lines out.
+
+     By default the folders in which the plots are saved will be deleted and new
+     ones created, so be carefull!
