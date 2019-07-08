@@ -1,4 +1,4 @@
-# Template-parametrisation
+> Template-parametrisation
 Code for my bachelor thesis.
 Fitting and plotting of MC templates on data
 
@@ -31,7 +31,7 @@ Fitting and plotting of MC templates on data
   * ### Smaller and wider background fitting
      For systematic uncertainties this variation is normally included in the
      afterburner however, the afterburner changes the fitting range from right
-     of the peak to left of the peak for pi0. Since we use this template method
+     of the peak to left of the peak for pi<sub>0</sub>. Since we use this template method
      to be able to describe the pions where at least one of the two photons
      converted into e+e- outside of our PID. This part of the pi0 peak should be
      in the same mass-range where the background fitting range variation of the
@@ -42,3 +42,37 @@ Fitting and plotting of MC templates on data
 
      This change needs to be done by hand in the afterburner to obtain the
      needed output!
+
+  * ### Setting up a Files.txt
+     To run the code smoothly I wrote a bash script that would read all the
+     needed path variables (like where the different output files are), which
+     should be contained in a single files that I called _Files.txt_.
+     In the bash script are the different needed variables listed as follows:
+
+     > $a == what should be plotted
+     > $b == SaveFile Format (.eps, .pdf, .png etc.)
+     > $c == path to the ESD MC
+     > $d == path to the ESD data
+     > $e == path to the normal framework output
+     > $f == path to the framework output without rebinning
+     > $g == path to the framework output with higher rebinning
+     > $h == path to the framework output with lower rebinning
+     > $i == path to the framework output with narrow uncorr back fit range
+     > $j == path to the framework output with wide uncorr back fit range
+     > $k == cut string (since the cut string log can contain more then one and this is made only for one cut string!)
+     > $l == SaveAppendix (if you want to add something like the data set to the pictures' names)
+
+     As an example here is what I am using:
+
+     > a="all"
+     > b="png"
+     > c="/data4/mhemmer/Documents/2020_1617/Data/GammaCalo_2020_1617MC.root"
+     > d="/data4/mhemmer/Documents/2020_1617/Data/GammaCalo_2020_1617data.root"
+     > e="/data4/mhemmer/Documents/2020_1617/ABO_Normal/"
+     > f="/data4/mhemmer/Documents/2020_1617/ABO_NoRebin/"
+     > g="/data4/mhemmer/Documents/2020_1617/ABO_HigherRebin/"
+     > h="/data4/mhemmer/Documents/2020_1617/ABO_LowerRebin/"
+     > i="/data4/mhemmer/Documents/2020_1617/ABO_NarrowCorrBck/"
+     > j="/data4/mhemmer/Documents/2020_1617/ABO_WideCorrBck/"
+     > k="00010113_4117911067032230000_01631031000000d0"
+     > l="\_2020\_1617"
