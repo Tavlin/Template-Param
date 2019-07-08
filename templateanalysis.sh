@@ -23,14 +23,14 @@ DIR=${PWD##*/} # the directery where I am currently to make things a bit more
 
 ## changed loop from 1-5 to 2-5 since! needs to be changed back!
 
-for iTM in {10..0..-1}
-  do
-
-    echo ""
-    echo "start templatemethod number $iTM analysis"
-    echo ""
-    time root -l -q -b Template_CAP.C++\($iTM,\"$c\",\"$d\",\"$e\",\"$f\",\"$g\",\"$h\",\"$i\",\"$j\",\"$k\"\)
-  done
+# for iTM in {10..0..-1}
+#   do
+#
+#     echo ""
+#     echo "start templatemethod number $iTM analysis"
+#     echo ""
+#     time root -l -q -b Template_CAP.C++\($iTM,\"$c\",\"$d\",\"$e\",\"$f\",\"$g\",\"$h\",\"$i\",\"$j\",\"$k\"\)
+#   done
 
 rm -r BetterBkgNN
 mkdir BetterBkgNN

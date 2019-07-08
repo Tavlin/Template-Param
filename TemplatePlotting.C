@@ -346,31 +346,34 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png",
           OAhists->Clear();
           OAratios->Clear();
 
-          TLegend* legCorrBkgComp = new TLegend(0.4, 0.8, 0.8, 0.95);
-          legCorrBkgComp->SetHeader("template");
+          TLegend* legCorrBkgComp = new TLegend(0.15, 0.75, 0.5, 0.85);
           legCorrBkgComp->AddEntry(hCorrBack, "corr. background (combined)", "p");
           legCorrBkgComp->AddEntry(hCorrBackNoRebin, "corr. background (single)", "p");
 
-          if(hCorrBack->GetMaximum() > hCorrBackNoRebin->GetMaximum()){
-            OAhists->Add(hCorrBack);
-            OAhists->Add(hCorrBackNoRebin);
+          TLegend* legTemplate = new TLegend(0.6, 0.5, 0.8, 0.75);
+          legTemplate->AddEntry((TObject*) 0, "templates:", "");
+          legTemplate->AddEntry((TObject*) 0, "PYTHIA 8", "");
+          legTemplate->AddEntry((TObject*) 0, "Monash 2013", "");
+          legTemplate->AddEntry((TObject*) 0, "GEANT 3", "");
 
-          }
-          else{
-            OAhists->Add(hCorrBackNoRebin);
-            OAhists->Add(hCorrBack);
-          }
+          TLegend* legpTBckRatio = new TLegend(0.6, 0.8, 0.8, 0.85);
+          legpTBckRatio->AddEntry((TObject*) 0, str, "");
+
+          hCorrBack->GetYaxis()->SetRangeUser(-1.5e3, 10.5e3);
+          OAhists->Add(hCorrBack);
+          OAhists->Add(hCorrBackNoRebin);
+
           OAhists->Add(legCorrBkgComp);
           OAhists->Add(legSystem);
-          OAhists->Add(legpT);
-          OAhists->Add(legTemplat);
+          OAhists->Add(legpTBckRatio);
+          OAhists->Add(legTemplate);
           OAratios->Add(hRatio_Bkg);
           OAratios->Add(fPol0);
 
-          c2 = makeCanvas(OAhists, OAratios, "notimeThickHorizontal", 0, 0);
+          c2 = makeCanvas(OAhists, OAratios, "notimeThickSquare", 0, 0);
 
           c2->Update();
-          c2->SaveAs(Form("BetterBkgNN/BackgroundWithRatio%02d" + SaveAppendix + "." + PicFormat,k));
+          c2->SaveAs(Form("BetterBkg3to8/BackgroundWithRatio%02d" + SaveAppendix + "." + PicFormat,k));
           c2->Clear();
 
           delete legCorrBkgComp;
@@ -402,41 +405,36 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png",
           OAhists->Clear();
           OAratios->Clear();
 
-          TLegend* legCorrBkgComp = new TLegend(0.15, 0.02, 0.3, 0.3);
-          legCorrBkgComp->SetHeader("Template");
+          TLegend* legCorrBkgComp = new TLegend(0.15, 0.75, 0.5, 0.85);
           legCorrBkgComp->AddEntry(hCorrBack, "corr. background (combined)", "p");
           legCorrBkgComp->AddEntry(hCorrBackNoRebin, "corr. background (single)", "p");
 
-          legTemplateRatio = new TLegend(0.7, 0.46, 0.85, 0.76);
-          legTemplateRatio->AddEntry((TObject*) 0, "templates:", "");
-          legTemplateRatio->AddEntry((TObject*) 0, "PYTHIA 8", "");
-          legTemplateRatio->AddEntry((TObject*) 0, "Monash 2013", "");
-          legTemplateRatio->AddEntry((TObject*) 0, "GEANT 3", "");
+          TLegend* legTemplate = new TLegend(0.6, 0.5, 0.8, 0.75);
+          legTemplate->AddEntry((TObject*) 0, "templates:", "");
+          legTemplate->AddEntry((TObject*) 0, "PYTHIA 8", "");
+          legTemplate->AddEntry((TObject*) 0, "Monash 2013", "");
+          legTemplate->AddEntry((TObject*) 0, "GEANT 3", "");
 
-          legpTRatio = new TLegend(0.55, 0.8, 0.85, 0.86);
-          legpTRatio->AddEntry((TObject*) 0, str, "");
+          TLegend* legpTBckRatio = new TLegend(0.6, 0.8, 0.8, 0.85);
+          legpTBckRatio->AddEntry((TObject*) 0, str, "");
 
-          if(hCorrBack->GetMaximum() > hCorrBackNoRebin->GetMaximum()){
-            OAhists->Add(hCorrBack);
-            OAhists->Add(hCorrBackNoRebin);
-          }
-          else{
-            OAhists->Add(hCorrBackNoRebin);
-            OAhists->Add(hCorrBack);
-          }
+          hCorrBack->GetYaxis()->SetRangeUser(-1.5e3, 10.5e3);
+          OAhists->Add(hCorrBack);
+          OAhists->Add(hCorrBackNoRebin);
+
           OAhists->Add(legCorrBkgComp);
-          OAhists->Add(legpTRatio);
-          OAhists->Add(legTemplateRatio);
+          OAhists->Add(legTemplate);
+          OAhists->Add(legpTBckRatio);
 
           OAratios->Add(hRatio_Bkg);
           OAratios->Add(fPol0);
           OAratios->Add(legSystemBWR);
 
-          c2 = makeCanvas(OAhists, OAratios, "notimeThickHorizontal", 0, 0);
+          c2 = makeCanvas(OAhists, OAratios, "notimeThickSquare", 0, 0);
 
 
           c2->Update();
-          c2->SaveAs(Form("BetterBkg3to8/BackgroundWithRatio%02d" + SaveAppendix + "." + PicFormat,k));
+          c2->SaveAs(Form("BetterBkgNN/BackgroundWithRatio%02d" + SaveAppendix + "." + PicFormat,k));
           c2->Clear();
 
           delete legCorrBkgComp;
@@ -712,11 +710,16 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png",
 
       // hChi2Map_Chi2_pT->GetYaxis()->SetRangeUser(0.0, 4.0);
 
-
-
       OAhists->Clear();
-      OAhists->Add(hChi2Map_Chi2_pT);
-      OAhists->Add(histoChi2_0);
+      if(hChi2Map_Chi2_pT->GetMaximum()>histoChi2_0->GetMaximum()){
+        OAhists->Add(hChi2Map_Chi2_pT);
+        OAhists->Add(histoChi2_0);
+      }
+
+      else{
+        OAhists->Add(histoChi2_0);
+        OAhists->Add(hChi2Map_Chi2_pT);
+      }
       OAhists->Add(leg2);
       OAhists->Add(legSystem);
       OAhists->Add(legTemplat);

@@ -1,3 +1,6 @@
 # Template-Param
-Code for my Bachelor Work.
-Focus on plotting and fitting MC Tamplates on Data
+Code for my bachelor thesis.
+Fitting and plotting of MC templates on data
+
+1. ## Prerequisite
+... 1. ###

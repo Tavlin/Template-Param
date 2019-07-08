@@ -109,9 +109,6 @@ void GetLowerBounds(void){
  * statistics. This is needed for better Chi2 fitting since errors are too big
  * otherwise.
  * @param i         current pT-Bin
- * @param b         number of Neighbours
- * @param file      File where the normal corr. bkg. histos are.
- * @param PicFormat Formattype of the pictures. (.eps or .png)
  */
 TH1D* BackgroundAdding(int i){
 
@@ -158,9 +155,9 @@ TH1D* BackgroundAdding(int i){
   hBack->Rebin(fBinsPi013TeVEMCPtRebin[i]);
 
   // comment *out* if you want fit without original bin!
-  list->Add(hBack);
+  // list->Add(hBack);
   // comment *in* if you want fit without original bin!
-  // scalefactor -= 1;
+  scalefactor -= 1;
 
   for(int m = k; m >= j; m--){
     if(m != i){
@@ -211,7 +208,6 @@ TH1D* BackgroundAdding(int i){
         }
       }
     }
-    // std::cout << "in between upper and lower ranges" << '\n';
     hUpperBkg->SetBinContent(o,tempup);
     hUpperBkg->SetBinError(o, 0.0);
     hLowerBkg->SetBinContent(o, templow);
@@ -219,14 +215,11 @@ TH1D* BackgroundAdding(int i){
     tempup = -1.e10;
     templow = 1.e10;
   }
-  // std::cout << "after upper and lower ranges" << '\n';
 
-  // std::cout << "before merge" << '\n';
   hPilledUpBack->Reset();
   hPilledUpBack->Merge(list);
   hPilledUpBack->Scale(1./(Double_t)scalefactor);
 
-  // std::cout << "after merge" << '\n';
 
   hRatio      = (TH1D*) hBack->Clone();
   hRatio->Divide(hBack, hPilledUpBack, 1, 1);
@@ -255,6 +248,7 @@ TH1D* BackgroundAdding(int i){
   // hPilledUpBack->Write(Form("hPilledUpBack_Bin%02d_with%02d_bins", i, b));
   // hUpperBkg->Write(Form("hUpperBkg_Bin%02d_with%02d_bins", i, b));
   // hLowerBkg->Write(Form("hLowerBkg_Bin%02d_with%02d_bins", i, b));
+  hBack->Write(Form("hBack_Bin%02d", i));
   hPilledUpBack->Write(Form("hPilledUpBack_Bin%02d", i));
   hRatio->Write(Form("hRatio_Bin%02d", i));
   fPol0->Write(Form("fPol0_Bin%02d", i));

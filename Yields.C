@@ -199,7 +199,7 @@ void Yields(TString PicFormat = "png", TString SaveAppendix = ""){
 
      TLegend* legLeftBkgVariationSysUncertainty = new TLegend(0.13, 0.7, 0.5, 0.9);
      legLeftBkgVariationSysUncertainty->AddEntry((TObject*) 0, "scaling range for the", "");
-     legLeftBkgVariationSysUncertainty->AddEntry((TObject*) 0, "uncorrected background:", "");
+     legLeftBkgVariationSysUncertainty->AddEntry((TObject*) 0, "uncorrelated background:", "");
      legLeftBkgVariationSysUncertainty->AddEntry(hCorrYield_LeftBkgWideSysUncertainty, "0.225 #leq #it{m}_{inv} /(GeV/#it{c}^{2}) < 0.3", "p");
      legLeftBkgVariationSysUncertainty->AddEntry(hCorrYield_LeftBkgSmallSysUncertainty, "0.19 #leq #it{m}_{inv} /(GeV/#it{c}^{2}) < 0.265", "p");
 

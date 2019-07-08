@@ -196,7 +196,9 @@ void PlotArray(TObjArray *arraytoplot, const char *controlstring ,Short_t *color
         if(hh==0) {hist->Draw("E2");}
         else{hist->Draw("Same E2");}
       }else{
-        if(hh==0) {hist->Draw("");}
+        if(hh==0){
+          hist->Draw("");
+        }
         else{hist->Draw("Same");}
       }
     }else if (arraytoplot->At(hh)->InheritsFrom("TH2")){
