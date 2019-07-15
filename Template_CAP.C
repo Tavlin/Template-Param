@@ -313,7 +313,8 @@ void Template_CAP(const int TEMPLATEMETHOD,
       std::cout << "k ist zu gross!" << '\n';
       continue;
     }
-    std::cout << "Start bin  " << k << " reading and wrinting!" << "\n\n";
+    std::cout << "_____________________________________________________________________" << '\n';
+    std::cout << "| Start bin  " << k << " reading and wrinting!" << "\n\n";
 
     /**
      * resetting the Filepointers and TH1 pointers just for "saftey" reasons
@@ -383,11 +384,8 @@ void Template_CAP(const int TEMPLATEMETHOD,
         // hCorrBkg->Rebin(fBinsPi013TeVEMCPtRebin[k]);
         hCorrBkg = NULL;
         hCorrBkg = BackGround3to8(k, TEMPLATEMETHOD);   	             // from BackGroundFitting.h
-        std::cout << "After BackGround3to8 1" << '\n';
         break;
     }
-
-    std::cout << "After BackGround3to8 2" << '\n';
 
     /**
      * little fix for the string which contains the pT intervall comming from
@@ -398,8 +396,6 @@ void Template_CAP(const int TEMPLATEMETHOD,
     TString str_copy = str.Copy();
     str_copy.ReplaceAll("<","#leq");
     str.Replace(0,20,str_copy,23);
-
-    std::cout << "After BackGround3to8 3" << '\n';
 
     hInvMass_Data->SetTitle(str);
 
@@ -616,7 +612,6 @@ void Template_CAP(const int TEMPLATEMETHOD,
      * current pT bin.
      * Then giving theses values into the uncorrected Yield histogram.
      */
-    std::cout << "lowerEffirange = " << lowerEffirange << '\n';
     int_value = data_clone_for_int_dt_chi2map->IntegralAndError(
       lowerEffirange, upperEffirange, int_error);
 
@@ -641,7 +636,9 @@ void Template_CAP(const int TEMPLATEMETHOD,
     //   CorrBkgFile->Close();
     // }
 
-    std::cout << "bin number " << k << " reading and writing... DONE!" << "\n\n";
+    std::cout << "| bin number " << k << " reading and writing... DONE!" << "\n";
+    std::cout << "_____________________________________________________________________" << "\n\n";
+
   }
   /**
    * end of the for loop over all 1 <= k < nbins

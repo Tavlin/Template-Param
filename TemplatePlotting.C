@@ -134,15 +134,18 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png",
     switch (templatemethod) {
       case 1:
         OutputFile      = SafelyOpenRootfile("OutputFileBetterBkgNN.root");
-        std::cout << "Start Plotting Better Bkg NN Method" << '\n';
+        std::cout << "_____________________________________________________________________" << '\n';
+        std::cout << "| Start Plotting Better Bkg NN Method" << '\n';
         break;
       case 2:
         OutputFile      = SafelyOpenRootfile("OutputFileNormal.root");
-        std::cout << "Start Plotting 'Normal' Method" << '\n';
+        std::cout << "_____________________________________________________________________" << '\n';
+        std::cout << "| Start Plotting 'Normal' Method" << '\n';
         break;
       default:
         OutputFile      = SafelyOpenRootfile("OutputFileBetterBkg3to8.root");
-        std::cout << "Start Plotting Better Bkg 3 to 8 Method" << '\n';
+        std::cout << "_____________________________________________________________________" << '\n';
+        std::cout << "| Start Plotting Better Bkg 3 to 8 Method" << '\n';
         break;
     }
     if (OutputFile->IsOpen() ) printf("OutputFile opened successfully\n");
@@ -456,7 +459,6 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png",
           hChi2_2D->SetXTitle("#lambda_{S}");
           hChi2_2D->SetYTitle("#lambda_{CB}");
           hChi2_2D->SetZTitle("#chi^{2}");
-          // hChi2_2D->GetZaxis()->SetRangeUser(6.e1, 1.1e2);
 
           OAhists->Clear();
           OAhists->Add(hChi2_2D);

@@ -11,47 +11,45 @@ Fitting and plotting of MC templates on data
      This is the main output file which will be used in this analysis.
 
   * ### Lower & higher rebinning
-     We normally rebin the invariant mass-axis, and this rebinning has to be
-     changed into a lower and a higher rebinning separately. This is one of the
+     We usually rebin the invariant mass-axis. This rebinning has to be
+     done separately into a lower and a higher rebinning separately. This is one of the
      systematic variations and is therefore needed for the calculation of the
      systematic uncertainties.
 
-     This change needs to be done by hand in the afterburner to obtain the
-     needed output!
+     This Setting is needed to be changed by hand!
 
   * ### No Rebinng
      No rebinning (or the "1-rebinning" how I call it) means you change the
-     value in the invariant mass-axis rebinning to 1, so it does not get
-     rebinned. This is needed for the combination of the correlated background
-     templates, which may be needed because of the statistical uncertainties.
+     rebinning value in the invariant mass-axis rebinning to 1, so it does not
+     get rebinned. This is needed for the combination of the correlated
+     background templates, which is needed since the correlated background
+     templates are used over a larger _p_ T range, then one _p_ T bin. So to be
+     able to combine them they need to be binned in the same way.
 
-     This change needs to be done by hand in the afterburner to obtain the
-     needed output!
+     This Setting is needed to be changed by hand!
 
   * ### Smaller and wider background fitting
-     For systematic uncertainties this variation is normally included in the
-     afterburner however, the afterburner changes the fitting range from right
-     of the peak to left of the peak for pi<sub>0</sub>. Since we use this template method
-     to be able to describe the pions where at least one of the two photons
-     converted into e+e- outside of our PID. This part of the pi0 peak should be
-     in the same mass-range where the background fitting range variation of the
-     afterburner is.
+     For systematic uncertainties this variation is usually included in the
+     afterburner however, the afterburner changes the fitting range from the
+     right to the left of the peak. Since we use this template method to
+     describe the pions where at least one of the two photons converted into
+     e+e- outside of our PID, this part of the pi0 peak should be in the same
+     mass region as the fitting range variation of the afterburner.
      So I decided to change the systematic variation into broadening and
-     narrowing the fit range of the background instead of translating it to
-     other invariant mass-values.
+     narrowing the fitting of the background instead of translating it to other
+     invariant mass-values.
 
-     This change needs to be done by hand in the afterburner to obtain the
-     needed output!
+     This Setting is needed to be changed by hand!
 
   * ### Setting up a Files.txt
-     To run the code smoothly I wrote a bash script that would read all the
-     needed path variables (like where the different output files are), which
-     should be contained in a single files that I called _Files.txt_.
+     To run the code smoothly I wrote a bash script that reads all the needed
+     path variables (like where the different output files are). Those should be
+     contained in a single file, called _Files.txt_
      In the bash script are the different needed variables listed as follows:
 
      > $a == what should be plotted
 
-     > $b == SaveFile Format (.eps, .pdf, .png etc.)
+     > $b == SaveFile Format (i.e. eps, pdf, png etc. without a dot!!)
 
      > $c == path to the ESD MC
 
@@ -71,7 +69,7 @@ Fitting and plotting of MC templates on data
 
      > $k == cut string (since the cut string log can contain more then one and this is made only for one cut string!)
 
-     > $l == SaveAppendix (if you want to add something like the data set to the pictures' names)
+     > $l == SaveAppendix (i.e. pp13TeV, or pp2016)
 
 
   2. ## Running the analysis
@@ -80,10 +78,10 @@ Fitting and plotting of MC templates on data
      $ bash templateanalysis.sh
      ```
 
-     Normally the bash script should run the full analaysis, with systematic
+     By default the bash script runs the full analysis, with systematic
      uncertainty calculation and plotting. If you wish to only do some parts,
-     you will need to change a few things in the bash script or comment some
-     lines out.
+     you will have to change a few things in the bash script or comment some
+     lines out by hand.
 
      By default the folders in which the plots are saved will be deleted and new
-     ones created, so be carefull!
+     ones created, keep that in mind!

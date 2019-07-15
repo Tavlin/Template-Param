@@ -4,15 +4,15 @@
 
 /**
  * Function called by Chi2MapFunction to actually calculated Chi^2 and Ndf
- * @param  h1             data histogram containing same event - scaled
- * @param  h2             MC histogram containing MC truth Pi0 Peak
+ * @param  h1             data histogram containing (same - scaled mixed) events
+ * @param  h2             MC histogram containing MC "true" pi^0 peak
  * @param  h3             correlated background histogram
  * @param  ndf            temp. variable to obtain ndf
  * @param  a              variable for the signal scaling
  * @param  b              variable for the corr. bkg scaling
  * @param  TEMPLATEMETHOD telling the function which method is currently
  * used
- * @param  binnumber      current PT bin
+ * @param  binnumber      current p_T bin
  * corr. bkg. scaling factor from the 3 to 8 method after one iteration.
  * function which is used as 1 sigma uncertainty as a constraint
  * @return                Chi^2
@@ -40,6 +40,17 @@ Double_t Chi2Calc(TH1D* h1, TH1D* h2, TH1D* h3, Double_t &ndf, Double_t a,
   }
 
 
+  /*
+  loop over all bins inside the fitting range
+  check if the MC histograms have meaninungful entries in these bins
+
+  if so, calculate the chi squared value for this bin and added it's vaule to
+  the sum of chi squared values for all bins
+
+  if not, decrease number of degrees of freedom by one
+
+  at the end return the sum of chi squared over all bins
+   */
   for (int j = lowerfitrange; j <= upperfitrange; j++) {
 
     if(h1->GetBinContent(j) != 0 && h1->GetBinError(j) != 0
@@ -59,8 +70,14 @@ Double_t Chi2Calc(TH1D* h1, TH1D* h2, TH1D* h3, Double_t &ndf, Double_t a,
       ndf -= 1;
     }
   }
-
-  return chi2;
+  if(a >= 0 && b>= 0)
+  {
+    return chi2;
+  }
+  else
+  {
+    return 0.0;
+  }
 }
 
 /**
@@ -80,164 +97,217 @@ Double_t Chi2Calc(TH1D* h1, TH1D* h2, TH1D* h3, Double_t &ndf, Double_t a,
  * @param fBinsPi013TeVEMCPt  pT binning
  * @param k                   current PT bin
  */
-TH2D* Chi2MapFunction(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi2_min,
-                      Double_t &signalAreaScaling, Double_t &corrbackAreaScaling,
-                      Double_t &x_min, Double_t &y_min, Double_t &ndf,
-                      int TEMPLATEMETHOD, Double_t pT, int binnumber,
-                      Double_t NEvents_data, Double_t NEvents_MC){
+ TH2D* Chi2MapFunction(TH1D* hData, TH1D* hSignal, TH1D* hCorrback, Double_t &chi2_min,
+                       Double_t &signalAreaScaling, Double_t &corrbackAreaScaling,
+                       Double_t &x_min, Double_t &y_min, Double_t &ndf,
+                       int TEMPLATEMETHOD, Double_t pT, int binnumber,
+                       Double_t NEvents_data, Double_t NEvents_MC)
+ {
 
-  Double_t chi2_min_temp = 10.e10;
-  Double_t chi2 = 0;
-  Double_t A_c        = 0;                   // Area of the same - scaled mixed event
-  Double_t A_b        = 0;                   // Area of corr. back. template
-  Double_t A_a        = 0;                   // Area of the signal template
-  Double_t stepwidth;
-  Int_t numbersteps;
-  Double_t temp_error = 0;                   // Fehlervariable fuer die Templates
-  Double_t x_min_temp = 0;
-  Double_t y_min_temp = 0;
-  TString safePath = gDirectory->GetPath();  // retrieve neutral path
+   Double_t chi2_min_temp = 10.e10;
+   Double_t chi2 = 0;
+   Double_t A_c        = 0;                   // Area of the same - scaled mixed event
+   Double_t A_b        = 0;                   // Area of corr. back. template
+   Double_t A_a        = 0;                   // Area of the signal template
+   Int_t numbersteps   = 101;                 // == the number of bins in the TH2
+   Double_t temp_error = 0;                   // Fehlervariable fuer die Templates
+   Double_t x_min_temp = 0;
+   Double_t y_min_temp = 0;
+   TString safePath = gDirectory->GetPath();  // retrieve neutral path
 
 
-  TH1D* hData_clone = (TH1D*) hData->Clone("hData");
-  TH1D* hSignal_clone = (TH1D*) hSignal->Clone("hSignal");
-  TH1D* hCorrback_clone = (TH1D*) hCorrback->Clone("hCorrback");
+   TH1D* hData_clone = (TH1D*) hData->Clone("hData");
+   TH1D* hSignal_clone = (TH1D*) hSignal->Clone("hSignal");
+   TH1D* hCorrback_clone = (TH1D*) hCorrback->Clone("hCorrback");
 
-  Int_t lowerfitrange = 0;
-  Int_t upperfitrange = 0;
-  switch (TEMPLATEMETHOD) {
-    case  7:
-      lowerfitrange = hData->FindBin(lowerparamrange_narrow);
-      upperfitrange = hData->FindBin(upperparamrange_narrow);
-      break;
-    case  8:
-      lowerfitrange = hData->FindBin(lowerparamrange_wide);
-      upperfitrange = hData->FindBin(upperparamrange_wide);
-      break;
-    default:
-      lowerfitrange = hData->FindBin(lowerparamrange);
-      upperfitrange = hData->FindBin(upperparamrange);
-      break;
-  }
+   Int_t lowerfitrange = 0;
+   Int_t upperfitrange = 0;
+   switch (TEMPLATEMETHOD) {
+     case  7:
+       lowerfitrange = hData->FindBin(lowerparamrange_narrow);
+       upperfitrange = hData->FindBin(upperparamrange_narrow);
+       break;
+     case  8:
+       lowerfitrange = hData->FindBin(lowerparamrange_wide);
+       upperfitrange = hData->FindBin(upperparamrange_wide);
+       break;
+     default:
+       lowerfitrange = hData->FindBin(lowerparamrange);
+       upperfitrange = hData->FindBin(upperparamrange);
+       break;
+   }
 
-  /**
-   * Setting all the bins with pT > 0.3 GeV/c to 0
-   * @param i loop variable indicating
+   /**
+    * Setting all the bins with pT > 0.3 GeV/c to 0
+    * @param i loop variable indicating
+    */
+   for (int i = 1; i < hData_clone->FindBin(0.3); i++)
+   {
+     if(i < lowerfitrange || i > upperfitrange){
+       hData_clone->SetBinContent(i,0.);
+       hData_clone->SetBinError(i,0.);
+       hSignal_clone->SetBinContent(i,0.);
+       hSignal_clone->SetBinError(i,0.);
+       hCorrback_clone->SetBinContent(i,0.);
+       hCorrback_clone->SetBinError(i,0.);
+     }
+   }
+
+   /**
+    * Areascaling method as general idea to compensate for difference in number
+    * of Events in MC and data. Can theortically still be used, but is currently
+    * not used as standard.
+    */
+   // A_c = hData_clone->Integral();
+   // A_b = hCorrback_clone->Integral();
+   // A_a = hSignal_clone->Integral();
+   //
+   // if(A_b < 0){
+   //   hCorrback_clone->Scale(-1.*(A_c/A_b));
+   //   corrbackAreaScaling = -1.*(A_c/A_b);
+   // }
+   // else{
+   //   hCorrback_clone->Scale(A_c/A_b);
+   //   corrbackAreaScaling = A_c/A_b;
+   // }
+   // hSignal_clone->Scale(A_c/A_a);
+   // signalAreaScaling = A_c/A_a;
+
+   corrbackAreaScaling = 1.;
+   signalAreaScaling = 1.;
+
+
+   /**
+   * Chi2Map Creation:
+   * First Setting the Stepsize in which Chi2 will be calculated
+   * Then create the Chi2Maps
    */
-  for (int i = 1; i < hData_clone->FindBin(0.3); i++) {
-    if(i < lowerfitrange || i > upperfitrange){
-      hData_clone->SetBinContent(i,0.);
-      hData_clone->SetBinError(i,0.);
-      hSignal_clone->SetBinContent(i,0.);
-      hSignal_clone->SetBinError(i,0.);
-      hCorrback_clone->SetBinContent(i,0.);
-      hCorrback_clone->SetBinError(i,0.);
-    }
-  }
 
-  /**
-   * Areascaling method as general idea to compensate for difference in number
-   * of Events in MC and data. Needed to have a general range for the Chi2Map
-   */
-  // A_c = hData_clone->Integral();
-  // A_b = hCorrback_clone->Integral();
-  // A_a = hSignal_clone->Integral();
-  //
-  // if(A_b < 0){
-  //   hCorrback_clone->Scale(-1.*(A_c/A_b));
-  //   corrbackAreaScaling = -1.*(A_c/A_b);
-  // }
-  // else{
-  //   hCorrback_clone->Scale(A_c/A_b);
-  //   corrbackAreaScaling = A_c/A_b;
-  // }
-  // hSignal_clone->Scale(A_c/A_a);
-  // signalAreaScaling = A_c/A_a;
+   TH2D* hChi2map      = NULL;
+   const int MAXnIterationsChi2Fit  = 2;
 
-  corrbackAreaScaling = 1.;
-  signalAreaScaling = 1.;
+   Double_t PMValue = 5.0*pow(10.0, -2);
 
+   hChi2map    = new TH2D("hChi2map", "",
+   numbersteps, -1.0*PMValue , 10.0+PMValue,
+   numbersteps, -1.0*PMValue , 10.0+PMValue);
+   SetHistoStandardSettings2(hChi2map);
 
-  /**
-  * Chi2Map Creation:
-  * First Setting the Stepsize in which Chi2 will be calculated
-  * Then create the Chi2Maps
-  * @param TEMPLATEMETHOD [description]
-  */
+   /*****************************************************************************
+   **************************First CHI2MAP CALCULATION***************************
+   *****************************************************************************/
 
-  x_min = (1./10.)*(NEvents_data/NEvents_MC);
-  y_min = (1./10.)*(NEvents_data/NEvents_MC);
-  TH2D* hChi2map      = NULL;
-  int MAXnIterationsChi2Fit  = 3;
-  for(int nIterationsChi2Fit = 1; nIterationsChi2Fit <= MAXnIterationsChi2Fit; nIterationsChi2Fit++){
+   Double_t x_point = 0.0;
+   Double_t y_point = 0.0;
+   for (int ix = 0; ix < numbersteps; ix++) {
+     for (int iy = 0; iy < numbersteps; iy++) {
+       x_point = hChi2map->GetXaxis()->GetBinCenter(ix);
+       y_point = hChi2map->GetYaxis()->GetBinCenter(iy);
+       ndf = upperfitrange-lowerfitrange-2;
+       chi2 = 0;
 
-    hChi2map      = NULL;
-    if(corrbackAreaScaling == 1. && signalAreaScaling == 1.){
+       chi2 = Chi2Calc(hSignal_clone, hCorrback_clone, hData_clone, ndf,
+                       x_point, y_point, TEMPLATEMETHOD, binnumber);
 
-      stepwidth   = (1./pow(10., nIterationsChi2Fit)) * (NEvents_data/NEvents_MC);
-      numbersteps = 100;
-      // std::cout << "x_min = " << x_min << '\n';
-      // std::cout << "y_min = " << y_min << '\n';
-      // std::cout << "x_min - (numbersteps+2)*stepwidth/2 = " << x_min - (numbersteps+2)*stepwidth/2 << '\n';
-      // std::cout << "x_min + (numbersteps-2)*stepwidth/2 = " << x_min + (numbersteps-2)*stepwidth/2. << '\n';
-      hChi2map    = new TH2D("hChi2map", "",
-      numbersteps, x_min - (numbersteps+2)*stepwidth/2., x_min + (numbersteps+2)*stepwidth/2.,
-      numbersteps, y_min - (numbersteps-2)*stepwidth/2., y_min + (numbersteps-2)*stepwidth/2.);
-      SetHistoStandardSettings2(hChi2map);
-    }
-    else if(corrbackAreaScaling != 1. || signalAreaScaling != 1.){
+       if(chi2 < chi2_min_temp && chi2 > 0.0){
+         chi2_min_temp = chi2;
+         x_min_temp = max(x_point, 0.0);
+         y_min_temp = max(y_point, 0.0);
+       }
 
-      stepwidth = 0.025;
-      numbersteps = 100;
-
-      hChi2map = new TH2D("hChi2map", "",
-      numbersteps, 0.0, numbersteps*stepwidth,
-      numbersteps, 0.0, numbersteps*stepwidth);
-      SetHistoStandardSettings2(hChi2map);
-    }
-    else{
-      std::cerr << "Neither Areascaling nor no Areascaling oO!" << '\n';
-      exit(42);
-    }
-
-    hChi2map->SetXTitle("SF_{Signal}");
-    hChi2map->SetYTitle("SF_{korr. Untergrund}");
-    hChi2map->SetZTitle("#chi^{2}");
-
-    for (int ix = 0; ix < numbersteps; ix++) {
-      for (int iy = 0; iy < numbersteps; iy++) {
-        ndf = upperfitrange-lowerfitrange-2;
-        chi2 = 0;
-        chi2 = Chi2Calc(hSignal_clone, hCorrback_clone, hData_clone, ndf,
-            stepwidth * (Double_t)ix + (x_min - (numbersteps+2)*stepwidth/2.),
-            stepwidth * (Double_t)iy + (y_min - (numbersteps+2)*stepwidth/2.),
-            TEMPLATEMETHOD, binnumber);
-
-        if(chi2 < chi2_min_temp){
-          chi2_min_temp = chi2;
-          x_min_temp = max(stepwidth * (Double_t)ix + (x_min - (numbersteps+2)*stepwidth/2.), 0.0);
-          y_min_temp = max(stepwidth * (Double_t)iy + (y_min - (numbersteps+2)*stepwidth/2.), 0.0);
-        }
-
-          hChi2map->SetBinContent(ix+1, iy+1, chi2);
+          hChi2map->SetBinContent(ix+1, iy+1, chi2); // since bin (0,0) is underflow!
       }
     }
 
     chi2_min = chi2_min_temp;
     x_min = x_min_temp;
     y_min = y_min_temp;
-    std::cout << "chi^2_min = " << chi2_min << std::endl;
-    std::cout << "ndf = " << ndf << std::endl;
+    std::cout << "*********************************************************************" << '\n';
+    std::cout << "| \u03C7\u00B2 _min = " << chi2_min << std::endl;
+    std::cout << "| number of degrees of freedom = " << ndf << std::endl;
+    std::cout << "| x_min = " << x_min << '\n';
+    std::cout << "| y_min = " << y_min << '\n';
+    std::cout << "*********************************************************************" << '\n';
 
-    // delete hint;
-    // delete fPulse;
-    if(nIterationsChi2Fit < MAXnIterationsChi2Fit){
-      delete hChi2map;
+    /****************************************************************************
+    **************************LOOP CHI2MAP CALCULATION***************************
+    ****************************************************************************/
+   for(int nIterationsChi2Fit = 1; nIterationsChi2Fit <= MAXnIterationsChi2Fit; nIterationsChi2Fit++){
+     PMValue = 5.0*pow(10.0, -(2+nIterationsChi2Fit));
+
+     // hChi2map      = NULL;
+     if(corrbackAreaScaling == 1. && signalAreaScaling == 1.){
+       hChi2map    = new TH2D("hChi2map", "",
+       numbersteps,
+       hChi2map->GetXaxis()->GetBinCenter(hChi2map->GetXaxis()->FindBin(x_min)-5) - PMValue,
+       hChi2map->GetXaxis()->GetBinCenter(hChi2map->GetXaxis()->FindBin(x_min)+5) + PMValue,
+       numbersteps,
+       hChi2map->GetYaxis()->GetBinCenter(hChi2map->GetYaxis()->FindBin(y_min)-5) - PMValue,
+       hChi2map->GetYaxis()->GetBinCenter(hChi2map->GetYaxis()->FindBin(y_min)+5) + PMValue);
+       SetHistoStandardSettings2(hChi2map);
+     }
+     else if(corrbackAreaScaling != 1. || signalAreaScaling != 1.){
+       hChi2map    = new TH2D("hChi2map", "",
+       numbersteps,
+       hChi2map->GetXaxis()->GetBinCenter(hChi2map->GetXaxis()->FindBin(x_min)-5) - PMValue,
+       hChi2map->GetXaxis()->GetBinCenter(hChi2map->GetXaxis()->FindBin(x_min)+5) + PMValue,
+       numbersteps,
+       hChi2map->GetYaxis()->GetBinCenter(hChi2map->GetYaxis()->FindBin(y_min)-5) - PMValue,
+       hChi2map->GetYaxis()->GetBinCenter(hChi2map->GetYaxis()->FindBin(y_min)+5) + PMValue);
+       SetHistoStandardSettings2(hChi2map);
+     }
+     else{
+       std::cerr << "Neither Areascaling nor no Areascaling oO? This doesn't make any sense. ABORT!" << '\n';
+       exit(42);
+     }
+
+     hChi2map->SetXTitle("SF_{Signal}");
+     hChi2map->SetYTitle("SF_{korr. Untergrund}");
+     hChi2map->SetZTitle("#chi^{2}");
+
+     for (int ix = 0; ix < numbersteps; ix++) {
+       for (int iy = 0; iy < numbersteps; iy++) {
+         x_point = hChi2map->GetXaxis()->GetBinCenter(ix);
+         y_point = hChi2map->GetYaxis()->GetBinCenter(iy);
+         ndf = upperfitrange-lowerfitrange-2;
+         chi2 = 0;
+
+         chi2 = Chi2Calc(hSignal_clone, hCorrback_clone, hData_clone, ndf,
+                         x_point, y_point, TEMPLATEMETHOD, binnumber);
+
+         if(chi2 < chi2_min_temp && chi2 > 0.0){
+           chi2_min_temp = chi2;
+           x_min_temp = max(x_point, 0.0);
+           y_min_temp = max(y_point, 0.0);
+         }
+
+            hChi2map->SetBinContent(ix+1, iy+1, chi2); // since bin (0,0) is underflow!
+        }
+      }
+
+      // if(nIterationsChi2Fit == MAXnIterationsChi2Fit)
+      // {
+        chi2_min = chi2_min_temp;
+        x_min = x_min_temp;
+        y_min = y_min_temp;
+        std::cout << "*********************************************************************" << '\n';
+        std::cout << "| \u03C7\u00B2 _min = " << chi2_min << std::endl;
+        std::cout << "| number of degrees of freedom = " << ndf << std::endl;
+        std::cout << "| x_min = " << x_min << '\n';
+        std::cout << "| y_min = " << y_min << '\n';
+        std::cout << "| Lower x Binedge = " << hChi2map->GetXaxis()->GetBinLowEdge(1) << '\n';
+        std::cout << "| Lower x Binedge +1 = " << hChi2map->GetXaxis()->GetBinLowEdge(2) << '\n';
+        std::cout << "| Upper x Binedge = " << hChi2map->GetXaxis()->GetBinLowEdge(numbersteps+1) << '\n';
+        std::cout << "| Lower y Binedge = " << hChi2map->GetYaxis()->GetBinLowEdge(1) << '\n';
+        std::cout << "| Lower y Binedge +1 = " << hChi2map->GetYaxis()->GetBinLowEdge(2) << '\n';
+        std::cout << "| Upper y Binedge = " << hChi2map->GetYaxis()->GetBinLowEdge(numbersteps+1) << '\n';
+        std::cout << "*********************************************************************" << '\n';
+      // }
+
     }
-  }
+   return hChi2map;
+ }
 
-  return hChi2map;
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Gets the 2D Histo and Searches for Chi2_min
@@ -257,14 +327,12 @@ std::vector<double> GetMinmumTH2 (TH2D *h){
         val = val_tmp;
         posX = h->GetXaxis()->GetBinCenter(ix);
         posY = h->GetYaxis()->GetBinCenter(iy);
-        // cout << "Pos X: " << posX << "\tPos Y: " << posY << "\t val: " << val << endl;
       }
     }
   }
   vec.push_back(posX);
   vec.push_back(posY);
   vec.push_back(val);
-  // cout << "Min X: " << gr->GetX()[1] << "\tMin Y: " << gr->GetY()[1] << endl;
   return vec;
 }
 

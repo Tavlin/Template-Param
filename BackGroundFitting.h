@@ -96,8 +96,6 @@ void GetLowerBounds(void){
     TH1D* hMinv_pT_ratio_projectionX = NULL;
     hMinv_pT_ratio_projectionX = (TH1D*) hMinv_pT_ratio->ProjectionX(Form("hMinv_pT_ratio_projectionX[%02d,%02d]", i, i+1), i, i+1);
     Int_t lowerbinnumber = hMinv_pT_ratio_projectionX->FindFirstBinAbove(0.0);
-
-    std::cout << "bin " << i << " minv_min = " << hMinv_pT_ratio_projectionX->GetXaxis()->GetBinCenter(lowerbinnumber)  << '\n';
   }
 
   OACFile->Close();
@@ -138,8 +136,6 @@ TH1D* BackgroundAdding(int i){
     k = 38;
     j = 37;
   }
-  std::cout << fBinsPi013TeVEMCPt[k]-fBinsPi013TeVEMCPt[j] << '\n';
-  std::cout << "k and j are " << k <<  " and " << j << '\n';
   int scalefactor = k-j;
 
   TH1D* (aBackStackup[k-j]);
@@ -189,9 +185,7 @@ TH1D* BackgroundAdding(int i){
       continue;
     }
   }
-  // std::cout << "outside the loop" << '\n';
 
-  // std::cout << "before upper and lower ranges" << '\n';
   TH1D* hUpperBkg     = (TH1D*) hBack->Clone("hUpperBkg");
   TH1D* hLowerBkg     = (TH1D*) hBack->Clone("hLowerBkg");
   TH1D* hPilledUpBack = (TH1D*) hBack->Clone("hPilledUpBack");
@@ -236,14 +230,12 @@ TH1D* BackgroundAdding(int i){
   }
   hRatio->Fit(Form("fPol0_bin%02d",i), "QM0", "",  0.08, 0.2);
 
-  // std::cout << "before making outputfile" << '\n';
   if(i == 1){
     BackFile      = new TFile("BackFileNN.root", "RECREATE");
   }
   else{
     BackFile      = new TFile("BackFileNN.root", "UPDATE");
   }
-  // std::cout << "after making outputfile" << '\n';
 
   // hPilledUpBack->Write(Form("hPilledUpBack_Bin%02d_with%02d_bins", i, b));
   // hUpperBkg->Write(Form("hUpperBkg_Bin%02d_with%02d_bins", i, b));
@@ -267,7 +259,6 @@ TH1D* BackgroundAdding(int i){
 
   delete list;
   hBack = NULL;
-  std::cout << "" << '\n';
 
   return hPilledUpBack;
 
@@ -409,7 +400,6 @@ TH1D* BackGround3to8(int i, const int TEMPLATEMETHOD){
         //     sum += hMinv_pT_ratio->GetBinContent(b, c+1);
         //   }
         // }
-        // std::cout << "BinContent = " << hMinv_pT_ratio->GetBinContent(b, i+1) << '\n';
         if(hMinv_pT_ratio->GetBinContent(b, i+1) != 0){
           OAC_scaling = 0;
           OAC_scaling = hMinv_pT_ratio->GetBinContent(b, i+1);  //sum;
@@ -420,18 +410,15 @@ TH1D* BackGround3to8(int i, const int TEMPLATEMETHOD){
           hPilledUpBack->SetBinContent(b, 0.0);
           hPilledUpBack->SetBinError(b, 0.0);
         }
-        // std::cout << "BinContent = " << hPilledUpBack->GetBinContent(b) << '\n';
       }
       break;
   }
-  std::cout << "number bins = " << hMinv_pT_ratio->GetNbinsX() << '\n';
   hRatio      = (TH1D*) hBack->Clone();
   hRatio->Divide(hBack, hPilledUpBack, 1, 1);
 
   fPol0        = new TF1(Form("fPol0_bin%02d",i), "[0]", 0.0, 0.3);
   fPol0->SetParLimits(0, 0.0, 5.0);
 
-  std::cout << "Smashing where? 1" << '\n';
   for (int t = 1; t < hRatio->GetNbinsX(); t++) {
     if(hRatio->GetBinError(t) > 40 || fabs(hRatio->GetBinContent(t)) > 40){
       hRatio->SetBinContent(t, 0.0);
@@ -470,12 +457,10 @@ TH1D* BackGround3to8(int i, const int TEMPLATEMETHOD){
       }
       break;
   }
-  std::cout << "Smashing where? 2" << '\n';
 
   hRatio->Write(Form("hRatio_Bin%02d", i));
   fPol0->Write(Form("fPol0_Bin%02d", i));
   BackFile->Close();
-  std::cout << "Smashing where? 3" << '\n';
 
   gDirectory->Cd(sPath.Data());
 
@@ -486,7 +471,6 @@ TH1D* BackGround3to8(int i, const int TEMPLATEMETHOD){
   OACFile->Close();
   CorrBkgFile->Close();
 
-  std::cout << "Smashing where? 4" << '\n';
 
   return hPilledUpBack;
 }
