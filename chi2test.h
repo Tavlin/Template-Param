@@ -176,16 +176,18 @@ Double_t Chi2Calc(TH1D* h1, TH1D* h2, TH1D* h3, Double_t &ndf, Double_t a,
    corrbackAreaScaling = 1.;
    signalAreaScaling = 1.;
 
-
-   /**
-   * Chi2Map Creation:
-   * First Setting the Stepsize in which Chi2 will be calculated
-   * Then create the Chi2Maps
-   */
-
+   /*
+   Creation of the first "map". The Map is a 2D histogram, with the x axis
+   representing the scaling factor for the signal template and the y axis
+   representing the scaling factor of the correlated background template. The
+   starting axis, hence scaling paramter range, is chosen arbitrary. Should the
+   number of events in MC be less then ~85% of the number of events in data,
+   this arbitrary value might need to be increased.
+   The binning is made in a way, that the bincenters in this first map are some
+   number with the power of 10, like 0.1 (and not 0.15). Therefore the PMValue
+   is needed to add/substract a certain value to/from te upper/lower bound.
+    */
    TH2D* hChi2map      = NULL;
-   const int MAXnIterationsChi2Fit  = 2;
-
    Double_t PMValue = 5.0*pow(10.0, -2);
 
    hChi2map    = new TH2D("hChi2map", "",
@@ -197,6 +199,12 @@ Double_t Chi2Calc(TH1D* h1, TH1D* h2, TH1D* h3, Double_t &ndf, Double_t a,
    **************************First CHI2MAP CALCULATION***************************
    *****************************************************************************/
 
+   /*
+   In this double loop for every possible (x,y) pair inside the 2D histogram
+   chi² is beeing calculated and given as value for the corresponding (x,y) bin.
+   While calculating values for all the bins, the minimal value will also be
+   searched and remembered, as well as the values of x and y for this minimum.
+    */
    Double_t x_point = 0.0;
    Double_t y_point = 0.0;
    for (int ix = 0; ix < numbersteps; ix++) {
@@ -222,6 +230,9 @@ Double_t Chi2Calc(TH1D* h1, TH1D* h2, TH1D* h3, Double_t &ndf, Double_t a,
     chi2_min = chi2_min_temp;
     x_min = x_min_temp;
     y_min = y_min_temp;
+
+    // printing of the found minima, the corresponding chi² and the number of
+    // degrees of freedom. This can be commented out if it's too annoying.
     std::cout << "*********************************************************************" << '\n';
     std::cout << "| \u03C7\u00B2 _min = " << chi2_min << std::endl;
     std::cout << "| number of degrees of freedom = " << ndf << std::endl;
@@ -232,38 +243,60 @@ Double_t Chi2Calc(TH1D* h1, TH1D* h2, TH1D* h3, Double_t &ndf, Double_t a,
     /****************************************************************************
     **************************LOOP CHI2MAP CALCULATION***************************
     ****************************************************************************/
-   for(int nIterationsChi2Fit = 1; nIterationsChi2Fit <= MAXnIterationsChi2Fit; nIterationsChi2Fit++){
-     PMValue = 5.0*pow(10.0, -(2+nIterationsChi2Fit));
 
-     // hChi2map      = NULL;
-     if(corrbackAreaScaling == 1. && signalAreaScaling == 1.){
-       hChi2map    = new TH2D("hChi2map", "",
-       numbersteps,
-       hChi2map->GetXaxis()->GetBinCenter(hChi2map->GetXaxis()->FindBin(x_min)-5) - PMValue,
-       hChi2map->GetXaxis()->GetBinCenter(hChi2map->GetXaxis()->FindBin(x_min)+5) + PMValue,
-       numbersteps,
-       hChi2map->GetYaxis()->GetBinCenter(hChi2map->GetYaxis()->FindBin(y_min)-5) - PMValue,
-       hChi2map->GetYaxis()->GetBinCenter(hChi2map->GetYaxis()->FindBin(y_min)+5) + PMValue);
-       SetHistoStandardSettings2(hChi2map);
-     }
-     else if(corrbackAreaScaling != 1. || signalAreaScaling != 1.){
-       hChi2map    = new TH2D("hChi2map", "",
-       numbersteps,
-       hChi2map->GetXaxis()->GetBinCenter(hChi2map->GetXaxis()->FindBin(x_min)-5) - PMValue,
-       hChi2map->GetXaxis()->GetBinCenter(hChi2map->GetXaxis()->FindBin(x_min)+5) + PMValue,
-       numbersteps,
-       hChi2map->GetYaxis()->GetBinCenter(hChi2map->GetYaxis()->FindBin(y_min)-5) - PMValue,
-       hChi2map->GetYaxis()->GetBinCenter(hChi2map->GetYaxis()->FindBin(y_min)+5) + PMValue);
-       SetHistoStandardSettings2(hChi2map);
-     }
-     else{
-       std::cerr << "Neither Areascaling nor no Areascaling oO? This doesn't make any sense. ABORT!" << '\n';
-       exit(42);
-     }
 
-     hChi2map->SetXTitle("SF_{Signal}");
-     hChi2map->SetYTitle("SF_{korr. Untergrund}");
-     hChi2map->SetZTitle("#chi^{2}");
+    const int MAXnIterationsChi2Fit  = 2; // the number of iterations for this
+                                          // procedure. This value needs to be
+                                          // chosen in such a way, that the last
+                                          // "map" is not too far zoomed in,
+                                          // otherwise the uncertainty of the
+                                          // scaling parameters can not be
+                                          // determined.
+
+    /*
+    Loop for iteratively zoom in on the current minimum in the current chi2map
+    to increase the precision of the scaling parameters.
+    The zooming is done by taking the (x,y) from the last "map" and choosing the
+    new bounds of (x,y) around these points in a way, that the precision is
+    increased by an additional decimal power.
+    Like written in the comment before, the humber of itrartions must be chosen,
+    such that the uncertainties of the scaling parameters can still be
+    calculated. The calculation of the uncertainties will be done outside of
+    this loop with the last "map". In this map all values which are equal to
+    chi²_min + 1 will be searched and the max difference between the (x,y)_min
+    and the (x,y) corresponding to the searched chi²_min + 1 values will be the
+    uncertainty of (x,y)_min. So if the map is zoomed in too far, there will be
+    no chi²_min + 1 values on it, so no uncertainties can be calculated.
+    */
+    for(int nIterationsChi2Fit = 1; nIterationsChi2Fit <= MAXnIterationsChi2Fit; nIterationsChi2Fit++){
+      PMValue = 5.0*pow(10.0, -(2+nIterationsChi2Fit));
+
+      // hChi2map      = NULL;
+      if(corrbackAreaScaling == 1. && signalAreaScaling == 1.){
+        hChi2map    = new TH2D("hChi2map", "",
+        numbersteps,
+        hChi2map->GetXaxis()->GetBinCenter(hChi2map->GetXaxis()->FindBin(x_min)-5) - PMValue,
+        hChi2map->GetXaxis()->GetBinCenter(hChi2map->GetXaxis()->FindBin(x_min)+5) + PMValue,
+        numbersteps,
+        hChi2map->GetYaxis()->GetBinCenter(hChi2map->GetYaxis()->FindBin(y_min)-5) - PMValue,
+        hChi2map->GetYaxis()->GetBinCenter(hChi2map->GetYaxis()->FindBin(y_min)+5) + PMValue);
+        SetHistoStandardSettings2(hChi2map);
+      }
+      else if(corrbackAreaScaling != 1. || signalAreaScaling != 1.){
+        hChi2map    = new TH2D("hChi2map", "",
+        numbersteps,
+        hChi2map->GetXaxis()->GetBinCenter(hChi2map->GetXaxis()->FindBin(x_min)-5) - PMValue,
+        hChi2map->GetXaxis()->GetBinCenter(hChi2map->GetXaxis()->FindBin(x_min)+5) + PMValue,
+        numbersteps,
+        hChi2map->GetYaxis()->GetBinCenter(hChi2map->GetYaxis()->FindBin(y_min)-5) - PMValue,
+        hChi2map->GetYaxis()->GetBinCenter(hChi2map->GetYaxis()->FindBin(y_min)+5) + PMValue);
+        SetHistoStandardSettings2(hChi2map);
+      }
+      else{
+        std::cerr << "Neither Areascaling nor no Areascaling oO? This doesn't make any sense.\nABORT!" << '\n';
+        exit(42);
+      }
+      hChi2map->SetZTitle("#chi^{2}");
 
      for (int ix = 0; ix < numbersteps; ix++) {
        for (int iy = 0; iy < numbersteps; iy++) {
@@ -285,8 +318,10 @@ Double_t Chi2Calc(TH1D* h1, TH1D* h2, TH1D* h3, Double_t &ndf, Double_t a,
         }
       }
 
-      // if(nIterationsChi2Fit == MAXnIterationsChi2Fit)
-      // {
+      // printing of the found minima, the corresponding chi² and the number of
+      // degrees of freedom. This can be commented out if it's too annoying.
+      if(nIterationsChi2Fit == MAXnIterationsChi2Fit)
+      {
         chi2_min = chi2_min_temp;
         x_min = x_min_temp;
         y_min = y_min_temp;
@@ -295,14 +330,8 @@ Double_t Chi2Calc(TH1D* h1, TH1D* h2, TH1D* h3, Double_t &ndf, Double_t a,
         std::cout << "| number of degrees of freedom = " << ndf << std::endl;
         std::cout << "| x_min = " << x_min << '\n';
         std::cout << "| y_min = " << y_min << '\n';
-        std::cout << "| Lower x Binedge = " << hChi2map->GetXaxis()->GetBinLowEdge(1) << '\n';
-        std::cout << "| Lower x Binedge +1 = " << hChi2map->GetXaxis()->GetBinLowEdge(2) << '\n';
-        std::cout << "| Upper x Binedge = " << hChi2map->GetXaxis()->GetBinLowEdge(numbersteps+1) << '\n';
-        std::cout << "| Lower y Binedge = " << hChi2map->GetYaxis()->GetBinLowEdge(1) << '\n';
-        std::cout << "| Lower y Binedge +1 = " << hChi2map->GetYaxis()->GetBinLowEdge(2) << '\n';
-        std::cout << "| Upper y Binedge = " << hChi2map->GetYaxis()->GetBinLowEdge(numbersteps+1) << '\n';
         std::cout << "*********************************************************************" << '\n';
-      // }
+      }
 
     }
    return hChi2map;
