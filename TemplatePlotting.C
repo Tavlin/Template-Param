@@ -8,7 +8,6 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png",
                       TString SaveAppendix = ""){
 
   TGaxis::SetMaxDigits(3);
-  int binnumber = -1;
  /**
   * loop over templatemethod
   * templatemethod == 0 for 3 to 8 Method
@@ -97,6 +96,8 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png",
 
     /*
       TLegend which displays most important info as header!
+      There are so many different ones, since many pictues have different places
+      where they can go.
      */
     TLegend* legSystem = new TLegend(0.1, 0.94, 0.7, 0.98);
     legSystem->AddEntry((TObject*) 0, "ALICE, pp #sqrt{#it{s}} = 13 TeV, #pi^{0} #rightarrow #gamma#gamma with EMCal", "");
@@ -131,6 +132,9 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png",
     BackFile3to8      = SafelyOpenRootfile("BackFile3to8.root");
     if (BackFile3to8->IsOpen() ) printf("BackFile3to8 opened successfully\n");
 
+    /*
+    Open the correct file corresponding to the current templatemethod
+     */
     switch (templatemethod) {
       case 1:
         OutputFile      = SafelyOpenRootfile("OutputFileBetterBkgNN.root");
@@ -212,7 +216,7 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png",
     SetHistogramProperties(hEfficiency, "pt", "correction factors", 0, 1.4, 14.);
 
     /*
-    The normal acceptance
+    The normal acceptance (from the afterburner)
      */
     hAcc                              = (TH1D*) OutputFile->Get("hAcc");
     SetHistogramProperties(hAcc, "pt", "correction factors", 1, 1.4, 14.);
@@ -258,9 +262,8 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png",
     // going over all pt bins despite first one, which is some framework bs.
     for (int k = 1; k < numberbins-1; k++) {
 
-      if(binnumber <=  0 || binnumber > numberbins){
 
-
+        /***********only possible if NOT lighweight train output!***********/
         // hGG                      = (TH1D*) MCWithOutFile->Get(Form("Mapping_TrueMesonCaloPhoton_InvMass_in_Pt_Bin%02d", k));
         // SetHistogramProperties(hGG, "minv", count_str, 2, 0.0, 0.3);
         //
@@ -271,6 +274,9 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png",
         // SetHistogramProperties(hCC, "minv", count_str, 7, 0.0, 0.3);
 
 
+        /**
+         * Same - scaled mixed event from MC
+         */
         hInvMass_MC              = (TH1D*) MCWithOutFile->Get(Form("fHistoMappingSignalInvMass_in_Pt_Bin%02d", k));
         SetHistogramProperties(hInvMass_MC, "minv", count_str, 5, 0.0, 0.3);
 
@@ -307,6 +313,9 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png",
         SetHistogramProperties(hCorrBack, "minv", count_str, 3, 0.0, 0.3);
 
 
+        /*
+        scaling of the signal and correalted background templates
+         */
         hSignal_scaled = (TH1D*) hSignal->Clone("hSignal_scaled");
         hCorrBack_scaled = (TH1D*) hCorrBack->Clone("hCorrBack_scaled");
 
@@ -314,6 +323,10 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png",
         hSignal_scaled->       Scale(hSignalAreaScaling->  GetBinContent(k+1)*h_x_min->GetBinContent(k+1));
         hCorrBack_scaled->     Scale(hCorrbackAreaScaling->GetBinContent(k+1)*h_y_min->GetBinContent(k+1));
 
+        /*
+        Histogram containing the combination of scaled (signal + correlated
+        background)
+         */
         hAdded                = (TH1D*) hSignal_scaled->   Clone("hAdded");
         hAdded->              Add(hCorrBack_scaled);
         SetHistogramProperties(hAdded, "minv", count_str, 8, 0.0, 0.3);
@@ -331,6 +344,11 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png",
          */
         if(templatemethod == 0){
 
+          /*
+          get the correalted background without rebinning and rebin them with
+          the proper value of the current pT bin.
+           */
+
           hCorrBackNoRebin    = NULL;
           hCorrBackNoRebin    = (TH1D*) CorrBkgFile->Get(Form("hCorrBkgNoRebinBin%02d",k));
           hCorrBackNoRebin->Rebin(fBinsPi013TeVEMCPtRebin[k-1]);
@@ -338,10 +356,16 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png",
           hRatio_Bkg = NULL;
           fPol0      = NULL;
 
+          /*
+          Get the ratio plot for the correlated background (combined/single)
+           */
           hRatio_Bkg = (TH1D*) BackFileNN->Get(Form("hRatio_Bin%02d", k));
           SetHistogramProperties(hCorrBackNoRebin, "minv", count_str, 1, 0.0, 0.3);
           SetHistogramProperties(hRatio_Bkg, "minv", "ratio", 5, 0.0, 0.3);
 
+          /*
+          a constant fit to the ratio above
+           */
           fPol0      = (TF1*)  BackFileNN->Get(Form("fPol0_Bin%02d", k));
 
           hRatio_Bkg->GetYaxis()->SetRangeUser(fPol0->GetParameter(0)-1.54, fPol0->GetParameter(0)+1.54);
@@ -349,6 +373,9 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png",
           OAhists->Clear();
           OAratios->Clear();
 
+          /*
+          TLegends for the correlated background templates in comparison.
+           */
           TLegend* legCorrBkgComp = new TLegend(0.15, 0.75, 0.5, 0.85);
           legCorrBkgComp->AddEntry(hCorrBack, "corr. background (combined)", "p");
           legCorrBkgComp->AddEntry(hCorrBackNoRebin, "corr. background (single)", "p");
@@ -362,6 +389,9 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png",
           TLegend* legpTBckRatio = new TLegend(0.6, 0.8, 0.8, 0.85);
           legpTBckRatio->AddEntry((TObject*) 0, str, "");
 
+          /*
+          plotting part using Plotting_Patrick.h
+           */
           hCorrBack->GetYaxis()->SetRangeUser(-1.5e3, 10.5e3);
           OAhists->Add(hCorrBack);
           OAhists->Add(hCorrBackNoRebin);
@@ -454,12 +484,21 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png",
           ////////////////////////////////////////////////////////////////////////
           // Drawing Chi2 maps
 
-          TGaxis::SetMaxDigits(1);
+          TGaxis::SetMaxDigits(1); //setting maxnumber of digits to 1 which may
+                                   //need to be changed back to 3
 
+          /*
+          Setting the axis titles for the Chi2Map
+           */
           hChi2_2D->SetXTitle("#lambda_{S}");
           hChi2_2D->SetYTitle("#lambda_{CB}");
           hChi2_2D->SetZTitle("#chi^{2}");
 
+          /*
+          Set Up and Drawing of the Chi2Map which is needed first to be able
+          to draw the white Chi²_min + 1 line which is saved in a different
+          histogram.
+           */
           OAhists->Clear();
           OAhists->Add(hChi2_2D);
           OAhists->Add(legSystemChi2Map);
@@ -467,6 +506,7 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png",
           OAhists->Add(legpT);
           legTemplat->SetTextColor(kWhite);
           OAhists->Add(legTemplat);
+
 
           cChi2Map = NULL;
           lChi2MinY = new TLine(h_x_min->GetBinContent(k+1),
@@ -486,13 +526,17 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png",
           cChi2Map = makeCanvas(OAhists, 0, "colznotimesquare", 0, 0);
           cChi2Map->cd();
           cChi2Map->Update();
+          /*
+          After drawing the Chi2Map once we can now draw the 1 sigma range which
+          is not an option in Plotting_Patrick.h
+           */
           hChi2_2D_sigma->SetLineColor(kWhite);
           hChi2_2D_sigma->SetLineWidth(2);
           hChi2_2D_sigma->SetContour(2, somelist);
           hChi2_2D_sigma->Draw("SAME CONT3");
           lChi2MinX->Draw("SAME");
           lChi2MinY->Draw("SAME");
-          // cChi2Map->SetLogz(1);
+
           TGaxis::SetMaxDigits(1);
           cChi2Map->Update();
 
@@ -507,7 +551,7 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png",
             cChi2Map->SaveAs(Form("Normal/Chi2Map%02d" + SaveAppendix + "." + PicFormat,k));
           }
           cChi2Map->Clear();
-          TGaxis::SetMaxDigits(3);
+          TGaxis::SetMaxDigits(3); // Resetting MaxDigits to 3
           delete lChi2MinX;
           delete lChi2MinY;
         }
@@ -633,6 +677,7 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png",
           delete lParamResult;
           delete paramrange;
 
+          /***********only possible if NOT lighweight train output!***********/
           // if(templatemethod == 0){
           //   TLegend* lGammas = new TLegend(0.63, 0.7, 0.8, 0.9);
           //   lGammas->AddEntry(hSignal, "MC true #pi^{0} signal", "p");
@@ -695,7 +740,6 @@ void TemplatePlotting(TString wpsid = "all", TString PicFormat = "png",
 
 
         }
-      }
       delete legpT;
     }
 

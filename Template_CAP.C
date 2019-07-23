@@ -304,8 +304,8 @@ void Template_CAP(const int TEMPLATEMETHOD,
 
   /**
    * For loop to loop over all pT bins definded by fBinsPi013TeVEMCPt. Bin 0 is
-   * excluded since it only contains 0 <= pT (GeV/c) < 1.4 where no data should
-   * be present, since we have an energy cut at 0.7 GeV per Cluster.
+   * excluded since it only contains 0 <= pT (GeV/c) < 1.4 where no usable data
+   * should be present, since we have an energy cut at 0.7 GeV per Cluster.
    */
   for (int k = 1; k <= numberbins; ++k) {
 
@@ -317,7 +317,7 @@ void Template_CAP(const int TEMPLATEMETHOD,
     std::cout << "| Start bin  " << k << " reading and wrinting!" << "\n\n";
 
     /**
-     * resetting the Filepointers and TH1 pointers just for "saftey" reasons
+     * resetting the filepointers and TH1 pointers just to be safe
      */
     MCFile        = NULL;
     DataFile      = NULL;
@@ -544,6 +544,12 @@ void Template_CAP(const int TEMPLATEMETHOD,
 
 
 
+    /*
+    After the correlated baclground was written in file, now scale it with the
+    before calculated scaling parameter. This is needed for the yield extraction
+    since we want to subtract the scaled correlated background from the same
+    event distribution to get the signal.
+     */
     for(int bin = 1; bin <= hCorrBkg->GetNbinsX(); bin++){
       hCorrBkg->SetBinContent(bin, hCorrBkg->GetBinContent(bin)*y_min*corrbackAreaScaling);
       hCorrBkg->SetBinError(bin, sqrt(pow(hCorrBkg->GetBinError(bin)*y_min*corrbackAreaScaling,2.)+
@@ -632,16 +638,13 @@ void Template_CAP(const int TEMPLATEMETHOD,
 
     MCFile->Close();
     DataFile->Close();
-    // if(TEMPLATEMETHOD == 4){
-    //   CorrBkgFile->Close();
-    // }
 
     std::cout << "| bin number " << k << " reading and writing... DONE!" << "\n";
     std::cout << "_____________________________________________________________________" << "\n\n";
 
   }
   /**
-   * end of the for loop over all 1 <= k < nbins
+   * end of the for loop over all pT-bins
    */
 
 
@@ -920,13 +923,4 @@ void Template_CAP(const int TEMPLATEMETHOD,
     systematics(OutputFile);
     std::cout << "\n\nFINISHED SYSTEMATIC ANALYSIS" << '\n';
   }
-
-  /**
-   * Closing all the files which were opend for the Yields.
-   */
-  // CorrectionFile->Close();
-  // OutputFile->Close();
-  // DataFile->Close();
-  // FData_corrected->Close();
-
 }
